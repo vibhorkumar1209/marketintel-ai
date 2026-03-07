@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { stripe, handleCheckoutCompleted, handleSubscriptionUpdated, handleSubscriptionDeleted } from '@/lib/stripe';
 import Stripe from 'stripe';
 
-export const config = { api: { bodyParser: false } };
-
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const sig = req.headers.get('stripe-signature');
