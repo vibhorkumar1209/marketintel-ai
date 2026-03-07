@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { SessionProvider } from 'next-auth/react';
+import { AuthProvider } from '@/components/auth/AuthProvider';
 import { getServerSession } from 'next-auth';
 import '@/styles/globals.css';
 
@@ -23,9 +23,9 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans bg-[#0A1628] text-[#E8EDF5]">
-        <SessionProvider session={session}>
+        <AuthProvider>
           {children}
-        </SessionProvider>
+        </AuthProvider>
       </body>
     </html>
   );
