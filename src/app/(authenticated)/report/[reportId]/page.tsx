@@ -76,272 +76,266 @@ export default function ReportPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Header with Downloads */}
-      <div className="sticky top-0 z-30 bg-[#0A1628] border-b border-[#2A3A55] -mx-4 -mt-8 px-4 sm:px-6 lg:px-8 py-6 sm:flex items-center justify-between">
-        <div className="flex-1 mb-4 sm:mb-0">
-          <h1 className="text-3xl font-bold text-[#E8EDF5] mb-2">{report.title}</h1>
-          <div className="flex items-center gap-3 text-sm text-[#8899BB]">
-            <span>
-              Generated {new Date(report.metadata.generatedAt).toLocaleDateString()}
-            </span>
+    <div style={{
+      display: 'flex', flexDirection: 'column', gap: 0,
+      background: '#f9fafb', minHeight: '100vh',
+      margin: '-32px', padding: 0  // break out of layout padding
+    }}>
+      {/* ── Report Header ── */}
+      <div style={{
+        background: '#0c3649',
+        padding: '24px 32px',
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16,
+        flexWrap: 'wrap',
+      }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#7eaabf', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 6 }}>Industry Report</p>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#E8F0F5', lineHeight: 1.3, marginBottom: 8 }}>{report.title}</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 12, color: '#7eaabf' }}>Generated {new Date(report.metadata.generatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
             {report.metadata.qualityScore && (
-              <>
-                <span>•</span>
-                <Badge variant="teal">
-                  Quality: {report.metadata.qualityScore.toFixed(0)}%
-                </Badge>
-              </>
+              <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(52,145,232,0.2)', color: '#6ab8ff', border: '1px solid rgba(52,145,232,0.35)', borderRadius: 4, padding: '2px 8px' }}>
+                Quality: {report.metadata.qualityScore.toFixed(0)}%
+              </span>
             )}
           </div>
         </div>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="secondary"
-            size="md"
+        <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+          <a
             href={`/api/report/${reportId}/download/pdf`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
+              background: 'rgba(255,255,255,0.1)', color: '#E8F0F5',
+              border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+              textDecoration: 'none',
+            }}
           >
-            📥 PDF
-          </Button>
-          <Button
-            variant="secondary"
-            size="md"
+            ↓ Print/PDF
+          </a>
+          <a
             href={`/api/report/${reportId}/download/xlsx`}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 16px', borderRadius: 6, fontSize: 13, fontWeight: 600,
+              background: '#E63946', color: '#fff', border: 'none', cursor: 'pointer',
+              textDecoration: 'none',
+            }}
           >
-            📊 Excel
-          </Button>
+            ↓ Excel
+          </a>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Sidebar - Table of Contents */}
-        <aside className={clsx(
-          'lg:col-span-1',
-          !showToc && 'hidden lg:block'
-        )}>
-          <div className="sticky top-32 space-y-4">
-            <div className="flex items-center justify-between lg:hidden mb-4">
-              <h3 className="font-semibold text-[#E8EDF5]">Contents</h3>
-              <button
-                onClick={() => setShowToc(!showToc)}
-                className="text-teal-600 hover:text-teal-500"
-              >
-                ✕
-              </button>
-            </div>
-
-            <nav className="scrollbar-thin overflow-y-auto max-h-[calc(100vh-150px)] space-y-2">
-              {tableOfContents.map((item, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setActiveSection(idx);
-                    setShowToc(false);
-                  }}
-                  className={clsx(
-                    'block w-full text-left px-3 py-2 rounded-lg transition-all text-sm',
-                    activeSection === idx
-                      ? 'bg-teal-600 bg-opacity-20 text-teal-400 border-l-2 border-teal-600'
-                      : 'text-[#8899BB] hover:bg-[#1B2A4A] hover:text-[#E8EDF5]'
-                  )}
-                >
-                  {item}
-                </button>
-              ))}
-            </nav>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="lg:col-span-3 space-y-8">
-          {/* Toggle TOC on mobile */}
-          {!showToc && (
+      {/* ── Horizontal Section Nav ── */}
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        background: '#fff',
+        borderBottom: '2px solid #e5e7eb',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+        overflowX: 'auto',
+      }}>
+        <div style={{ display: 'flex', padding: '0 32px', whiteSpace: 'nowrap', minWidth: 'max-content' }}>
+          {tableOfContents.map((item, idx) => (
             <button
-              onClick={() => setShowToc(true)}
-              className="lg:hidden px-4 py-2 bg-[#111827] border border-[#2A3A55] rounded-lg text-[#8899BB] hover:text-[#E8EDF5] transition-colors w-full text-left"
+              key={idx}
+              onClick={() => setActiveSection(idx)}
+              style={{
+                padding: '14px 18px',
+                fontSize: 13,
+                fontWeight: activeSection === idx ? 700 : 500,
+                color: activeSection === idx ? '#E63946' : '#374151',
+                background: 'none',
+                border: 'none',
+                borderBottom: activeSection === idx ? '2px solid #E63946' : '2px solid transparent',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                transition: 'all 150ms ease',
+                flexShrink: 0,
+              } as React.CSSProperties}
             >
-              ≡ Show Table of Contents
+              {idx === 0 ? '✦ Exec Summary' : item}
             </button>
-          )}
+          ))}
+        </div>
+      </div>
 
-          {/* Executive Summary */}
-          {activeSection === 0 && (
-            <div className="space-y-6 animate-fade-in">
-              <div>
-                <h2 className="text-3xl font-bold text-[#E8EDF5] mb-4">Executive Summary</h2>
-              </div>
 
-              {/* Market Headline */}
-              <Card className="bg-gradient-to-r from-teal-600 from-opacity-10 to-teal-600 to-opacity-5 border-teal-600">
-                <p className="text-lg font-semibold text-teal-300 leading-relaxed">
-                  {report.executiveSummary.headline}
-                </p>
-              </Card>
+      {/* ── Section Content ── */}
+      <div style={{ padding: '32px', maxWidth: 1100, margin: '0 auto' }}>
 
-              {/* KPI Panel */}
-              <Card>
-                <div className="grid md:grid-cols-2 gap-6">
-                  {report.executiveSummary.kpiPanel.map((kpi, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 bg-[#0A1628] border border-[#2A3A55] rounded-lg"
-                    >
-                      <p className="text-sm text-[#8899BB] mb-1">{kpi.label}</p>
-                      <p className="text-2xl font-bold text-teal-600 mb-1">{kpi.value}</p>
-                      <p className="text-xs text-[#8899BB]">From: {(kpi as { label: string; value: string; source_section?: string }).source_section || 'Analysis'}</p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              {/* Body Paragraphs */}
-              <Card>
-                <div className="space-y-4">
-                  {report.executiveSummary.paragraphs.map((para, idx) => (
-                    <p key={idx} className="text-[#E8EDF5] leading-relaxed">
-                      {para}
-                    </p>
-                  ))}
-                </div>
-              </Card>
-
-              {/* Scenarios */}
-              <Card>
-                <h3 className="text-xl font-semibold text-[#E8EDF5] mb-4">Market Scenarios</h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  {[
-                    { label: 'Bull Case', value: report.executiveSummary.scenarios.bull, icon: '📈' },
-                    { label: 'Base Case', value: report.executiveSummary.scenarios.base, icon: '→' },
-                    { label: 'Bear Case', value: report.executiveSummary.scenarios.bear, icon: '📉' },
-                  ].map((scenario, idx) => (
-                    <div
-                      key={idx}
-                      className="p-4 bg-[#0A1628] border border-[#2A3A55] rounded-lg"
-                    >
-                      <div className="text-3xl mb-2">{scenario.icon}</div>
-                      <p className="text-sm font-semibold text-[#E8EDF5] mb-2">
-                        {scenario.label}
-                      </p>
-                      <p className="text-sm text-[#8899BB]">{scenario.value}</p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
+        {/* Executive Summary */}
+        {activeSection === 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* Big headline card */}
+            <div style={{
+              borderLeft: '4px solid #3491E8',
+              paddingLeft: 20,
+              paddingTop: 8, paddingBottom: 8,
+            }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: '#3491E8', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 6 }}>Market Headline</p>
+              <p style={{ fontSize: 16, fontWeight: 600, color: '#1f2937', lineHeight: 1.65 }}>
+                {report.executiveSummary.headline}
+              </p>
             </div>
-          )}
 
-          {/* Report Sections */}
-          {report.sections.map((section, idx) => (
-            activeSection === idx + 1 && (
-              <div key={section.id} className="space-y-6 animate-fade-in">
-                {/* Section Header */}
-                <div className="pb-4 border-b border-[#2A3A55]">
-                  <h2 className="text-3xl font-bold text-[#E8EDF5] mb-2">{section.title}</h2>
-                  {section.flags && section.flags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      {section.flags.map((flag, fidx) => (
-                        <Badge key={fidx} variant="amber">
-                          {flag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+            {/* KPI panel */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+              {report.executiveSummary.kpiPanel.map((kpi, idx) => (
+                <div key={idx} style={{
+                  background: '#fff',
+                  border: '1px solid #e5e7eb',
+                  borderTop: `3px solid ${idx % 2 === 0 ? '#3491E8' : '#E63946'}`,
+                  borderRadius: 10,
+                  padding: '16px 20px',
+                }}>
+                  <p style={{ fontSize: 10, fontWeight: 700, color: '#6b7280', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 6 }}>{kpi.label}</p>
+                  <p style={{ fontSize: 24, fontWeight: 900, color: '#0c3649', fontFamily: 'DM Mono, monospace' }}>{kpi.value}</p>
+                  <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>Source: {(kpi as { label: string; value: string; source_section?: string }).source_section || 'Analysis'}</p>
                 </div>
+              ))}
+            </div>
 
-                {/* Body Content */}
-                <Card>
-                  <div className="space-y-4">
-                    {section.content.map((paragraph, pidx) => (
-                      <p key={pidx} className="text-[#E8EDF5] leading-relaxed">
-                        {paragraph}
-                      </p>
+            {/* Body paragraphs */}
+            <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: 24 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {report.executiveSummary.paragraphs.map((para, idx) => (
+                  <p key={idx} style={{ color: '#1f2937', lineHeight: 1.75, fontSize: 14 }}>{para}</p>
+                ))}
+              </div>
+            </div>
+
+            {/* Scenarios */}
+            <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: 24 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0c3649', marginBottom: 16 }}>Market Scenarios</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                {[
+                  { label: 'Bull Case', value: report.executiveSummary.scenarios.bull, color: '#3491E8' },
+                  { label: 'Base Case', value: report.executiveSummary.scenarios.base, color: '#0c3649' },
+                  { label: 'Bear Case', value: report.executiveSummary.scenarios.bear, color: '#E63946' },
+                ].map((scenario, idx) => (
+                  <div key={idx} style={{
+                    padding: '14px 16px',
+                    borderLeft: `4px solid ${scenario.color}`,
+                    background: '#f9fafb',
+                    borderRadius: 8,
+                  }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: scenario.color, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: 6 }}>{scenario.label}</p>
+                    <p style={{ fontSize: 13, color: '#374151', lineHeight: 1.6 }}>{scenario.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Report Sections */}
+        {report.sections.map((section, idx) =>
+          activeSection === idx + 1 && (
+            <div key={section.id} style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              {/* Section Header */}
+              <div style={{ borderBottom: '2px solid #3491E8', paddingBottom: 14, marginBottom: 4 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#3491E8', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 4 }}>Section {idx + 1}</p>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0c3649' }}>{section.title}</h2>
+                {section.flags && section.flags.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                    {section.flags.map((flag, fidx) => (
+                      <span key={fidx} style={{
+                        fontSize: 11, fontWeight: 600, color: '#92400e',
+                        background: '#fef3c7', border: '1px solid #fcd34d',
+                        borderRadius: 4, padding: '3px 8px',
+                      }}>{flag}</span>
                     ))}
                   </div>
-                </Card>
-
-                {/* Key Table */}
-                {section.keyTable && (
-                  <Card>
-                    <h3 className="text-lg font-semibold text-[#E8EDF5] mb-4">
-                      {(section.keyTable as { title?: string }).title || 'Data Table'}
-                    </h3>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
-                        {(section.keyTable as { headers?: string[] }).headers && (
-                          <thead>
-                            <tr className="border-b border-[#2A3A55]">
-                              {((section.keyTable as { headers?: string[] }).headers || []).map((header, hidx) => (
-                                <th
-                                  key={hidx}
-                                  className="text-left px-3 py-3 font-semibold text-[#8899BB]"
-                                >
-                                  {String(header)}
-                                </th>
-                              ))}
-                            </tr>
-                          </thead>
-                        )}
-                        <tbody>
-                          {((section.keyTable as { rows?: unknown[] }).rows || []).map((row, ridx) => (
-                            <tr
-                              key={ridx}
-                              className="border-b border-[#2A3A55] hover:bg-[#111827]"
-                            >
-                              {(Array.isArray(row) ? row : Object.values(row as object)).map((cell, cidx) => (
-                                <td
-                                  key={cidx}
-                                  className="px-3 py-3 text-[#E8EDF5]"
-                                >
-                                  {String(cell ?? '')}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </Card>
-                )}
-
-                {/* Chart */}
-                {section.chartSpec && (
-                  <Card>
-                    <h3 className="text-lg font-semibold text-[#E8EDF5] mb-1">
-                      {String((section.chartSpec as { title?: unknown }).title || 'Market Chart')}
-                    </h3>
-                    <p className="text-xs text-[#8899BB] mb-4">
-                      {String((section.chartSpec as { type?: unknown }).type || 'line')} chart
-                    </p>
-                    <ReportChart
-                      chartSpec={section.chartSpec as any}
-                      sizing={(report as any).sizing}
-                    />
-                  </Card>
-                )}
-
-                {/* Citations */}
-                {section.citations && section.citations.length > 0 && (
-                  <Card>
-                    <h3 className="text-lg font-semibold text-[#E8EDF5] mb-4">Sources</h3>
-                    <ul className="space-y-3">
-                      {section.citations.map((citation, cidx) => (
-                        <li key={cidx} className="text-sm">
-                          <p className="text-[#E8EDF5] mb-1">"{String(citation.claim || '')}"</p>
-                          <p className="text-[#8899BB]">
-                            <Badge variant="teal">{String(citation.tier || 'N/A')}</Badge>
-                            <span className="ml-2">{String(citation.source || '')}</span>
-                            <span className="ml-2 text-xs">({String(citation.date || 'N/A')})</span>
-                          </p>
-                        </li>
-                      ))}
-                    </ul>
-                  </Card>
                 )}
               </div>
-            )
-          ))}
-        </main>
+
+              {/* Body Content */}
+              <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: 24 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {section.content.map((paragraph, pidx) => (
+                    <p key={pidx} style={{ color: '#1f2937', lineHeight: 1.8, fontSize: 14 }}>{paragraph}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Key Table */}
+              {section.keyTable && (
+                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+                  <div style={{ background: '#0c3649', padding: '12px 20px' }}>
+                    <h3 style={{ fontSize: 13, fontWeight: 700, color: '#E8F0F5', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      {(section.keyTable as { title?: string }).title || 'Data Table'}
+                    </h3>
+                  </div>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                      {(section.keyTable as { headers?: string[] }).headers && (
+                        <thead>
+                          <tr style={{ background: '#f1f5f9' }}>
+                            {((section.keyTable as { headers?: string[] }).headers || []).map((header, hidx) => (
+                              <th key={hidx} style={{ textAlign: 'left', padding: '10px 16px', fontSize: 11, fontWeight: 700, color: '#3491E8', textTransform: 'uppercase', letterSpacing: '0.8px', borderBottom: '1px solid #e5e7eb' }}>
+                                {String(header)}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                      )}
+                      <tbody>
+                        {((section.keyTable as { rows?: unknown[] }).rows || []).map((row, ridx) => (
+                          <tr key={ridx} style={{ background: ridx % 2 === 0 ? '#fff' : '#f9fafb', borderBottom: '1px solid #e5e7eb' }}>
+                            {(Array.isArray(row) ? row : Object.values(row as object)).map((cell, cidx) => (
+                              <td key={cidx} style={{ padding: '10px 16px', color: cidx === 0 ? '#0c3649' : '#374151', fontWeight: cidx === 0 ? 600 : 400 }}>
+                                {String(cell ?? '')}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              {/* Chart */}
+              {section.chartSpec && (
+                <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, padding: 24 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0c3649', marginBottom: 4 }}>
+                    {String((section.chartSpec as { title?: unknown }).title || 'Market Chart')}
+                  </h3>
+                  <p style={{ fontSize: 11, color: '#9ca3af', marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.8px', fontWeight: 600 }}>
+                    {String((section.chartSpec as { type?: unknown }).type || 'line')} chart
+                  </p>
+                  <ReportChart
+                    chartSpec={section.chartSpec as any}
+                    sizing={(report as any).sizing}
+                  />
+                </div>
+              )}
+
+              {/* Citations */}
+              {section.citations && section.citations.length > 0 && (
+                <div style={{ background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: 10, padding: 20 }}>
+                  <h4 style={{ fontSize: 11, fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: 14 }}>Sources</h4>
+                  <ul style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {section.citations.map((citation, cidx) => (
+                      <li key={cidx} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, background: '#3491E820', color: '#3491E8', border: '1px solid #3491E835', borderRadius: 4, padding: '2px 7px', flexShrink: 0 }}>
+                          {String(citation.tier || 'N/A')}
+                        </span>
+                        <div>
+                          <span style={{ fontSize: 13, color: '#374151' }}>&ldquo;{String(citation.claim || '')}&rdquo;</span>
+                          <span style={{ fontSize: 12, color: '#9ca3af', marginLeft: 8 }}>{String(citation.source || '')} ({String(citation.date || 'N/A')})</span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )
+        )}
       </div>
     </div>
   );
