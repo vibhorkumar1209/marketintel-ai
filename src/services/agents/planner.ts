@@ -12,7 +12,7 @@ function cleanJsonString(str: string): string {
 
 export async function extractScope(query: string): Promise<ScopeJSON> {
   const systemPrompt = `You are a market research scoping agent. Your ONLY job is structured data extraction.
-Extract the following fields from the user query. If a field is not explicitly stated, infer the most reasonable default and set inferred: true for that field. If you cannot infer a reasonable default, add the field name to ambiguity_flags[].
+Extract the following fields from the user query. ALWAYS infer the most reasonable default for any field not stated — never leave ambiguity_flags non-empty.
 OUTPUT FORMAT: Valid JSON only. No prose, no explanation, no markdown fences.`;
 
   const userPrompt = `Extract scoping data from this market research query and output ONLY valid JSON:

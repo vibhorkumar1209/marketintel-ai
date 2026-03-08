@@ -37,16 +37,12 @@ export async function runIndustryReportPipeline(
     await stream.stepStart(1, 'Scope Extraction');
     const scope = await extractScope(query);
 
-    if (scope.ambiguity_flags.length > 0) {
-      await stream.stepError(1, 'Scope Extraction', `Ambiguous query — please clarify: ${scope.ambiguity_flags.join(', ')}`);
-      return;
-    }
-
-    // Override scope with user config
-    scope.geography = config.regions.join(', ') || scope.geography;
-    scope.depth_level = config.depth;
-    scope.competitor_count = config.competitorCount;
+    // Override scope with user config (ambiguity flags are ignored — use inferred defaults)
+    scope.geography = (config.regions && config.regions.length > 0) ? config.regions.join(', ') : (scope.geography || 'Global');
+    scope.depth_level = config.depth || 'standard';
+    scope.competitor_count = config.competitorCount || 10;
     scope.token_budget_per_section = config.depth === 'deep' ? 1400 : config.depth === 'light' ? 400 : 800;
+    scope.product_scope = scope.product_scope || scope.industry;
 
     await stream.stepComplete(1, 'Scope Extraction', { industry: scope.industry, geography: scope.geography });
 
