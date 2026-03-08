@@ -4,9 +4,9 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { CREDIT_COSTS, deductCredits } from '@/lib/stripe';
 import { checkRateLimit } from '@/lib/redis';
-import { runIndustryReportPipeline } from '@/services/report-generation/industry-report';
-import { runDatapackPipeline } from '@/services/report-generation/datapack';
 import { z } from 'zod';
+
+export const maxDuration = 60;
 
 const GenerateSchema = z.object({
   reportType: z.enum(['industry_report', 'datapack']),
@@ -71,13 +71,8 @@ export async function POST(req: NextRequest) {
     // Deduct credits immediately (refunded on failure)
     await deductCredits(userId, creditCost, job.id);
 
-    // Run pipeline asynchronously (fire and forget — SSE for progress)
-    const pipelineFn = reportType === 'industry_report' ? runIndustryReportPipeline : runDatapackPipeline;
-
-    // Non-blocking execution
-    pipelineFn(job.id, userId, query, config).catch(err => {
-      console.error(`Pipeline failed for job ${job.id}:`, err);
-    });
+    // Pipeline will be triggered by /api/generate/[jobId]/stream when client connects
+    // This circumvents Vercel Serverless instantly suspending execution
 
     return NextResponse.json({
       jobId: job.id,

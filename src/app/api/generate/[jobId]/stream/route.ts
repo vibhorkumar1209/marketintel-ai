@@ -3,9 +3,12 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { drainStreamEvents } from '@/lib/redis';
+import { runIndustryReportPipeline } from '@/services/report-generation/industry-report';
+import { runDatapackPipeline } from '@/services/report-generation/datapack';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+export const maxDuration = 60;
 
 export async function GET(
   req: NextRequest,
@@ -54,6 +57,23 @@ export async function GET(
         return;
       }
 
+      // Try to transition job from queued -> running if we are the first to observe it
+      if (job.status === 'queued') {
+        const updated = await db.job.updateMany({
+          where: { id: params.jobId, status: 'queued' },
+          data: { status: 'running' }
+        });
+        if (updated.count > 0) {
+          const pipelineFn = job.reportType === 'industry_report'
+            ? runIndustryReportPipeline
+            : runDatapackPipeline;
+
+          pipelineFn(job.id, session.user.id, job.query, job.config as any).catch(console.error);
+        }
+      }
+
+      let lastPing = Date.now();
+
       // Poll Redis for new events
       const pollInterval = setInterval(async () => {
         if (closed) {
@@ -77,6 +97,13 @@ export async function GET(
                 return;
               }
             } catch { /* skip malformed event */ }
+          }
+
+          if (Date.now() - lastPing > 15000) {
+            try {
+              controller.enqueue(': ping\n\n');
+              lastPing = Date.now();
+            } catch { }
           }
 
           // Also check DB status as fallback
