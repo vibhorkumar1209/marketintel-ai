@@ -51,17 +51,15 @@ export async function generateResearchPlan(scope: ScopeJSON): Promise<SearchPlan
   const systemPrompt = `You are a market research planning agent. You generate prioritized web search plans.
 Output ONLY valid JSON. No prose, no markdown fences.`;
 
-  const userPrompt = `Given the scope JSON below, generate exactly 18 web searches ordered by source tier priority.
+  const userPrompt = `Given the scope below, generate exactly 8 high-priority web searches.
 
-Structure them in three tiers:
-- Tier A (6 searches): Government, regulatory, and trade association sources covering market size, production volumes, trade flows
-- Tier B (6 searches): Consultancy and company filings covering competitive landscape, financials, strategic developments
-- Tier C (6 searches): Trade press and company-level sources covering recent news, pricing, M&A, product launches
+Structure in TWO tiers:
+- Tier A (4 searches): Market size figures, CAGR, government/trade data
+- Tier B (4 searches): Competitive landscape, key players, recent news
 
-For each search provide:
-{ "search_query": "exact string to search", "target_source_tier": "T1-T5", "data_objective": "what data this finds", "fallback_query": "alternative if primary fails" }
+Each search: { "search_query": "exact string", "target_source_tier": "T1-T3", "data_objective": "what this finds", "fallback_query": "alternative" }
 
-OUTPUT: { "search_plan": [ ...exactly 18 items... ] }
+OUTPUT: { "search_plan": [ ...exactly 8 items... ] }
 
 SCOPE: ${JSON.stringify(scope, null, 2)}`;
 

@@ -56,19 +56,19 @@ OUTPUT FORMAT:
   "discrepancy_note": "string or null"
 }
 
-RESEARCH BUNDLE SUMMARY:
-${JSON.stringify({
-    data_points: researchBundle.data_points.slice(0, 30),  // limit for context
-    gaps: researchBundle.gaps,
-  }, null, 2)}
-
-SCOPE: ${JSON.stringify({
-    industry: scope.industry,
-    product_scope: scope.product_scope,
-    geography: scope.geography,
-    base_year: scope.base_year,
-    forecast_end_year: scope.forecast_end_year,
-  }, null, 2)}`;
+RESEARCH BUNDLE (top 10 data points):
+${JSON.stringify(
+    researchBundle.data_points.slice(0, 10).map(dp => ({
+      value: dp.value,
+      unit: dp.unit,
+      context: String(dp.context || '').slice(0, 120),
+      source_name: dp.source_name,
+      confidence: dp.confidence,
+    })),
+    null, 2
+  )}
+GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 5) ?? [])}
+SCOPE: ${scope.industry} | ${scope.product_scope} | ${scope.geography} | ${scope.base_year}–${scope.forecast_end_year}`;
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5',

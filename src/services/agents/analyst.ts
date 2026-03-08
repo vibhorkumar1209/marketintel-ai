@@ -74,14 +74,13 @@ ${JSON.stringify({
     confidence: sizingJSON.confidence_interval,
   }, null, 2)}
 
-TOP DATA POINTS FROM RESEARCH (use these for citations):
-${JSON.stringify(researchBundle.data_points.slice(0, 20), null, 2)}
+KEY DATA POINTS (cite by source_name):
+${JSON.stringify(researchBundle.data_points.slice(0, 8).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 120), source_name: dp.source_name, confidence: dp.confidence })), null, 2)}
 
-DATA GAPS (write [FIGURE UNAVAILABLE] for any of these):
-${JSON.stringify(researchBundle.gaps, null, 2)}
+DATA GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 5) ?? [])}
 
-${enrichmentBundle ? `ENRICHMENT DATA:
-${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 5), null, 2)}` : ''}
+${enrichmentBundle && enrichmentBundle.enrichment_data.length > 0 ? `ENRICHMENT (top 2 companies):
+${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 2), null, 2)}` : ''}
 
 OUTPUT the complete section JSON:`;
 
@@ -152,13 +151,12 @@ REQUIREMENTS:
 
 Output ONLY valid JSON.`;
 
-  // Summarize sections to fit in context
+  // Summarize sections to fit in context — keep only first paragraph per section
   const sectionSummaries = sections.map(s => ({
     section_id: s.section_id,
     title: s.section_title,
-    key_points: s.body_paragraphs.slice(0, 2),
-    citations: s.citations.slice(0, 3),
-    flags: s.section_flags,
+    key_point: String(s.body_paragraphs?.[0] || '').slice(0, 300),
+    top_citation: s.citations?.[0] || null,
   }));
 
   const userPrompt = `Write the Executive Summary for this ${scope.industry} market report.
