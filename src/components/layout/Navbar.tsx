@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 import { clsx } from 'clsx';
 import Button from '../ui/Button';
+import { ThemeToggle } from './ThemeToggle';
 
 const Navbar: React.FC = () => {
   const { data: session } = useSession();
@@ -120,6 +121,7 @@ const Navbar: React.FC = () => {
 
             {!session?.user && (
               <div className="flex items-center gap-3">
+                <ThemeToggle />
                 <Button variant="ghost" size="sm" href="/signin">
                   Sign In
                 </Button>

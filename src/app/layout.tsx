@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { AuthProvider } from '@/components/auth/AuthProvider';
 import { getServerSession } from 'next-auth';
+import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -23,9 +24,11 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="font-sans bg-[#0A1628] text-[#E8EDF5]">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            {children}
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
