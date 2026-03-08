@@ -3,129 +3,268 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { clsx } from 'clsx';
+import { useSession } from 'next-auth/react';
+
+const NAV_ITEMS = [
+  {
+    href: '/dashboard',
+    label: 'Dashboard',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+        <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
+      </svg>
+    ),
+  },
+  {
+    href: '/wizard',
+    label: 'New Report',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 5v14M5 12h14" />
+      </svg>
+    ),
+  },
+  {
+    href: '/dashboard#history',
+    label: 'Report History',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
+    ),
+  },
+  {
+    href: '/billing',
+    label: 'Credits & Billing',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+        <line x1="1" y1="10" x2="23" y2="10" />
+      </svg>
+    ),
+  },
+  {
+    href: '/settings',
+    label: 'Settings',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" />
+      </svg>
+    ),
+  },
+];
 
 const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [credits, setCredits] = useState<number | null>(null);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
-    const fetchCredits = async () => {
-      try {
-        const res = await fetch('/api/credits');
-        if (res.ok) {
-          const data = await res.json();
-          setCredits(data.balance);
-        }
-      } catch (error) {
-        console.error('Failed to fetch credits:', error);
-      }
-    };
-
-    fetchCredits();
+    fetch('/api/credits').then(r => r.ok ? r.json() : null).then(d => d && setCredits(d.balance)).catch(() => { });
   }, []);
 
-  const navItems = [
-    { href: '/dashboard', label: 'Dashboard', icon: '📊' },
-    { href: '/wizard', label: 'New Report', icon: '✨' },
-    { href: '/dashboard', label: 'Report History', icon: '📜' },
-    { href: '/settings', label: 'Settings', icon: '⚙️' },
-    { href: '/billing', label: 'Billing', icon: '💳' },
-  ];
-
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
-      return pathname === '/dashboard' || pathname === '/';
-    }
+    if (href === '/dashboard' || href === '/dashboard#history') return pathname === '/dashboard' || pathname === '/';
     return pathname.startsWith(href);
   };
 
+  const initials = session?.user?.name?.slice(0, 1)?.toUpperCase() || session?.user?.email?.slice(0, 1)?.toUpperCase() || 'U';
+
   return (
     <>
-      {/* Desktop Sidebar */}
+      {/* ── Desktop Sidebar ── */}
       <aside
-        className={clsx(
-          'hidden md:flex flex-col bg-[#111827] border-r border-[#2A3A55] transition-all duration-300',
-          isCollapsed ? 'w-20' : 'w-64'
-        )}
+        style={{
+          width: isCollapsed ? 68 : 220,
+          minWidth: isCollapsed ? 68 : 220,
+          background: '#0c3649',
+          borderRight: '1px solid #1a5270',
+          display: 'flex',
+          flexDirection: 'column',
+          transition: 'width 250ms ease, min-width 250ms ease',
+          position: 'relative',
+          zIndex: 20,
+        }}
+        className="hidden md:flex"
       >
-        {/* Toggle Button */}
-        <div className="p-4 border-b border-[#2A3A55] flex items-center justify-between">
+        {/* Logo */}
+        <div style={{
+          height: 56,
+          borderBottom: '1px solid #1a5270',
+          display: 'flex',
+          alignItems: 'center',
+          padding: isCollapsed ? '0 16px' : '0 20px',
+          gap: 10,
+          overflow: 'hidden',
+        }}>
+          {/* Triangle logo mark */}
+          <div style={{
+            width: 30, height: 30, flexShrink: 0,
+            background: 'linear-gradient(135deg, #3491E8 0%, #E63946 100%)',
+            clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+          }} />
           {!isCollapsed && (
-            <Link href="/dashboard" className="font-bold text-lg">
-              <span className="text-[#E8EDF5]">RefractOne Industry Report Hub</span>
-              <span className="text-teal-600">AI</span>
-            </Link>
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: '#E8F0F5', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
+                RefractOne
+              </div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: '#7eaabf', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+                Industry Report Hub
+              </div>
+            </div>
           )}
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            className="p-1.5 hover:bg-[#1B2A4A] rounded-lg transition-colors"
-            title={isCollapsed ? 'Expand' : 'Collapse'}
-          >
-            <svg
-              className="w-5 h-5 text-[#8899BB]"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d={isCollapsed ? 'M13 5l7 7m0 0l-7 7m7-7H5' : 'M11 19l-7-7m0 0l7-7m-7 7h16'}
-              />
-            </svg>
-          </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto scrollbar-thin p-4 space-y-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={clsx(
-                'flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200',
-                'border-l-4 border-transparent',
-                isActive(item.href)
-                  ? 'bg-teal-600 bg-opacity-10 border-l-teal-600 text-teal-400'
-                  : 'text-[#8899BB] hover:bg-[#1B2A4A] hover:text-[#E8EDF5]'
-              )}
-              title={isCollapsed ? item.label : ''}
-            >
-              <span className="text-xl">{item.icon}</span>
-              {!isCollapsed && <span className="font-medium">{item.label}</span>}
-            </Link>
-          ))}
+        {/* Collapse toggle */}
+        <button
+          onClick={() => setIsCollapsed(c => !c)}
+          style={{
+            position: 'absolute', top: 16, right: isCollapsed ? -12 : -12,
+            width: 24, height: 24, borderRadius: '50%',
+            background: '#0c3649', border: '1px solid #1a5270',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#7eaabf', zIndex: 30,
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d={isCollapsed ? 'M9 18l6-6-6-6' : 'M15 18l-6-6 6-6'} strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        {/* Nav */}
+        <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
+          {NAV_ITEMS.map(item => {
+            const active = isActive(item.href);
+            return (
+              <Link key={item.label} href={item.href}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  padding: isCollapsed ? '11px 0' : '11px 20px',
+                  justifyContent: isCollapsed ? 'center' : 'flex-start',
+                  margin: '2px 0',
+                  borderLeft: active ? '3px solid #E63946' : '3px solid transparent',
+                  background: active ? 'rgba(230,57,70,0.08)' : 'transparent',
+                  color: active ? '#E8F0F5' : '#7eaabf',
+                  cursor: 'pointer',
+                  transition: 'all 150ms ease',
+                }}
+                  onMouseEnter={e => {
+                    if (!active) {
+                      (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)';
+                      (e.currentTarget as HTMLElement).style.color = '#E8F0F5';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!active) {
+                      (e.currentTarget as HTMLElement).style.background = 'transparent';
+                      (e.currentTarget as HTMLElement).style.color = '#7eaabf';
+                    }
+                  }}
+                  title={isCollapsed ? item.label : ''}
+                >
+                  <span style={{ flexShrink: 0, opacity: active ? 1 : 0.7 }}>{item.icon}</span>
+                  {!isCollapsed && (
+                    <span style={{ fontSize: 13, fontWeight: active ? 600 : 500, whiteSpace: 'nowrap' }}>
+                      {item.label}
+                    </span>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
         </nav>
 
-        {/* Credit Balance */}
-        <div className="p-4 border-t border-[#2A3A55]">
-          <div
-            className={clsx(
-              'bg-[#0A1628] border border-[#2A3A55] rounded-lg p-3',
-              'flex items-center justify-center gap-2'
-            )}
-            title={isCollapsed ? `${credits || '...'} credits` : ''}
-          >
-            <span className="text-teal-500 text-lg">⚡</span>
+        {/* User + Credits */}
+        <div style={{ borderTop: '1px solid #1a5270', padding: '12px' }}>
+          {!isCollapsed && credits !== null && (
+            <div style={{
+              background: 'rgba(52,145,232,0.1)', border: '1px solid rgba(52,145,232,0.2)',
+              borderRadius: 8, padding: '8px 12px', marginBottom: 10,
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3491E8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
+              </svg>
+              <span style={{ fontSize: 11, color: '#7eaabf', fontWeight: 600 }}>CREDITS</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#3491E8', fontFamily: 'DM Mono, monospace', marginLeft: 'auto' }}>
+                {credits}
+              </span>
+            </div>
+          )}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: isCollapsed ? '4px 0' : '4px',
+            justifyContent: isCollapsed ? 'center' : 'flex-start',
+          }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: '#E63946', color: '#fff',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 13, fontWeight: 700, flexShrink: 0,
+            }}>
+              {initials}
+            </div>
             {!isCollapsed && (
-              <>
-                <div className="flex-1">
-                  <p className="text-xs text-[#8899BB]">Available</p>
-                  <p className="text-lg font-bold text-[#E8EDF5]">
-                    {credits !== null ? `${credits}` : '...'}
-                  </p>
+              <div style={{ overflow: 'hidden' }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#E8F0F5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130 }}>
+                  {session?.user?.name || 'User'}
                 </div>
-              </>
+                <div style={{ fontSize: 10, color: '#7eaabf', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130 }}>
+                  {session?.user?.email || ''}
+                </div>
+              </div>
             )}
           </div>
         </div>
       </aside>
 
-      {/* Mobile Sidebar (shown as dropdown) */}
-      <div className="md:hidden" />
+      {/* ── Mobile: Top bar + slide-out ── */}
+      <div className="md:hidden" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
+        <div style={{
+          height: 56, background: '#0c3649', borderBottom: '1px solid #1a5270',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{
+              width: 26, height: 26,
+              background: 'linear-gradient(135deg, #3491E8 0%, #E63946 100%)',
+              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
+            }} />
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#E8F0F5' }}>RefractOne</span>
+          </div>
+          <button onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', color: '#7eaabf', cursor: 'pointer' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              {mobileOpen ? <path d="M6 18L18 6M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
+            </svg>
+          </button>
+        </div>
+        {mobileOpen && (
+          <div style={{ background: '#0c3649', borderBottom: '1px solid #1a5270', padding: '8px 0' }}>
+            {NAV_ITEMS.map(item => (
+              <Link key={item.label} href={item.href} onClick={() => setMobileOpen(false)}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px',
+                  color: isActive(item.href) ? '#E8F0F5' : '#7eaabf',
+                  borderLeft: isActive(item.href) ? '3px solid #E63946' : '3px solid transparent',
+                  background: isActive(item.href) ? 'rgba(230,57,70,0.08)' : 'transparent',
+                  fontSize: 14, fontWeight: 500,
+                }}>
+                  {item.icon}<span>{item.label}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </>
   );
 };

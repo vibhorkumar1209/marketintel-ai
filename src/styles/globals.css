@@ -2,32 +2,35 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=DM+Mono:wght@400;500&display=swap');
 
+/* ── Brand token system (from Antigravity_MasterPrompts design spec) ── */
 :root {
-  --background: #ffffff;
-  --foreground: #0A1628;
-  --navy: #e8ecf5;
-  --teal: #00897B;
-  --dark-bg: #f9fafb;
-  --card-surface: #ffffff;
-  --light-text: #111827;
-  --muted-text: #4b5563;
-  --border-color: #e5e7eb;
-  --border-accent: #d1d5db;
-}
+  /* Primary brand palette */
+  --navy: #0c3649;
+  --navy-light: #0e4a62;
+  --navy-xlight: #163f56;
+  --navy-border: #1a5270;
+  --red: #E63946;
+  --red-muted: #ff6b75;
+  --blue: #3491E8;
+  --blue-muted: #6ab8ff;
+  --black: #000000;
 
-.dark {
-  --background: #0A1628;
-  --foreground: #E8EDF5;
-  --navy: #1B2A4A;
-  --teal: #00BDA8;
-  --dark-bg: #0A1628;
-  --card-surface: #111827;
-  --light-text: #E8EDF5;
-  --muted-text: #8899BB;
-  --border-color: #1B2A4A;
-  --border-accent: #2A3A55;
+  /* Text */
+  --text-primary: #E8F0F5;
+  --text-muted: #7eaabf;
+  --white: #FFFFFF;
+
+  /* Surface (dark terminal aesthetic) */
+  --background: #080f16;
+  --surface: #0f2535;
+  --card: #132d40;
+  --card-border: #1e4a68;
+  --foreground: #E8F0F5;
+
+  /* Legacy compat aliases */
+  --teal: #3491E8;
 }
 
 * {
@@ -43,8 +46,9 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', 'DM Sans', system-ui, sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 html,
@@ -58,59 +62,41 @@ body {
   min-height: 100vh;
 }
 
-.scrollbar-thin::-webkit-scrollbar {
-  width: 4px;
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
 
-.scrollbar-thin::-webkit-scrollbar-track {
-  background: #0A1628;
+::-webkit-scrollbar-track {
+  background: var(--navy);
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  background: #1B2A4A;
-  border-radius: 2px;
+::-webkit-scrollbar-thumb {
+  background: var(--navy-border);
+  border-radius: 3px;
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb:hover {
-  background: #2A3A55;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--blue-muted);
 }
 
-/* Smooth transitions for interactive elements */
-button,
-a,
-input,
-textarea,
-select {
-  transition: all 0.2s ease;
+/* ── Transitions ── */
+.transition-colors {
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
 }
 
-/* Spinner animation */
-@keyframes spin-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+.transition-all {
+  transition: all 150ms ease;
 }
 
-/* Fade in animation */
+/* ── Fade animation ── */
 @keyframes fade-in {
   from {
     opacity: 0;
+    transform: translateY(6px);
   }
-  to {
-    opacity: 1;
-  }
-}
 
-/* Slide up animation */
-@keyframes slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
   to {
     opacity: 1;
     transform: translateY(0);
@@ -118,27 +104,60 @@ select {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+  animation: fade-in 200ms ease forwards;
 }
 
-.animate-slide-up {
-  animation: slide-up 0.3s ease-out;
+/* ── Skeleton loading ── */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
-/* Utility classes for consistent styling */
-.btn-focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 focus:ring-offset-[#0A1628];
+.skeleton {
+  background: linear-gradient(90deg, var(--navy-xlight) 25%, var(--navy-light) 50%, var(--navy-xlight) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
 }
 
-.card-surface {
-  @apply bg-[#111827] border border-[#2A3A55] rounded-lg;
+/* ── Monospace data values ── */
+.mono {
+  font-family: 'DM Mono', 'Fira Code', 'Courier New', monospace;
 }
 
-.glass-effect {
-  @apply bg-opacity-10 backdrop-blur-md;
+/* ── Status badge colors ── */
+.badge-high {
+  background: rgba(230, 57, 70, .15);
+  color: var(--red);
+  border: 1px solid rgba(230, 57, 70, .35);
 }
 
-/* Prevent layout shift from scrollbar */
-html {
-  overflow-y: scroll;
+.badge-medium {
+  background: rgba(52, 145, 232, .15);
+  color: var(--blue);
+  border: 1px solid rgba(52, 145, 232, .35);
+}
+
+.badge-low {
+  background: rgba(22, 63, 86, .6);
+  color: var(--text-muted);
+  border: 1px solid var(--navy-border);
+}
+
+/* ── Print styles ── */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  aside,
+  nav {
+    display: none;
+  }
 }

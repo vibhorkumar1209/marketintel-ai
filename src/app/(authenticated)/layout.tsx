@@ -15,12 +15,15 @@ export default async function AuthenticatedLayout({
   }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Navbar />
-      <div className="flex flex-1">
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#080f16' }}>
+      {/* Fixed-width navy sidebar */}
+      <Sidebar />
+
+      {/* Right column: topnav + content */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: '#f9fafb' }}>
+        <Navbar />
+        <main style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
             {children}
           </div>
         </main>

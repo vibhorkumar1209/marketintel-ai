@@ -48,18 +48,27 @@ USER QUERY: ${query}`;
 // ─── STEP 2: RESEARCH PLAN ─────────────────────────────────────────────────────
 
 export async function generateResearchPlan(scope: ScopeJSON): Promise<SearchPlan> {
-  const systemPrompt = `You are a market research planning agent. You generate prioritized web search plans.
-Output ONLY valid JSON. No prose, no markdown fences.`;
+  const systemPrompt = `You are a market research planning agent following the Antigravity v2.0 methodology.
+Generate web searches following these EXACT patterns. Output ONLY valid JSON.`;
 
-  const userPrompt = `Given the scope below, generate exactly 8 high-priority web searches.
+  const userPrompt = `Generate exactly 12 prioritised searches for the scope below.
 
-Structure in TWO tiers:
-- Tier A (4 searches): Market size figures, CAGR, government/trade data
-- Tier B (4 searches): Competitive landscape, key players, recent news
+Use Antigravity search library patterns:
+  MARKET SIZE: "[PRODUCT] market size [GEOGRAPHY] [YEAR]" site:gov OR site:europa.eu
+  TRADE DATA:  "[PRODUCT] [HS CODE] import export [GEOGRAPHY] comtrade OR customs"
+  FILINGS:     "[COMPANY] [PRODUCT segment] revenue [YEAR] annual report OR earnings"
+  REGULATORY:  "[PRODUCT] regulation [GEOGRAPHY] [YEAR]" site:ec.europa.eu OR site:epa.gov
+  TECHNOLOGY:  "[PRODUCT] patent [YEAR]" OR "[INDUSTRY] AI automation [YEAR] case study"
+  COMPETITIVE: "[COMPANY] market share [PRODUCT] [GEOGRAPHY] [YEAR] investor presentation"
+  M&A:         "[COMPANY] acquisition merger [PRODUCT] [YEAR] press release"
+  PRICING:     "[PRODUCT] average selling price [GEOGRAPHY] [YEAR] ICIS OR Platts OR earnings"
 
-Each search: { "search_query": "exact string", "target_source_tier": "T1-T3", "data_objective": "what this finds", "fallback_query": "alternative" }
+Tier A (6 searches): Market size, government data, trade flows, company filings — Tier T1-T2 sources
+Tier B (6 searches): Competitive landscape, technology, regulatory, M&A — Tier T2-T4 sources
 
-OUTPUT: { "search_plan": [ ...exactly 8 items... ] }
+Each search: { "search_query": "exact string", "target_source_tier": "T1|T2|T3|T4", "data_objective": "what this finds", "fallback_query": "alternative if no results", "section_target": "which section this feeds" }
+
+OUTPUT: { "search_plan": [ ...exactly 12 items... ] }
 
 SCOPE: ${JSON.stringify(scope, null, 2)}`;
 

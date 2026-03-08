@@ -10,22 +10,78 @@ import {
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
-const SECTION_DEFINITIONS: Record<string, { title: string; desc: string }> = {
-  intro: { title: 'Introduction & Study Scope', desc: 'Study assumptions, scope matrix (product types × applications × geographies), abbreviations' },
-  methodology: { title: 'Research Methodology', desc: 'Methodology flow, secondary + primary research, data triangulation, quality assurance' },
-  executive_summary: { title: 'Executive Summary', desc: 'Market headline, KPI panel, top drivers, restraints, key competitive moves, scenario outlook' },
-  dynamics: { title: 'Market Dynamics', desc: 'Growth drivers (TEI format), restraints (with mitigation signals), supply chain, Porter\'s Five Forces' },
-  sizing_workings: { title: 'Market Sizing Workings', desc: 'Full top-down and bottom-up methodology, triangulation, scenario analysis' },
-  segmentation: { title: 'Market Segmentation', desc: 'By product type, by application, by geography with values, shares, and CAGRs' },
-  competitive: { title: 'Competitive Landscape', desc: 'M&A tracker, market ranking analysis, strategic positioning map, strategies of leading players' },
-  company_profiles: { title: 'Company Profiles', desc: 'Structured profiles for top 10–15 players: overview, financials, products, developments' },
-  social_intel: { title: 'Social Intelligence Panel', desc: 'Per-company social signals, content theme classification, engagement patterns' },
-  tech_focus: { title: 'Technology Focus', desc: 'Tech capability heatmap, R&D spend signals, patent activity, proprietary vs licensed tech' },
-  tech_developments: { title: 'Technology Developments', desc: 'Top 10 industry tech shifts in past 12–18 months with strategic implications' },
-  opportunities: { title: 'Market Opportunities & Future Trends', desc: 'Top 3–5 quantified opportunities with sizing, timeframe, entry requirements, risks' },
-  investment_ma: { title: 'Investment & M&A Landscape', desc: 'Deal tracker, strategic scenarios, SWOT summary, stakeholder recommendations' },
-  regional_analysis: { title: 'Regional Analysis', desc: 'Country-level sizing for all geographies in scope, trade flows, regional comparison' },
-  appendix: { title: 'Appendix & Source Reference', desc: 'Complete source list, methodology note, glossary, list of figures, data availability statement' },
+// Antigravity CONTENT_PROMPT v2.0 — 9-section architecture
+const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: string }> = {
+  // Section 1
+  intro: {
+    title: 'Scope of Study',
+    desc: 'Scope matrix table (product types × applications × geographies × time period), competitor shortlist table (Company | HQ | Est. revenue | Market presence), study assumptions log (base year, currency, triangulation method).',
+    tone: 'Definitive. State precise market boundary before any sizing or competitive analysis.',
+  },
+  // Section 2
+  sizing_workings: {
+    title: 'Market Size Estimation (TAM — Volume & Value)',
+    desc: 'TWO independent sizing methods: (A) Top-Down — government stats → penetration rate → trade flow cross-check; (B) Bottom-Up — sum of confirmed player revenues ÷ coverage ratio. Mandatory triangulation table: Method | Value (USD M) | Volume | Key Assumption | Confidence | Source Tier. Include CAGR (historical + forecast) and Low/Base/High scenario range.',
+    tone: 'Quantitative. Every figure must show method and source tier. Confidence must be tagged [HIGH/MEDIUM/LOW].',
+  },
+  // Section 3
+  segmentation: {
+    title: 'Market Segmentation',
+    desc: 'Break total market across ALL dimensions: (A) By Product Type — size + share + CAGR + key driver per type; (B) By Application — heatmap size × growth rate matrix; (C) By End-Use Industry — Pareto showing which 3 sectors = 80% of demand; (D) By Geography — country table with size, share, CAGR, top local player; (E) By Distribution Channel — channel mix with trend direction. Flag: [ESTIMATE — LOW DATA CONFIDENCE] for any segment with insufficient data.',
+    tone: 'Structured. Use tables for all segmentation. Prose only for non-obvious insight.',
+  },
+  // Section 4
+  dynamics: {
+    title: 'Market Trends, Drivers & Barriers',
+    desc: 'Three sub-sections: (4A) Trends — cover macroeconomic, demand-side, supply-side, commercial/pricing, regulatory, technology trends; each must have a named company or quantified event example. (4B) Growth Drivers TEI table — min 6 rows: # | Driver | Scenario Type | Est. Market Impact | Impact (H/M/L) | Affected Segments | Risk Horizon | Strategic Implication. (4C) Barriers TEI table — min 5 rows, same format + Mitigation Signal column + Barrier Type (Cost|Regulatory|Competitive|Structural|Cyclical).',
+    tone: 'Evidence-anchored. Every driver and barrier must cite a real named company, regulation, or quantified market signal. No generic statements.',
+  },
+  // Section 5
+  regulatory: {
+    title: 'Regulatory Overview',
+    desc: 'Strategic regulatory intelligence: (A) Regulatory body table — Name | Geography | Mandate | Relevance; (B) Regulation tracker — Regulation | Date | Scope | Market Impact (H/M/L) — focus on past 3 years; (C) Trade & compliance barrier table by geography — import regs, tariffs, certifications; (D) Pending regulation watch list — Rule | Expected date | Impact.',
+    tone: 'Strategic. Not legal compliance. Focus on market implications of regulatory changes.',
+  },
+  // Section 6
+  tech_developments: {
+    title: 'Major Technology Trends',
+    desc: 'Top 5–8 tech trends: (1) AI Adoption — named adopter + quantified benefit (%, USD, time); (2) Automation & Industry 4.0 — company example + investment scale; (3) Patent & Innovation Signals — volume trend, top applicants, tech sub-categories; (4) Sustainability Technology — commercialisation timeline; (5) Digital & Commercial Model Shifts — adoption rate estimate. Each trend: name + named adopter + quantified impact.',
+    tone: 'Forward-looking. Named examples required for every trend. No generic technology commentary.',
+  },
+  // Section 7
+  competitive: {
+    title: 'Key Player & Competitive Analysis',
+    desc: 'Market share ranking table: Rank | Company | Est. Share % | Revenue USD M | HQ | Primary Geography | Confidence Level. 2×2 Positioning Matrix: Market Presence (x) vs Innovation Score (y). M&A / JV Activity Tracker (past 3 years): Date | Acquirer | Target | Deal Value | Strategic Rationale. Company profile per player: Financials | Market Share | Recent Strategic Activity | Social Signal | Technology / R&D Signal.',
+    tone: 'Analytical. Every sentence serves a competitive intelligence purpose. Not Wikipedia summaries.',
+  },
+  // Section 8
+  opportunities: {
+    title: 'Market Forecast (3 Scenarios)',
+    desc: 'Three mutually exclusive scenarios anchored in Section 4 drivers/barriers: (A) Pessimistic — apply top 2 barriers at max impact, state CAGR + market size at horizon + probability + key assumption; (B) Realistic (Base) — triangulated TAM grown at weighted net impact, must reconcile with Section 2 TAM; (C) Optimistic — apply top 2 drivers at max impact. Mandatory forecast table: Scenario | CAGR | Base Yr (USD M) | Forecast Yr (USD M) | Key Assumption | Confidence. Chart spec: 3-line chart (pessimistic=dashed red, base=solid blue, optimistic=dotted blue-muted).',
+    tone: 'Scenario-driven. Base scenario must numerically reconcile with sizing section. Do NOT average scenarios.',
+  },
+  // Section 9 (generated last, placed first)
+  executive_summary: {
+    title: 'Executive Summary',
+    desc: 'Generated LAST but placed FIRST. Mandatory blocks in order: (1) Market Snapshot 3–4 lines: market size (base yr USD M + volume) + CAGR (historical + forecast) + single most important structural characteristic; (2) Top 3 Growth Drivers — bullet format: ↑ [Driver]: [Evidence with number or named event]; (3) Top 3 Risks / Barriers — bullet format: ↓ [Barrier]: [Evidence with impact estimate]; (4) Competitive Landscape 3–4 lines: number of players + top 3 by share + key competitive dynamic; (5) Strategic Outlook 3–4 lines: realistic CAGR + most probable scenario + single highest-priority recommendation; (6) 5 KPI callout boxes: Market Size | CAGR % | No. Key Players | Top Geography | #1 Trend. Max 450 words in narrative blocks.',
+    tone: 'Written for a CFO or Board member. Every sentence must contain a number, a named company, OR a named dynamic. No source citations in body.',
+  },
+  // Supporting sections
+  regional_analysis: {
+    title: 'Regional Analysis',
+    desc: 'Country/region table — Size | Share | CAGR | Top local player. Import/export trade flow data. Regional comparison heatmap. Flag data gaps per geography.',
+    tone: 'Data-driven tables with insight commentary.',
+  },
+  investment_ma: {
+    title: 'Investment & M&A Landscape',
+    desc: 'Deal tracker (past 3 years): Date | Acquirer | Target | Deal Value | Strategic Rationale. SWOT summary. Stakeholder recommendations.',
+    tone: 'Analytical. Quantify deal values where available.',
+  },
+  appendix: {
+    title: 'Appendix & Source Log',
+    desc: 'Complete source list: Source Name | URL | Date Accessed | Credibility Tier (1–6) | Section Used In. Methodology note: data collection approach, triangulation logic, number of searches, known data gaps, confidence tier distribution.',
+    tone: 'Factual. Only place where source names appear in the report.',
+  },
 };
 
 // ─── STEP 5: DRAFT ONE SECTION ─────────────────────────────────────────────────
@@ -40,25 +96,36 @@ export async function draftSection(
   const sectionDef = SECTION_DEFINITIONS[sectionId] || { title: sectionId, desc: '' };
   const wordTarget = scope.token_budget_per_section;
 
-  const systemPrompt = `You are a senior market analyst writing executive-grade intelligence.
+  const sectionTone = sectionDef.tone || 'Analytical and evidence-backed.';
 
-RULES:
-1. Be CONCISE — bullet-point style where possible, no padding
-2. Every numeric claim must cite a source by name
-3. Write [DATA UNAVAILABLE] if a figure is missing — never speculate
-4. Each paragraph ≤ 80 words — strip filler words ruthlessly
-5. Output JSON ONLY
+  const systemPrompt = `You are a principal-level market intelligence analyst generating a section of a commercial-grade industry report.
+
+CORE RULES (NON-NEGOTIABLE):
+1. NO HALLUCINATION — every factual claim, number, company stat, or regulation must come from the data provided. If no data exists, write: [DATA NOT AVAILABLE — search attempted].
+2. NO GENERIC STATEMENTS — "the market is growing" is not acceptable. Required format: "the market grew at 6.8% CAGR 2020–2024, driven by X".
+3. CONFIDENCE TAGGING — tag every estimate: [HIGH — Tier 1–2] | [MEDIUM — Tier 3–4] | [LOW — ESTIMATE].
+4. SOURCE TIER ORDER (highest available per data point):
+   T1: Government / Regulatory / Central Bank
+   T2: Audited Company Filings / Annual Reports / Earnings Calls
+   T3: Trade Associations / Industry Bodies
+   T4: Tier-1 Consulting Reports
+   T5: Research Aggregators (sanity check only — NOT primary)
+   T6: Media / Press (only when no other source available)
+   BANNED as primary: Grand View Research, Mordor Intelligence, IMARC, Transparency Market Research.
+5. TABLES FIRST — wherever 3+ comparable data points exist, use a structured table.
+6. TONE: ${sectionTone}
+7. Output structured JSON ONLY — no prose outside the JSON structure.
 
 OUTPUT FORMAT:
 {
   "section_id": "string",
   "section_title": "string",
   "word_count_target": number,
-  "body_paragraphs": ["2-3 tight paragraphs, ≤80 words each"],
-  "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] } or null,
+  "body_paragraphs": ["2-3 concise paragraphs — each ≤100 words — analytical not descriptive"],
+  "key_table": { "title": "string", "headers": ["Col1","Col2","Col3"], "rows": [["val","val","val"]] } or null,
   "chart_spec": { "type": "line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label" } or null,
-  "citations": [{ "claim": "≤50 chars", "source": "string", "tier": "T1|T2|T3", "date": "YYYY" }],
-  "section_flags": []
+  "citations": [{ "claim": "string ≤60 chars", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY" }],
+  "section_flags": ["SOURCING_GAP: description" or "DATA_QUALITY: note" or "METHODOLOGY_NOTE: note"]
 }`;
 
   const userPrompt = `Draft Section: "${sectionDef.title}"
