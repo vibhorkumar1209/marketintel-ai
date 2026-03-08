@@ -263,34 +263,36 @@ export default function ReportPage() {
                 {section.keyTable && (
                   <Card>
                     <h3 className="text-lg font-semibold text-[#E8EDF5] mb-4">
-                      {section.keyTable.title}
+                      {(section.keyTable as { title?: string }).title || 'Data Table'}
                     </h3>
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
-                        <thead>
-                          <tr className="border-b border-[#2A3A55]">
-                            {section.keyTable.headers.map((header, hidx) => (
-                              <th
-                                key={hidx}
-                                className="text-left px-3 py-3 font-semibold text-[#8899BB]"
-                              >
-                                {header}
-                              </th>
-                            ))}
-                          </tr>
-                        </thead>
+                        {(section.keyTable as { headers?: string[] }).headers && (
+                          <thead>
+                            <tr className="border-b border-[#2A3A55]">
+                              {((section.keyTable as { headers?: string[] }).headers || []).map((header, hidx) => (
+                                <th
+                                  key={hidx}
+                                  className="text-left px-3 py-3 font-semibold text-[#8899BB]"
+                                >
+                                  {String(header)}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                        )}
                         <tbody>
-                          {section.keyTable.rows.map((row, ridx) => (
+                          {((section.keyTable as { rows?: unknown[] }).rows || []).map((row, ridx) => (
                             <tr
                               key={ridx}
                               className="border-b border-[#2A3A55] hover:bg-[#111827]"
                             >
-                              {row.map((cell, cidx) => (
+                              {(Array.isArray(row) ? row : Object.values(row as object)).map((cell, cidx) => (
                                 <td
                                   key={cidx}
                                   className="px-3 py-3 text-[#E8EDF5]"
                                 >
-                                  {cell}
+                                  {String(cell ?? '')}
                                 </td>
                               ))}
                             </tr>
@@ -308,10 +310,10 @@ export default function ReportPage() {
                       <div className="text-center">
                         <div className="text-4xl mb-3">📊</div>
                         <p className="text-[#E8EDF5] font-semibold mb-1">
-                          {section.chartSpec.title}
+                          {String((section.chartSpec as { title?: unknown }).title || 'Chart')}
                         </p>
                         <p className="text-sm text-[#8899BB]">
-                          Chart: {section.chartSpec.type}
+                          {String((section.chartSpec as { type?: unknown }).type || 'Data Visualization')}
                         </p>
                       </div>
                     </div>
@@ -325,11 +327,11 @@ export default function ReportPage() {
                     <ul className="space-y-3">
                       {section.citations.map((citation, cidx) => (
                         <li key={cidx} className="text-sm">
-                          <p className="text-[#E8EDF5] mb-1">"{citation.claim}"</p>
+                          <p className="text-[#E8EDF5] mb-1">"{String(citation.claim || '')}"</p>
                           <p className="text-[#8899BB]">
-                            <Badge variant="teal">{citation.tier}</Badge>
-                            <span className="ml-2">{citation.source}</span>
-                            <span className="ml-2 text-xs">({citation.date})</span>
+                            <Badge variant="teal">{String(citation.tier || 'N/A')}</Badge>
+                            <span className="ml-2">{String(citation.source || '')}</span>
+                            <span className="ml-2 text-xs">({String(citation.date || 'N/A')})</span>
                           </p>
                         </li>
                       ))}
