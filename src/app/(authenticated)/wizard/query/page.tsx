@@ -19,6 +19,7 @@ export default function WizardQueryPage() {
   const [competitorCount, setCompetitorCount] = useState(10);
   const [forecastYears, setForecastYears] = useState(5);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [customCountry, setCustomCountry] = useState('');
 
   const creditCosts = {
     light: { industry_report: 30, datapack: 15 },
@@ -43,6 +44,14 @@ export default function WizardQueryPage() {
         ? prev.filter((r) => r !== region)
         : [...prev, region]
     );
+  };
+
+  const handleAddCustomCountry = () => {
+    const country = customCountry.trim();
+    if (country && !regions.includes(country)) {
+      setRegions((prev) => [...prev, country]);
+    }
+    setCustomCountry('');
   };
 
   const handleContinue = () => {
@@ -160,6 +169,37 @@ export default function WizardQueryPage() {
                   <p className="text-sm font-medium text-[#E8EDF5]">{region}</p>
                 </button>
               ))}
+              {regions.filter(r => !regionOptions.includes(r)).map((customRegion) => (
+                <button
+                  key={customRegion}
+                  onClick={() => toggleRegion(customRegion)}
+                  className="p-3 rounded-lg border-2 transition-all text-left border-teal-600 bg-teal-600 bg-opacity-10"
+                >
+                  <p className="text-sm font-medium text-[#E8EDF5] flex justify-between">
+                    <span>{customRegion}</span>
+                    <span className="opacity-60 ml-2">✕</span>
+                  </p>
+                </button>
+              ))}
+            </div>
+
+            <div className="mt-4 flex gap-2">
+              <input
+                type="text"
+                placeholder="Or enter a specific country..."
+                value={customCountry}
+                onChange={(e) => setCustomCountry(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCustomCountry();
+                  }
+                }}
+                className="flex-1 px-4 py-2 bg-[#0A1628] border border-[#2A3A55] rounded-lg text-[#E8EDF5] placeholder-[#8899BB] focus:border-teal-600 focus:ring-2 focus:ring-teal-600 focus:ring-opacity-20 transition-all"
+              />
+              <Button variant="ghost" type="button" onClick={handleAddCustomCountry}>
+                Add
+              </Button>
             </div>
           </div>
 
