@@ -14,12 +14,37 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
   }
 
   try {
-    const data = report.reportType === 'datapack'
-      ? { sheets: report.sheets }
-      : { sheets: report.sections }; // fallback for industry reports
+    let xlsxBuffer: Buffer;
 
-    const xlsxBuffer = generateDatapackXLSX(data as object);
-    const filename = `${report.title?.replace(/[^a-z0-9]/gi, '_') || 'datapack'}.xlsx`;
+    if (report.reportType === 'datapack' && (report.sheets as unknown[])) {
+      // Datapack: has structured sheets
+      xlsxBuffer = generateDatapackXLSX({ sheets: report.sheets });
+    } else {
+      // Industry report: convert sections into a summary spreadsheet
+      const sections = (report.sections as Array<{ title?: string; content?: string[]; citations?: Array<{ claim: string; source: string }> }>) || [];
+      const rows = sections.flatMap(section =>
+        (section.content || []).map((para, i) => ({
+          Section: section.title || '',
+          Paragraph: i + 1,
+          Content: para || '',
+          Citations: (section.citations || []).slice(0, 3).map(c => `${c.source}: ${c.claim}`).join('; '),
+        }))
+      );
+
+      if (rows.length === 0) {
+        rows.push({ Section: 'No content', Paragraph: 0, Content: 'Report has no text content', Citations: '' });
+      }
+
+      xlsxBuffer = generateDatapackXLSX({
+        sheets: [{
+          name: 'Report Summary',
+          columns: ['Section', 'Paragraph', 'Content', 'Citations'],
+          rows,
+        }]
+      });
+    }
+
+    const filename = `${report.title?.replace(/[^a-z0-9]/gi, '_') || 'report'}.xlsx`;
 
     return new NextResponse(xlsxBuffer as unknown as BodyInit, {
       headers: {

@@ -17,6 +17,8 @@ export async function GET() {
   return NextResponse.json({
     jobs: jobs.map((j: typeof jobs[number]) => ({
       id: j.id,
+      title: j.query?.slice(0, 80) || 'Untitled Report',  // use query as title
+      type: j.reportType,
       reportType: j.reportType,
       query: j.query,
       status: j.status,

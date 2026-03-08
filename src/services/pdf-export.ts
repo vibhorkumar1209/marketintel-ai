@@ -2,31 +2,32 @@ import { IndustryReport } from '@/types/reports';
 
 // Build HTML for the report (used by Puppeteer)
 export function buildReportHTML(report: IndustryReport): string {
-  const sectionsHTML = report.sections.map(section => `
-    <section id="${section.id}" class="report-section">
-      <h2>${section.title}</h2>
-      ${section.flags.length > 0 ? `<div class="quality-flag">⚠ ${section.flags.join(' | ')}</div>` : ''}
-      ${section.content.map(p => `<p>${p}</p>`).join('\n')}
+  const sectionsHTML = (report.sections || []).map(section => `
+    <section id="${section.id || ''}" class="report-section">
+      <h2>${section.title || 'Section'}</h2>
+      ${(section.flags || []).length > 0 ? `<div class="quality-flag">⚠ ${(section.flags || []).join(' | ')}</div>` : ''}
+      ${(section.content || []).map(p => `<p>${p || ''}</p>`).join('\n')}
       ${section.keyTable ? `
         <div class="table-wrapper">
-          <p class="table-title"><strong>${section.keyTable.title}</strong></p>
+          <p class="table-title"><strong>${section.keyTable.title || ''}</strong></p>
           <table class="data-table">
-            <thead><tr>${section.keyTable.headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
-            <tbody>${section.keyTable.rows.map((row, i) =>
-              `<tr class="${i % 2 === 0 ? 'even' : 'odd'}">${row.map(cell => `<td>${cell || '[N/A]'}</td>`).join('')}</tr>`
-            ).join('')}</tbody>
+            <thead><tr>${(section.keyTable.headers || []).map(h => `<th>${h}</th>`).join('')}</tr></thead>
+            <tbody>${(section.keyTable.rows || []).map((row, i) =>
+    `<tr class="${i % 2 === 0 ? 'even' : 'odd'}">${(Array.isArray(row) ? row : []).map(cell => `<td>${cell || '[N/A]'}</td>`).join('')}</tr>`
+  ).join('')}</tbody>
           </table>
         </div>
       ` : ''}
       ${section.chartSpec ? `<div class="chart-placeholder" data-type="${section.chartSpec.type}" data-title="${section.chartSpec.title}">[Chart: ${section.chartSpec.title}]</div>` : ''}
-      ${section.citations.length > 0 ? `
+      ${(section.citations || []).length > 0 ? `
         <div class="citations">
           <p class="citations-label">Sources:</p>
-          ${section.citations.map(c => `<cite>${c.claim} — ${c.source} (${c.date}, ${c.tier})</cite>`).join('\n')}
+          ${(section.citations || []).map(c => `<cite>${c.claim || ''} — ${c.source || ''} (${c.date || 'N/A'}, ${c.tier || 'N/A'})</cite>`).join('\n')}
         </div>
       ` : ''}
     </section>
   `).join('\n');
+
 
   const kpiPanelHTML = report.executiveSummary.kpiPanel.map(k => `
     <div class="kpi-card">
