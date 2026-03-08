@@ -123,13 +123,27 @@ export async function draftSectionsParallel(
   enrichmentBundle?: EnrichmentBundle,
   onSectionComplete?: (sectionId: string, draft: SectionDraft) => void
 ): Promise<SectionDraft[]> {
-  const promises = sectionIds.map(async (id) => {
-    const draft = await draftSection(id, scope, researchBundle, sizingJSON, enrichmentBundle);
-    if (onSectionComplete) onSectionComplete(id, draft);
-    return draft;
-  });
+  const results: SectionDraft[] = [];
+  const CONCURRENCY = 2; // limit to 2 simultaneous Anthropic connections
 
-  return Promise.all(promises);
+  for (let i = 0; i < sectionIds.length; i += CONCURRENCY) {
+    const batch = sectionIds.slice(i, i + CONCURRENCY);
+    const batchDrafts = await Promise.all(
+      batch.map(async (id) => {
+        const draft = await draftSection(id, scope, researchBundle, sizingJSON, enrichmentBundle);
+        if (onSectionComplete) onSectionComplete(id, draft);
+        return draft;
+      })
+    );
+    results.push(...batchDrafts);
+
+    // Small delay between batches to avoid burst rate limits
+    if (i + CONCURRENCY < sectionIds.length) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  }
+
+  return results;
 }
 
 // ─── STEP 7: EXECUTIVE SUMMARY ────────────────────────────────────────────────
