@@ -69,10 +69,10 @@ Industry: ${scope.industry} | Geography: ${scope.geography} | Scope: ${scope.pro
 
 MARKET SIZING SUMMARY:
 ${JSON.stringify({
-  validated_market_size: sizingJSON.validated_market_size,
-  cagr: sizingJSON.cagr_estimate,
-  confidence: sizingJSON.confidence_interval,
-}, null, 2)}
+    validated_market_size: sizingJSON.validated_market_size,
+    cagr: sizingJSON.cagr_estimate,
+    confidence: sizingJSON.confidence_interval,
+  }, null, 2)}
 
 TOP DATA POINTS FROM RESEARCH (use these for citations):
 ${JSON.stringify(researchBundle.data_points.slice(0, 20), null, 2)}
@@ -86,8 +86,8 @@ ${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 5), null, 2)}` : ''}
 OUTPUT the complete section JSON:`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 8000,
+    model: 'claude-haiku-4-5',
+    max_tokens: 4000,
     temperature: 0.4,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
@@ -182,7 +182,7 @@ OUTPUT FORMAT:
 }`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: 'claude-haiku-4-5',
     max_tokens: 4000,
     temperature: 0.3,
     system: systemPrompt,

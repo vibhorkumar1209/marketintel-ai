@@ -51,8 +51,8 @@ OUTPUT:
 }`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 6000,
+    model: 'claude-haiku-4-5',
+    max_tokens: 4000,
     temperature: 0.2,
     system: systemPrompt,
     tools: [
@@ -137,8 +137,8 @@ INDUSTRY: ${scope.industry}
 OUTPUT: { "enrichment_data": [...] }`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
-    max_tokens: 8000,
+    model: 'claude-haiku-4-5',
+    max_tokens: 4000,
     temperature: 0.2,
     system: systemPrompt,
     tools: [

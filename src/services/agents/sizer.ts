@@ -58,20 +58,20 @@ OUTPUT FORMAT:
 
 RESEARCH BUNDLE SUMMARY:
 ${JSON.stringify({
-  data_points: researchBundle.data_points.slice(0, 30),  // limit for context
-  gaps: researchBundle.gaps,
-}, null, 2)}
+    data_points: researchBundle.data_points.slice(0, 30),  // limit for context
+    gaps: researchBundle.gaps,
+  }, null, 2)}
 
 SCOPE: ${JSON.stringify({
-  industry: scope.industry,
-  product_scope: scope.product_scope,
-  geography: scope.geography,
-  base_year: scope.base_year,
-  forecast_end_year: scope.forecast_end_year,
-}, null, 2)}`;
+    industry: scope.industry,
+    product_scope: scope.product_scope,
+    geography: scope.geography,
+    base_year: scope.base_year,
+    forecast_end_year: scope.forecast_end_year,
+  }, null, 2)}`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: 'claude-haiku-4-5',
     max_tokens: 3000,
     temperature: 0,
     system: systemPrompt,
