@@ -81,13 +81,10 @@ SCOPE: ${scope.industry} | ${scope.product_scope} | ${scope.geography} | ${scope
   const text = (response.content[0] as { text: string }).text.trim();
 
   try {
-    return JSON.parse(text) as SizingJSON;
-  } catch {
-    // Fallback with best-effort extraction
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) return JSON.parse(jsonMatch[0]) as SizingJSON;
-
-    // Return a minimal valid structure
+    return JSON.parse(jsonMatch ? jsonMatch[0] : text) as SizingJSON;
+  } catch {
+    // Return a minimal valid structure on parse failure
     return {
       top_down: {
         TAM: { value: 0, unit: 'USD Million', source: 'Estimation failed' },
@@ -104,7 +101,7 @@ SCOPE: ${scope.industry} | ${scope.product_scope} | ${scope.geography} | ${scope
       confidence_interval: { low: 0, high: 0 },
       cagr_estimate: { value: 0, period: `${scope.base_year}–${scope.forecast_end_year}`, source: 'N/A' },
       discrepancy_flag: true,
-      discrepancy_note: 'Sizing failed — insufficient data in research bundle',
+      discrepancy_note: 'Sizing failed — JSON response was truncated or unparseable',
     };
   }
 }

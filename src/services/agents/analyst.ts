@@ -86,7 +86,7 @@ OUTPUT the complete section JSON:`;
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5',
-    max_tokens: 4000,
+    max_tokens: 6000,
     temperature: 0.4,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
@@ -94,23 +94,28 @@ OUTPUT the complete section JSON:`;
 
   const text = (response.content[0] as { text: string }).text.trim();
 
-  try {
-    return JSON.parse(text) as SectionDraft;
-  } catch {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) return JSON.parse(jsonMatch[0]) as SectionDraft;
+  const safeParse = (raw: string): SectionDraft | null => {
+    try {
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      return JSON.parse(jsonMatch ? jsonMatch[0] : raw) as SectionDraft;
+    } catch {
+      return null;
+    }
+  };
 
-    return {
-      section_id: sectionId,
-      section_title: sectionDef.title,
-      word_count_target: wordTarget,
-      body_paragraphs: [text],
-      key_table: null,
-      chart_spec: null,
-      citations: [],
-      section_flags: ['JSON parsing failed — raw text returned'],
-    };
-  }
+  const parsed = safeParse(text);
+  if (parsed) return parsed;
+
+  return {
+    section_id: sectionId,
+    section_title: sectionDef.title,
+    word_count_target: wordTarget,
+    body_paragraphs: [text.slice(0, 2000) || 'Section generation incomplete'],
+    key_table: null,
+    chart_spec: null,
+    citations: [],
+    section_flags: ['JSON parsing failed — raw text returned'],
+  };
 }
 
 // ─── STEP 5: PARALLEL SECTION DRAFTING ────────────────────────────────────────
@@ -203,22 +208,28 @@ OUTPUT FORMAT:
 
   const text = (response.content[0] as { text: string }).text.trim();
 
-  try {
-    return JSON.parse(text) as ExecutiveSummary;
-  } catch {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) return JSON.parse(jsonMatch[0]) as ExecutiveSummary;
+  const safeParse = (raw: string): ExecutiveSummary | null => {
+    try {
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      return JSON.parse(jsonMatch ? jsonMatch[0] : raw) as ExecutiveSummary;
+    } catch {
+      return null;
+    }
+  };
 
-    return {
-      section_id: 'executive_summary',
-      market_headline: `${scope.industry} market analysis — ${scope.base_year}–${scope.forecast_end_year}`,
-      kpi_panel: [
-        { label: 'Market Size', value: `${sizingJSON.validated_market_size.value} ${sizingJSON.validated_market_size.unit}`, source_section: 'sizing_workings' },
-        { label: 'CAGR', value: `${sizingJSON.cagr_estimate.value}%`, source_section: 'sizing_workings' },
-      ],
-      body_paragraphs: [text],
-      scenario_outlook: { bull: 'Strong growth trajectory if key drivers materialize', base: 'Steady growth in line with historical trends', bear: 'Subdued growth if macro headwinds persist' },
-      citations: [],
-    };
-  }
+  const parsed = safeParse(text);
+  if (parsed) return parsed;
+
+  return {
+    section_id: 'executive_summary',
+    market_headline: `${scope.industry} market analysis — ${scope.base_year}–${scope.forecast_end_year}`,
+    kpi_panel: [
+      { label: 'Market Size', value: `${sizingJSON.validated_market_size.value} ${sizingJSON.validated_market_size.unit}`, source_section: 'sizing_workings' },
+      { label: 'CAGR', value: `${sizingJSON.cagr_estimate.value}%`, source_section: 'sizing_workings' },
+    ],
+    body_paragraphs: [text.slice(0, 2000) || 'Executive summary generation incomplete'],
+    scenario_outlook: { bull: 'Strong growth trajectory', base: 'Steady growth', bear: 'Subdued growth if headwinds persist' },
+    citations: [],
+  };
 }
+
