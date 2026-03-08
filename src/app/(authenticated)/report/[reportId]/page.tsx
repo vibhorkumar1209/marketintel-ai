@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
+import ReportChart from '@/components/charts/ReportChart';
 import { IndustryReport } from '@/types/reports';
 import { clsx } from 'clsx';
 
@@ -303,20 +304,19 @@ export default function ReportPage() {
                   </Card>
                 )}
 
-                {/* Chart Placeholder */}
+                {/* Chart */}
                 {section.chartSpec && (
                   <Card>
-                    <div className="aspect-video bg-gradient-to-br from-teal-600 from-opacity-10 to-teal-600 to-opacity-5 border border-teal-600 border-opacity-30 rounded-lg flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-4xl mb-3">📊</div>
-                        <p className="text-[#E8EDF5] font-semibold mb-1">
-                          {String((section.chartSpec as { title?: unknown }).title || 'Chart')}
-                        </p>
-                        <p className="text-sm text-[#8899BB]">
-                          {String((section.chartSpec as { type?: unknown }).type || 'Data Visualization')}
-                        </p>
-                      </div>
-                    </div>
+                    <h3 className="text-lg font-semibold text-[#E8EDF5] mb-1">
+                      {String((section.chartSpec as { title?: unknown }).title || 'Market Chart')}
+                    </h3>
+                    <p className="text-xs text-[#8899BB] mb-4">
+                      {String((section.chartSpec as { type?: unknown }).type || 'line')} chart
+                    </p>
+                    <ReportChart
+                      chartSpec={section.chartSpec as any}
+                      sizing={(report as any).sizing}
+                    />
                   </Card>
                 )}
 

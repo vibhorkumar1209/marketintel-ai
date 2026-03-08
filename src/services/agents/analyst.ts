@@ -40,25 +40,24 @@ export async function draftSection(
   const sectionDef = SECTION_DEFINITIONS[sectionId] || { title: sectionId, desc: '' };
   const wordTarget = scope.token_budget_per_section;
 
-  const systemPrompt = `You are a senior market research analyst writing at Mordor Intelligence / Grand View Research commercial quality.
+  const systemPrompt = `You are a senior market analyst writing executive-grade intelligence.
 
-STRICT RULES:
-1. Every quantitative claim MUST reference a data_point from the research_bundle (cite by source_name)
-2. If a relevant figure was not found in research, write exactly: [FIGURE UNAVAILABLE — sourcing gap identified]
-3. Estimates from sizing_json must be labeled with their method (top-down / bottom-up / cross-validated)
-4. Do NOT use hedging language like "it is believed" or "it seems"
-5. Do NOT repeat content — each section contributes unique insight
-6. Output structured JSON ONLY — no prose as plain text
+RULES:
+1. Be CONCISE — bullet-point style where possible, no padding
+2. Every numeric claim must cite a source by name
+3. Write [DATA UNAVAILABLE] if a figure is missing — never speculate
+4. Each paragraph ≤ 80 words — strip filler words ruthlessly
+5. Output JSON ONLY
 
-OUTPUT FORMAT (keep compact — max 2000 chars total response):
+OUTPUT FORMAT:
 {
   "section_id": "string",
   "section_title": "string",
   "word_count_target": number,
-  "body_paragraphs": ["max 4 paragraphs, each max 200 words"],
-  "key_table": null,
-  "chart_spec": null,
-  "citations": [{ "claim": "short quote max 60 chars", "source": "string", "tier": "T1-T6", "date": "YYYY" }],
+  "body_paragraphs": ["2-3 tight paragraphs, ≤80 words each"],
+  "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] } or null,
+  "chart_spec": { "type": "line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label" } or null,
+  "citations": [{ "claim": "≤50 chars", "source": "string", "tier": "T1|T2|T3", "date": "YYYY" }],
   "section_flags": []
 }`;
 
