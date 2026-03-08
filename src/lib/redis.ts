@@ -1,13 +1,10 @@
-import { Redis } from '@upstash/redis';
+import Redis from 'ioredis';
 
 const globalForRedis = globalThis as unknown as { redis: Redis };
 
 export const redis =
   globalForRedis.redis ||
-  new Redis({
-    url: process.env.UPSTASH_REDIS_REST_URL!,
-    token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-  });
+  new Redis(process.env.REDIS_URL || '');
 
 if (process.env.NODE_ENV !== 'production') globalForRedis.redis = redis;
 
@@ -19,12 +16,12 @@ export async function setJobProgress(jobId: string, progress: {
   pct: number;
   status: string;
 }) {
-  await redis.set(`job:${jobId}:progress`, JSON.stringify(progress), { ex: 86400 });
+  await redis.set(`job:${jobId}:progress`, JSON.stringify(progress), 'EX', 86400);
 }
 
 export async function getJobProgress(jobId: string) {
   const raw = await redis.get(`job:${jobId}:progress`);
-  return raw ? (raw as object) : null;
+  return raw ? JSON.parse(raw) : null;
 }
 
 // ─── STREAM EVENTS ────────────────────────────────────────────────────────────
@@ -42,18 +39,18 @@ export async function drainStreamEvents(jobId: string): Promise<string[]> {
   if (len === 0) return [];
   const items = await redis.lrange(key, 0, len - 1);
   if (len > 0) await redis.ltrim(key, len, -1);
-  return items as string[];
+  return items;
 }
 
 // ─── REPORT CACHE ─────────────────────────────────────────────────────────────
 
 export async function cacheReport(reportId: string, data: object) {
-  await redis.set(`report:${reportId}`, JSON.stringify(data), { ex: 86400 });
+  await redis.set(`report:${reportId}`, JSON.stringify(data), 'EX', 86400);
 }
 
 export async function getCachedReport(reportId: string) {
   const raw = await redis.get(`report:${reportId}`);
-  return raw ? raw : null;
+  return raw ? JSON.parse(raw) : null;
 }
 
 // ─── RATE LIMITER (simple token bucket) ───────────────────────────────────────
