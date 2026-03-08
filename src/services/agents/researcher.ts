@@ -1,115 +1,150 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ScopeJSON, SearchPlan, ResearchBundle, EnrichmentBundle } from '@/types/agents';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+const claudeClient = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+const PARALLEL_API_KEY = process.env.PARALLEL_API_KEY!;
+const PARALLEL_ENDPOINT = 'https://api.parallel.ai/v1beta/search';
 
-// ─── STEP 3: WEB SEARCH EXECUTION ─────────────────────────────────────────────
+// ─── PARALLEL.AI SEARCH HELPER ─────────────────────────────────────────────────
+
+interface ParallelResult {
+  url: string;
+  title: string;
+  excerpts: string[];
+}
+
+async function parallelSearch(objective: string, queries: string[]): Promise<ParallelResult[]> {
+  const res = await fetch(PARALLEL_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${PARALLEL_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ objective, search_queries: queries }),
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Parallel.ai search failed: ${res.status} ${err.slice(0, 200)}`);
+  }
+
+  const data = await res.json() as { results: ParallelResult[]; search_id: string };
+  return data.results || [];
+}
+
+function formatResultsForClaude(results: ParallelResult[]): string {
+  return results.slice(0, 10).map((r, i) =>
+    `[${i + 1}] ${r.title}\nURL: ${r.url}\n${r.excerpts.slice(0, 3).join('\n').slice(0, 800)}`
+  ).join('\n\n---\n\n');
+}
+
+// ─── STEP 3: WEB RESEARCH VIA PARALLEL.AI ─────────────────────────────────────
 
 export async function executeResearch(
   searchPlan: SearchPlan,
   scope: ScopeJSON
 ): Promise<ResearchBundle> {
-  const systemPrompt = `You are a market research data extraction agent. Output ONLY valid JSON. No markdown, no explanation.`;
+  // Execute top 6 searches via Parallel.ai
+  const queries = searchPlan.search_plan.slice(0, 6).map(s => s.search_query);
+  const objective = `Market intelligence for: ${scope.industry} | ${scope.product_scope} | ${scope.geography}`;
 
-  // Only send the first 6 searches to keep context under 200k tokens
-  const trimmedPlan = searchPlan.search_plan.slice(0, 6);
-
-  const userPrompt = `Execute these ${trimmedPlan.length} market research searches and extract key data points.
-
-For each data point use this structure:
-{ "value": "string", "unit": "string", "context": "brief (max 100 chars)", "source_name": "string", "source_url": "string", "source_tier": "T1|T2|T3", "publication_date": "YYYY", "confidence": "high|medium|low", "staleness_warning": false }
-
-SEARCHES: ${JSON.stringify(trimmedPlan)}
-SCOPE: ${scope.industry} | ${scope.geography} | ${scope.base_year}
-
-OUTPUT JSON: { "data_points": [...max 20 items...], "gaps": [...max 5 items...], "searches_executed": number, "sources_rejected": number, "web_injection_flags": [] }`;
-
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5',
-    max_tokens: 4000,
-    temperature: 0.2,
-    system: systemPrompt,
-    tools: [
-      {
-        type: 'web_search_20250305',
-        name: 'web_search',
-        max_uses: 5,
-      } as unknown as Anthropic.Messages.Tool,
-    ],
-    messages: [{ role: 'user', content: userPrompt }],
-  });
-
-  // Find the final text output (after tool use cycles)
-  const textContent = response.content.find(b => b.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+  let rawResults: ParallelResult[] = [];
+  try {
+    rawResults = await parallelSearch(objective, queries);
+  } catch (err) {
+    console.error('Parallel.ai search error:', err);
     return {
       data_points: [],
-      gaps: ['Web search execution failed to produce structured output'],
+      gaps: ['Web search via Parallel.ai failed — no data available'],
       searches_executed: 0,
       sources_rejected: 0,
     };
   }
 
+  const formattedSources = formatResultsForClaude(rawResults);
+
+  // Use Claude to synthesize the search results into structured data points
+  const systemPrompt = `You are a market research data extraction agent. Extract structured data points from web search results. Output ONLY valid JSON.`;
+
+  const userPrompt = `Extract key market data points from these web search results for: ${scope.industry} (${scope.geography})
+
+WEB SEARCH RESULTS:
+${formattedSources}
+
+Extract data points with this structure (max 15 items, keep values concise):
+{ "value": "string", "unit": "string", "context": "max 100 chars", "source_name": "string", "source_url": "string", "source_tier": "T1|T2|T3", "publication_date": "YYYY", "confidence": "high|medium|low", "staleness_warning": false }
+
+OUTPUT JSON: { "data_points": [...], "gaps": [...max 5 items...], "searches_executed": ${queries.length}, "sources_rejected": 0, "web_injection_flags": [] }`;
+
   try {
-    const raw = textContent.text;
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : raw) as ResearchBundle;
-    // Hard cap data points to avoid downstream bloat
-    parsed.data_points = (parsed.data_points || []).slice(0, 20);
+    const response = await claudeClient.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 3000,
+      temperature: 0,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    });
+
+    const text = (response.content[0] as { text: string }).text.trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text) as ResearchBundle;
+    parsed.data_points = (parsed.data_points || []).slice(0, 15);
     return parsed;
   } catch {
     return {
       data_points: [],
-      gaps: ['Failed to parse research output'],
-      searches_executed: 0,
+      gaps: ['Claude synthesis of search results failed'],
+      searches_executed: queries.length,
       sources_rejected: 0,
     };
   }
 }
 
-// ─── STEP 6: SOCIAL & TECH ENRICHMENT ─────────────────────────────────────────
+// ─── STEP 6: ENRICHMENT VIA PARALLEL.AI ───────────────────────────────────────
 
 export async function executeEnrichment(
   companies: string[],
   scope: ScopeJSON
 ): Promise<EnrichmentBundle> {
-  const systemPrompt = `You are a competitive intelligence agent. Output ONLY valid JSON.`;
-
-  // Limit to top 3 companies to stay under token limits
   const topCompanies = companies.slice(0, 3);
+  const objective = `Recent news, patent filings, and strategic developments for these companies: ${topCompanies.join(', ')} in the ${scope.industry} industry`;
+  const queries = topCompanies.map(c => `${c} latest news market strategy 2024 2025`);
 
-  const userPrompt = `Search for recent news and developments for these companies: ${JSON.stringify(topCompanies)}
-Industry: ${scope.industry}
-
-Per company output (keep all string values under 150 chars):
-{ "company": "string", "social_signals": [{ "channel": "LinkedIn|X|PR", "date": "YYYY-MM", "headline": "string", "strategic_signal": "string" }], "latest_development": { "type": "M&A|Product Launch|Partnership|Pricing|Regulatory", "description": "string", "date": "YYYY-MM" } }
-
-OUTPUT: { "enrichment_data": [...max 3 companies...] }`;
-
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5',
-    max_tokens: 3000,
-    temperature: 0.2,
-    system: systemPrompt,
-    tools: [
-      {
-        type: 'web_search_20250305',
-        name: 'web_search',
-        max_uses: 4,
-      } as unknown as Anthropic.Messages.Tool,
-    ],
-    messages: [{ role: 'user', content: userPrompt }],
-  });
-
-  const textContent = response.content.find(b => b.type === 'text');
-  if (!textContent || textContent.type !== 'text') {
+  let rawResults: ParallelResult[] = [];
+  try {
+    rawResults = await parallelSearch(objective, queries);
+  } catch (err) {
+    console.error('Parallel.ai enrichment error:', err);
     return { enrichment_data: [] };
   }
 
+  const formattedSources = formatResultsForClaude(rawResults);
+
+  const systemPrompt = `You are a competitive intelligence agent. Extract structured competitive data from search results. Output ONLY valid JSON.`;
+
+  const userPrompt = `Extract competitive intelligence for these companies: ${JSON.stringify(topCompanies)}
+Industry: ${scope.industry}
+
+FROM THESE SEARCH RESULTS:
+${formattedSources}
+
+Per company (keep all strings under 120 chars):
+{ "company": "string", "social_signals": [{ "channel": "PR|News", "date": "YYYY-MM", "headline": "string", "strategic_signal": "string" }], "latest_development": { "type": "M&A|Product Launch|Partnership|Regulatory", "description": "string", "date": "YYYY-MM" } }
+
+OUTPUT: { "enrichment_data": [...max 3 companies...] }`;
+
   try {
-    const raw = textContent.text;
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    return JSON.parse(jsonMatch ? jsonMatch[0] : raw) as EnrichmentBundle;
+    const response = await claudeClient.messages.create({
+      model: 'claude-haiku-4-5',
+      max_tokens: 2000,
+      temperature: 0,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }],
+    });
+
+    const text = (response.content[0] as { text: string }).text.trim();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    return JSON.parse(jsonMatch ? jsonMatch[0] : text) as EnrichmentBundle;
   } catch {
     return { enrichment_data: [] };
   }
