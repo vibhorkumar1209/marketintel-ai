@@ -83,6 +83,7 @@ export default function GenerationPage() {
                 )
               );
               setError(`Step ${data.step} failed: ${data.error || 'Unknown error'}`);
+              eventSource.close();
             } else if (data.type === 'job_complete') {
               setIsComplete(true);
               setReportId(data.reportId || '');
@@ -98,11 +99,11 @@ export default function GenerationPage() {
           }
         };
 
-        eventSource.onerror = () => {
+        eventSource.onerror = (e) => {
+          if (eventSource.readyState === EventSource.CLOSED) return;
+          console.error("EventSource failed:", e);
           eventSource.close();
-          setError('Connection lost. Attempting to reconnect...');
-          // Attempt to reconnect after 3 seconds
-          setTimeout(connect, 3000);
+          setError('Connection lost. Please refresh the page to see the latest status.');
         };
       } catch (err) {
         setError('Failed to connect to generation stream');

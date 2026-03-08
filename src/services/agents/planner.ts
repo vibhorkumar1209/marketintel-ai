@@ -3,6 +3,11 @@ import { ScopeJSON, SearchPlan } from '@/types/agents';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
+function cleanJsonString(str: string): string {
+  const jsonMatch = str.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+  return jsonMatch ? jsonMatch[0] : str;
+}
+
 // ─── STEP 1: SCOPE EXTRACTION ──────────────────────────────────────────────────
 
 export async function extractScope(query: string): Promise<ScopeJSON> {
@@ -37,7 +42,7 @@ USER QUERY: ${query}`;
   });
 
   const text = (response.content[0] as { text: string }).text.trim();
-  return JSON.parse(text) as ScopeJSON;
+  return JSON.parse(cleanJsonString(text)) as ScopeJSON;
 }
 
 // ─── STEP 2: RESEARCH PLAN ─────────────────────────────────────────────────────
@@ -69,7 +74,7 @@ SCOPE: ${JSON.stringify(scope, null, 2)}`;
   });
 
   const text = (response.content[0] as { text: string }).text.trim();
-  return JSON.parse(text) as SearchPlan;
+  return JSON.parse(cleanJsonString(text)) as SearchPlan;
 }
 
 // ─── DATAPACK SCOPE ────────────────────────────────────────────────────────────
@@ -105,5 +110,5 @@ USER QUERY: ${query}`;
   });
 
   const text = (response.content[0] as { text: string }).text.trim();
-  return JSON.parse(text);
+  return JSON.parse(cleanJsonString(text));
 }
