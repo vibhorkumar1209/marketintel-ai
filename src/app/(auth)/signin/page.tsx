@@ -100,7 +100,7 @@ export default function SignInPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#E8EDF5] mb-2">Sign In</h1>
-        <p className="text-[#8899BB]">Access your MarketIntel AI account</p>
+        <p className="text-[#8899BB]">Access your RefractOne Industry Report Hub account</p>
       </div>
 
       {generalError && (

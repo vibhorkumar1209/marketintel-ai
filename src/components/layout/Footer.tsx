@@ -13,7 +13,7 @@ const Footer: React.FC = () => {
           {/* Brand */}
           <div>
             <Link href="/" className="font-bold text-lg inline-block mb-4">
-              <span className="text-[#E8EDF5]">MarketIntel</span>
+              <span className="text-[#E8EDF5]">RefractOne Industry Report Hub</span>
               <span className="text-teal-600">AI</span>
             </Link>
             <p className="text-[#8899BB] text-sm">
@@ -119,7 +119,7 @@ const Footer: React.FC = () => {
         <div className="border-t border-[#2A3A55] pt-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <p className="text-[#8899BB] text-sm">
-              &copy; {currentYear} MarketIntel AI. All rights reserved.
+              &copy; {currentYear} RefractOne Industry Report Hub. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <a

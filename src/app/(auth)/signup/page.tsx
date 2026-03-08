@@ -114,7 +114,7 @@ export default function SignUpPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#E8EDF5] mb-2">Create Account</h1>
-        <p className="text-[#8899BB]">Join MarketIntel AI and start generating intelligence reports</p>
+        <p className="text-[#8899BB]">Join RefractOne Industry Report Hub and start generating intelligence reports</p>
       </div>
 
       {generalError && (

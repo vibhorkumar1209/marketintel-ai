@@ -5,10 +5,10 @@ import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'MarketIntel AI',
+  title: 'RefractOne Industry Report Hub',
   description: 'AI-powered market intelligence for modern enterprises',
   openGraph: {
-    title: 'MarketIntel AI',
+    title: 'RefractOne Industry Report Hub',
     description: 'AI-powered market intelligence for modern enterprises',
     type: 'website',
   },

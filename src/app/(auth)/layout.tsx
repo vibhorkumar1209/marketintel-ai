@@ -19,7 +19,7 @@ export default function AuthLayout({
           {/* Logo */}
           <Link href="/" className="flex items-center justify-center mb-8">
             <span className="text-3xl font-bold">
-              <span className="text-[#E8EDF5]">MarketIntel</span>
+              <span className="text-[#E8EDF5]">RefractOne Industry Report Hub</span>
               <span className="text-teal-600">AI</span>
             </span>
           </Link>
@@ -33,7 +33,7 @@ export default function AuthLayout({
 
           {/* Footer Text */}
           <p className="text-center text-[#8899BB] text-sm mt-8">
-            By using MarketIntel AI, you agree to our{' '}
+            By using RefractOne Industry Report Hub, you agree to our{' '}
             <Link href="/terms" className="text-teal-600 hover:text-teal-500 transition-colors">
               Terms of Service
             </Link>

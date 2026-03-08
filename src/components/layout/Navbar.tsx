@@ -45,7 +45,7 @@ const Navbar: React.FC = () => {
             href={session ? '/dashboard' : '/'}
             className="flex items-center gap-2 font-bold text-xl"
           >
-            <span className="text-[#E8EDF5]">MarketIntel</span>
+            <span className="text-[#E8EDF5]">RefractOne Industry Report Hub</span>
             <span className="text-teal-600">AI</span>
           </Link>
 

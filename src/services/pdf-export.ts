@@ -85,7 +85,7 @@ export function buildReportHTML(report: IndustryReport): string {
   <div class="cover">
     <h1>${report.title}</h1>
     <div class="subtitle">${report.query}</div>
-    <div class="meta">Generated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} | MarketIntel AI Platform</div>
+    <div class="meta">Generated ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })} | RefractOne Industry Report Hub Platform</div>
   </div>
 
   <div class="toc">

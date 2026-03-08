@@ -54,7 +54,7 @@ const Sidebar: React.FC = () => {
         <div className="p-4 border-b border-[#2A3A55] flex items-center justify-between">
           {!isCollapsed && (
             <Link href="/dashboard" className="font-bold text-lg">
-              <span className="text-[#E8EDF5]">MarketIntel</span>
+              <span className="text-[#E8EDF5]">RefractOne Industry Report Hub</span>
               <span className="text-teal-600">AI</span>
             </Link>
           )}
