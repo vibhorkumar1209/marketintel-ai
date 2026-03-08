@@ -20,19 +20,19 @@ export async function formatIndustryReport(
     content: s.body_paragraphs,
     keyTable: s.key_table
       ? {
-          title: s.key_table.title,
-          headers: s.key_table.headers,
-          rows: s.key_table.rows,
-        }
+        title: s.key_table.title,
+        headers: s.key_table.headers,
+        rows: s.key_table.rows,
+      }
       : undefined,
     chartSpec: s.chart_spec
       ? {
-          type: s.chart_spec.type,
-          title: s.chart_spec.title,
-          xAxis: s.chart_spec.x_axis,
-          yAxis: s.chart_spec.y_axis,
-          dataSource: s.chart_spec.data_source,
-        }
+        type: s.chart_spec.type,
+        title: s.chart_spec.title,
+        xAxis: s.chart_spec.x_axis,
+        yAxis: s.chart_spec.y_axis,
+        dataSource: s.chart_spec.data_source,
+      }
       : undefined,
     citations: s.citations,
     flags: s.section_flags,
@@ -104,10 +104,10 @@ OUTPUT: { "sheets": [...array of 10 sheet objects...] }`;
 
   const text = (response.content[0] as { text: string }).text.trim();
   try {
-    return JSON.parse(text);
-  } catch {
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    return jsonMatch ? JSON.parse(jsonMatch[0]) : { sheets: [] };
+    return JSON.parse(jsonMatch ? jsonMatch[0] : text);
+  } catch {
+    return { sheets: [] };
   }
 }
 

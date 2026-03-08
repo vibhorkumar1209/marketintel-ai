@@ -50,16 +50,16 @@ STRICT RULES:
 5. Do NOT repeat content — each section contributes unique insight
 6. Output structured JSON ONLY — no prose as plain text
 
-OUTPUT FORMAT:
+OUTPUT FORMAT (keep compact — max 2000 chars total response):
 {
   "section_id": "string",
   "section_title": "string",
   "word_count_target": number,
-  "body_paragraphs": ["array of paragraph strings"],
-  "key_table": { "title": "string", "headers": ["array"], "rows": [["array"]] } or null,
-  "chart_spec": { "type": "bar|line|pie|scatter|heatmap|timeline", "title": "string", "x_axis": "string", "y_axis": "string", "data_source": "string" } or null,
-  "citations": [{ "claim": "short quote", "source": "source_name", "tier": "T1-T6", "date": "YYYY" }],
-  "section_flags": ["quality warnings array — can be empty"]
+  "body_paragraphs": ["max 4 paragraphs, each max 200 words"],
+  "key_table": null,
+  "chart_spec": null,
+  "citations": [{ "claim": "short quote max 60 chars", "source": "string", "tier": "T1-T6", "date": "YYYY" }],
+  "section_flags": []
 }`;
 
   const userPrompt = `Draft Section: "${sectionDef.title}"
@@ -86,7 +86,7 @@ OUTPUT the complete section JSON:`;
 
   const response = await client.messages.create({
     model: 'claude-haiku-4-5',
-    max_tokens: 6000,
+    max_tokens: 3000,
     temperature: 0.4,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],

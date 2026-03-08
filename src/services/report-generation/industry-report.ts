@@ -14,14 +14,8 @@ const SECTION_IDS = [
   'sizing_workings',
   'segmentation',
   'competitive',
-  'company_profiles',
-  'social_intel',
-  'tech_focus',
-  'tech_developments',
   'opportunities',
-  'investment_ma',
   'regional_analysis',
-  'appendix',
 ];
 
 export async function runIndustryReportPipeline(
