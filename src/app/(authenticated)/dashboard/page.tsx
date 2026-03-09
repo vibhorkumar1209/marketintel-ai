@@ -115,7 +115,7 @@ export default function DashboardPage() {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${C.blue}20`; (e.currentTarget as HTMLElement).style.borderColor = `${C.blue}50`; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = C.border; }}>
               <div style={{ width: 46, height: 46, borderRadius: 12, background: `${C.blue}14`, color: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>{Ico.report}</div>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 5 }}>New Industry Report</h3>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: C.text, marginBottom: 5 }}>Industry Report</h3>
               <p style={{ fontSize: 12, color: C.sub, lineHeight: 1.65, marginBottom: 16, flex: 1 }}>9-section deep research — market sizing, competitive intelligence, 3-scenario forecast & TEI driver table</p>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: C.blue }}>Start Report {Ico.arrow}</div>
             </div>
