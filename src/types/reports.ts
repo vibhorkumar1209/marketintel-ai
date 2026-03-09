@@ -22,6 +22,7 @@ export interface ReportSection {
   }>;
   citations: Array<{ claim: string; source: string; tier: string; date: string }>;
   flags: string[];
+  adminMethodology?: string;
 }
 
 export interface ReportMetadata {

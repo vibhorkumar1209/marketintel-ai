@@ -16,14 +16,14 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 1
   intro: {
     title: 'Market Report Scope',
-    desc: 'Scope matrix table (product types × applications × geographies × time period), competitor shortlist table (Company | HQ | Est. revenue | Market presence), study assumptions log (base year, currency, triangulation method).',
-    tone: 'Definitive. State precise market boundary before any sizing or competitive analysis.',
+    desc: 'Purely define market boundaries: (A) Product scope matrix (list all included/excluded types); (B) Application scope matrix; (C) Geography scope (regions/districts included); (D) Timeline definition (Base year, Forecast period). DO NOT include any market sizing figures here.',
+    tone: 'Definitive. Clear "included/excluded" boundaries for the research.',
   },
   // Section 2
   sizing_workings: {
     title: 'Market Size',
-    desc: 'TWO independent sizing methods: (A) Top-Down — government stats → penetration rate → trade flow cross-check; (B) Bottom-Up — sum of confirmed player revenues ÷ coverage ratio. Mandatory triangulation table: Method | Value (USD M) | Volume | Key Assumption | Confidence | Source Tier. Include CAGR (historical + forecast) and Low/Base/High scenario range.',
-    tone: 'Quantitative. Every figure must show method and source tier. Confidence must be tagged [HIGH/MEDIUM/LOW].',
+    desc: 'Provide ONLY historical and current market sizing data: (A) Market Size Table (Volume [units] and Value [USD M]) for the past 5 years and current year; (B) Historical CAGR %; (C) Current market share breakdown of top 3 players. All detailed estimation logic and triangulation methods MUST be output ONLY in the "admin_methodology" field, not in body paragraphs.',
+    tone: 'Quantitative. Focus on factual historical and current numbers. No methodology theory in user-facing text.',
   },
   // Section 3
   segmentation: {
@@ -34,8 +34,8 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 4
   dynamics: {
     title: 'Trends',
-    desc: 'You must output EXACTLY 3 subsections named: "Trends", "Drivers", and "Barriers". Each subsection must contain EXACTLY 2 introductory lines and a highly detailed table. Each table MUST use these EXACT headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"].',
-    tone: 'Evidence-anchored. Every driver and barrier must cite a real named company, regulation, or quantified market signal. No generic statements.',
+    desc: 'You must output EXACTLY 3 detailed subsections: "Trends", "Drivers", and "Barriers". Each subsection requires an EXTREMELY detailed table with at least 6–8 distinct data rows. Headers MUST BE: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Emphasize local market dynamics (e.g. specific local regulations, infrastructure projects, or news events).',
+    tone: 'Extremely detailed and evidence-anchored. Use specific local news and data points from the research results.',
   },
   // Section 5
   regulatory: {
@@ -106,7 +106,8 @@ export async function draftSection(
   const sectionQueries = [
     `${scope.industry} ${scope.geography} ${sectionDef.title}`,
     `${scope.product_scope} industry ${sectionDef.title} data statistics`,
-    `${scope.industry} ${scope.geography} ${sectionId === 'competitive' ? 'top players market share' : sectionId === 'regulatory' ? 'regulations policies' : sectionId === 'tech_developments' ? 'new technology innovation' : sectionId === 'segmentation' ? 'market breakdown by product application' : sectionId === 'sizing_workings' ? 'market size CAGR value USD' : 'drivers barriers trends'}`
+    `${scope.industry} ${scope.geography} ${sectionId === 'competitive' ? 'top players market share' : sectionId === 'regulatory' ? 'regulations policies' : sectionId === 'tech_developments' ? 'new technology innovation' : sectionId === 'segmentation' ? 'market breakdown by product application' : sectionId === 'sizing_workings' ? 'market size CAGR value USD' : 'drivers barriers trends'}`,
+    `${scope.industry} ${scope.geography} news market dynamics recent events 2024 2025`
   ];
 
   let formattedSectionSources = '';
@@ -158,6 +159,7 @@ OUTPUT FORMAT:
   "section_title": "string",
   "word_count_target": number,
   "body_paragraphs": ["Exactly 2 sentences introducing the overall section context."],
+  "admin_methodology": "DANGER: FOR ADMIN LOG ONLY. Detailed internal logic, triangulation calculations, assumptions, and data source quality notes. This will NOT be rendered for users.",
   "key_table": null,
   "chart_spec": null,
   "subsections": [

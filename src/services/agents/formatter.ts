@@ -31,6 +31,7 @@ export async function formatIndustryReport(
     })),
     citations: s.citations,
     flags: s.section_flags,
+    adminMethodology: s.admin_methodology,
   }));
 
   const qualityScore = calculateQualityScore(sections, sizingJSON);

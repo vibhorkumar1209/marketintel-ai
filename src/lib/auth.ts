@@ -52,13 +52,15 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.email = user.email;
+        token.email = user.email || '';
+        token.role = (user as any).role || 'user';
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user && token.id) {
         session.user.id = token.id as string;
+        session.user.role = token.role as string;
       }
       return session;
     },
@@ -84,8 +86,20 @@ declare module 'next-auth' {
     user: {
       id: string;
       email: string;
+      role: string; // Add role to the session user type
       name?: string | null;
       image?: string | null;
     };
+  }
+}
+
+// Extend token types for JWT
+declare module 'next-auth/jwt' {
+  interface JWT {
+    id: string;
+    email: string;
+    role: string; // Add role to the JWT token type
+    name?: string | null;
+    image?: string | null;
   }
 }

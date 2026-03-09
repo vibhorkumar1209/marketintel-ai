@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import Spinner from '@/components/ui/Spinner';
 import ReportChart from '@/components/charts/ReportChart';
 import { IndustryReport } from '@/types/reports';
@@ -80,6 +81,7 @@ function SectionLabel({ text, color = T.teal }: { text: string; color?: string }
 // ── Main Report Page ──────────────────────────────────────────────────────────
 export default function ReportPage() {
   const params = useParams();
+  const { data: session } = useSession();
   const reportId = params.reportId as string;
   const [report, setReport] = useState<IndustryReport | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -427,6 +429,23 @@ export default function ReportPage() {
                 </div>
               )}
 
+
+              {/* Admin-only methodology log */}
+              {session?.user?.role === 'admin' && section.adminMethodology && (
+                <div style={{ marginTop: 20, border: '1px solid #f59e0b', borderRadius: 12, padding: 20, background: 'rgba(245, 158, 11, 0.05)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                    <span style={{ color: '#f59e0b' }}>⚠️</span>
+                    <h3 style={{ fontSize: 12, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '1px' }}>
+                      Admin Internal Methodology Log
+                    </h3>
+                  </div>
+                  <div style={{ background: '#0a1624', borderRadius: 8, padding: 16, border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                    <p style={{ color: '#f59e0b', fontSize: 13, lineHeight: 1.7, fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                      {section.adminMethodology}
+                    </p>
+                  </div>
+                </div>
+              )}
 
             </div>
           );

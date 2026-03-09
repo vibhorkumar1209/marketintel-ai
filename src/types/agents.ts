@@ -105,6 +105,7 @@ export interface SectionDraft {
   }>;
   citations: SectionCitation[];
   section_flags: string[];
+  admin_methodology?: string;
 }
 
 export interface EnrichmentItem {
