@@ -42,7 +42,7 @@ export async function formatIndustryReport(
     query: `${scope.industry} — ${scope.product_scope} — ${scope.geography}`,
     executiveSummary: {
       headline: executiveSummary.market_headline,
-      kpiPanel: executiveSummary.kpi_panel.map(k => ({ label: k.label, value: k.value })),
+      kpiPanel: (executiveSummary.kpi_panel || []).map(k => ({ label: k.label, value: k.value })),
       paragraphs: executiveSummary.body_paragraphs,
       scenarios: executiveSummary.scenario_outlook,
     },
@@ -52,7 +52,7 @@ export async function formatIndustryReport(
       qualityScore,
       marketSize: `${sizingJSON.validated_market_size.value} ${sizingJSON.validated_market_size.unit}`,
       cagr: `${sizingJSON.cagr_estimate.value}%`,
-      keyFindings: executiveSummary.kpi_panel.slice(0, 5).map(k => `${k.label}: ${k.value}`),
+      keyFindings: (executiveSummary.kpi_panel || []).slice(0, 5).map(k => `${k.label}: ${k.value}`),
       sources: countUniqueSources(sections),
       depth: scope.depth_level,
       geography: scope.geography,
@@ -352,7 +352,7 @@ function calculateQualityScore(sections: SectionDraft[], sizing: SizingJSON): nu
 }
 
 function countUniqueSources(sections: SectionDraft[]): number {
-  return new Set(sections.flatMap(s => s.citations.map(c => c.source))).size;
+  return new Set(sections.flatMap(s => (s.citations || []).map(c => c.source))).size;
 }
 
 // ─── REPORT TITLE GENERATOR ───────────────────────────────────────────────────

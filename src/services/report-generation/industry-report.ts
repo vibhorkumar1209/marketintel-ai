@@ -94,12 +94,11 @@ export async function runIndustryReportPipeline(
 
     // ── STEP 6: Social & Tech Enrichment ─────────────────────────────────
     await stream.stepStart(6, 'Social & Technology Intelligence');
-    const companies: string[] = sectionDrafts
-      .find(s => s.section_id === 'competitive')
-      ?.citations
+    const competitiveSection = sectionDrafts.find(s => s.section_id === 'competitive');
+    const companies: string[] = (competitiveSection?.citations || [])
       .map(c => c.source)
       .filter(Boolean)
-      .slice(0, scope.competitor_count) ?? [];
+      .slice(0, scope.competitor_count);
 
     const enrichmentBundle = await executeEnrichment(
       companies.length > 0 ? companies : [`Top ${scope.industry} companies`],

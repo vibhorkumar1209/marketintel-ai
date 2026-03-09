@@ -336,7 +336,7 @@ Output the JSON:`;
 // ─── STEP 9: APPENDIX ─────────────────────────────────────────────────────────
 
 export function buildAppendixSection(sections: SectionDraft[], scope: ScopeJSON): SectionDraft {
-  const allCitations = sections.flatMap(s => s.citations.map(c => ({ ...c, usedIn: s.section_title })));
+  const allCitations = sections.flatMap(s => (s.citations || []).map(c => ({ ...c, usedIn: s.section_title })));
   const uniqueCitations = Array.from(new Map(allCitations.map(c => [c.source + c.claim, c])).values());
 
   const tierCounts: Record<string, number> = {};

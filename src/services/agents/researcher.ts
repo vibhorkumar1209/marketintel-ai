@@ -45,7 +45,7 @@ export async function executeResearch(
   scope: ScopeJSON
 ): Promise<ResearchBundle> {
   // Execute top 20 searches via Parallel.ai
-  const queries = searchPlan.search_plan.slice(0, 20).map(s => s.search_query);
+  const queries = (searchPlan.search_plan || []).slice(0, 20).map(s => s.search_query);
   const objective = `Market intelligence for: ${scope.industry} | ${scope.product_scope} | ${scope.geography}`;
 
   let rawResults: ParallelResult[] = [];
