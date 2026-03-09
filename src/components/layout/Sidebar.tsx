@@ -26,7 +26,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: '/dashboard#history',
+    href: '/reports',
     label: 'Report History',
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -34,6 +34,15 @@ const NAV_ITEMS = [
         <polyline points="14 2 14 8 20 8" />
         <line x1="16" y1="13" x2="8" y2="13" />
         <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
+    ),
+  },
+  {
+    href: '/trends',
+    label: 'Trends Report',
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
       </svg>
     ),
   },
@@ -71,8 +80,8 @@ const Sidebar: React.FC = () => {
   }, []);
 
   const isActive = (href: string) => {
-    if (href === '/dashboard' || href === '/dashboard#history') return pathname === '/dashboard' || pathname === '/';
-    return pathname.startsWith(href);
+    if (href === '/dashboard') return pathname === '/dashboard' || pathname === '/';
+    return pathname.startsWith(href.split('#')[0]);
   };
 
   const initials = session?.user?.name?.slice(0, 1)?.toUpperCase() || session?.user?.email?.slice(0, 1)?.toUpperCase() || 'U';

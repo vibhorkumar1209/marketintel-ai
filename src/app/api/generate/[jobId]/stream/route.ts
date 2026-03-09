@@ -64,9 +64,12 @@ export async function GET(
           data: { status: 'running' }
         });
         if (updated.count > 0) {
-          const pipelineFn = job.reportType === 'industry_report'
-            ? runIndustryReportPipeline
-            : runDatapackPipeline;
+          let pipelineFn: typeof runIndustryReportPipeline | typeof runDatapackPipeline;
+          if (job.reportType === 'industry_report') {
+            pipelineFn = runIndustryReportPipeline;
+          } else {
+            pipelineFn = runDatapackPipeline;
+          }
 
           pipelineFn(job.id, session.user.id, job.query, job.config as any).catch(console.error);
         }

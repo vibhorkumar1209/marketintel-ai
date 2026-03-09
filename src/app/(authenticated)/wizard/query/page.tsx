@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 
-type ReportType = 'industry_report' | 'datapack';
+type ReportType = 'industry_report' | 'datapack' | 'trends_report';
 type Depth = 'light' | 'standard' | 'deep';
 
 export default function WizardQueryPage() {
@@ -22,12 +22,12 @@ export default function WizardQueryPage() {
   const [customCountry, setCustomCountry] = useState('');
 
   const creditCosts = {
-    light: { industry_report: 30, datapack: 15 },
-    standard: { industry_report: 50, datapack: 30 },
-    deep: { industry_report: 100, datapack: 60 },
+    light: { industry_report: 30, datapack: 15, trends_report: 20 },
+    standard: { industry_report: 50, datapack: 30, trends_report: 35 },
+    deep: { industry_report: 100, datapack: 60, trends_report: 70 },
   };
 
-  const currentCost = creditCosts[depth][reportType];
+  const currentCost = creditCosts[depth][reportType] ?? 35;
 
   const regionOptions = [
     'Global',
