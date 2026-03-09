@@ -20,7 +20,7 @@ export default async function AuthenticatedLayout({
       <Sidebar />
 
       {/* Right column: topnav + content */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: '#080f16' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: '#f9fafb' }}>
         <Navbar />
         <main style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto' }}>

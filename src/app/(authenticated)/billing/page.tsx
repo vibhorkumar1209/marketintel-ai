@@ -118,8 +118,8 @@ export default function BillingPage() {
     <div className="max-w-6xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[#FFFFFF] mb-2">Billing & Subscription</h1>
-        <p className="text-[#8899BB]">Manage your plan and credits</p>
+        <h1 className="text-3xl font-bold text-[#0c3649] mb-2">Billing & Subscription</h1>
+        <p className="text-[#6b7280]">Manage your plan and credits</p>
       </div>
 
       {error && (
@@ -144,7 +144,7 @@ export default function BillingPage() {
               <>
                 <div>
                   <p className="text-sm text-[#8899BB] mb-2">Current Plan</p>
-                  <p className="text-2xl font-bold text-[#FFFFFF] capitalize">
+                  <p className="text-2xl font-bold text-[#0c3649] capitalize">
                     {creditsData.subscription.plan}
                   </p>
                   <Badge variant="green" className="mt-2">
@@ -155,7 +155,7 @@ export default function BillingPage() {
                 {creditsData.subscription.renewalDate && (
                   <div>
                     <p className="text-sm text-[#8899BB] mb-2">Renewal Date</p>
-                    <p className="text-2xl font-bold text-[#FFFFFF]">
+                    <p className="text-2xl font-bold text-[#0c3649]">
                       {new Date(creditsData.subscription.renewalDate).toLocaleDateString()}
                     </p>
                   </div>
@@ -209,7 +209,7 @@ export default function BillingPage() {
 
       {/* Pricing Plans */}
       <div>
-        <h2 className="text-2xl font-bold text-[#FFFFFF] mb-6">Upgrade Your Plan</h2>
+        <h2 className="text-2xl font-bold text-[#0c3649] mb-6">Upgrade Your Plan</h2>
         <div className="grid md:grid-cols-3 gap-6">
           {plans.map((plan) => (
             <Card
@@ -219,7 +219,7 @@ export default function BillingPage() {
             >
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-2xl font-bold text-[#FFFFFF]">{plan.name}</h3>
+                  <h3 className="text-2xl font-bold text-[#0c3649]">{plan.name}</h3>
                   <div className="mt-3 space-y-1">
                     <div>
                       <span className="text-4xl font-bold text-teal-600">${plan.price}</span>

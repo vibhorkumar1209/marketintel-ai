@@ -161,7 +161,7 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
             {/* Progress Bar Header */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-[#8899BB] uppercase tracking-wider">Report Completion</p>
+                    <p className="text-sm font-semibold text-[#6b7280] uppercase tracking-wider">Report Completion</p>
                     <p className="text-sm font-bold" style={{ color: meta.accent }}>{isComplete ? '100%' : `${progress}%`}</p>
                 </div>
                 <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">

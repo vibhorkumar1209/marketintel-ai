@@ -35,8 +35,8 @@ const Navbar: React.FC = () => {
       className="hidden md:flex"
       style={{
         height: 56,
-        background: '#111827',
-        borderBottom: '1px solid #2A3A55',
+        background: '#ffffff',
+        borderBottom: '1px solid #e5e7eb',
         display: 'flex',
         alignItems: 'center',
         paddingLeft: 24,
@@ -66,17 +66,17 @@ const Navbar: React.FC = () => {
             width: '100%',
             height: 36,
             borderRadius: 8,
-            border: '1px solid #2A3A55',
-            background: '#0A1628',
+            border: '1px solid #e5e7eb',
+            background: '#f9fafb',
             paddingLeft: 36,
             paddingRight: 12,
             fontSize: 13,
-            color: '#E8EDF5',
+            color: '#1f2937',
             outline: 'none',
             fontFamily: 'Inter, sans-serif',
           }}
-          onFocus={e => { e.target.style.borderColor = '#3491E8'; e.target.style.background = '#111827'; }}
-          onBlur={e => { e.target.style.borderColor = '#2A3A55'; e.target.style.background = '#0A1628'; }}
+          onFocus={e => { e.target.style.borderColor = '#3491E8'; e.target.style.background = '#fff'; }}
+          onBlur={e => { e.target.style.borderColor = '#e5e7eb'; e.target.style.background = '#f9fafb'; }}
         />
       </div>
 
@@ -87,18 +87,18 @@ const Navbar: React.FC = () => {
         <Link href="/billing">
           <div style={{
             display: 'flex', alignItems: 'center', gap: 7,
-            border: '1px solid #2A3A55', borderRadius: 8,
+            border: '1px solid #e5e7eb', borderRadius: 8,
             padding: '5px 12px', cursor: 'pointer',
-            background: '#0A1628',
+            background: '#f9fafb',
             transition: 'all 150ms ease',
           }}
             onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = '#3491E8'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#2A3A55'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = '#e5e7eb'; }}
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3491E8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
             </svg>
-            <span style={{ fontSize: 12, fontWeight: 700, color: '#E8EDF5', fontFamily: 'DM Mono, monospace' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#1f2937', fontFamily: 'DM Mono, monospace' }}>
               {credits} Credits
             </span>
           </div>
@@ -108,17 +108,17 @@ const Navbar: React.FC = () => {
       {/* Bell */}
       <button style={{
         width: 36, height: 36, borderRadius: '50%',
-        border: '1px solid #2A3A55', background: '#0A1628',
+        border: '1px solid #e5e7eb', background: '#f9fafb',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer', position: 'relative',
       }}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8899BB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0" />
         </svg>
         <div style={{
           position: 'absolute', top: 6, right: 6,
           width: 8, height: 8, borderRadius: '50%',
-          background: '#E63946', border: '2px solid #0A1628',
+          background: '#E63946', border: '2px solid #fff',
         }} />
       </button>
 
@@ -142,25 +142,25 @@ const Navbar: React.FC = () => {
             <div style={{
               position: 'absolute', right: 0, top: 44,
               width: 200,
-              background: '#111827', border: '1px solid #2A3A55',
-              borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              background: '#fff', border: '1px solid #e5e7eb',
+              borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
               overflow: 'hidden', zIndex: 60,
             }}>
-              <div style={{ padding: '12px 16px', borderBottom: '1px solid #2A3A55' }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: '#E8EDF5' }}>
+              <div style={{ padding: '12px 16px', borderBottom: '1px solid #e5e7eb' }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: '#1f2937' }}>
                   {session.user.name || 'User'}
                 </div>
-                <div style={{ fontSize: 11, color: '#8899BB', marginTop: 2 }}>
+                <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>
                   {session.user.email}
                 </div>
               </div>
               {[{ label: 'Settings', href: '/settings' }, { label: 'Billing', href: '/billing' }].map(item => (
                 <Link key={item.label} href={item.href} onClick={() => setDropdownOpen(false)}>
                   <div style={{
-                    padding: '10px 16px', fontSize: 13, color: '#E8EDF5',
-                    cursor: 'pointer', borderBottom: '1px solid #2A3A55',
+                    padding: '10px 16px', fontSize: 13, color: '#374151',
+                    cursor: 'pointer', borderBottom: '1px solid #f3f4f6',
                   }}
-                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#1A2333'; }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#f9fafb'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                   >
                     {item.label}
@@ -174,7 +174,7 @@ const Navbar: React.FC = () => {
                   fontSize: 13, color: '#E63946', background: 'none', border: 'none',
                   cursor: 'pointer',
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(230,57,70,0.1)'; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#fff5f5'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
               >
                 Sign Out

@@ -161,36 +161,36 @@ export default function WizardConfirmPage() {
           {/* Report Configuration */}
           <Card>
             <div className="space-y-6">
-              <div className="pb-6 border-b border-[#2A3A55]">
-                <p className="text-sm text-[#8899BB] mb-2">Report Type</p>
+              <div className="pb-6 border-b border-[#e5e7eb]">
+                <p className="text-sm text-[#6b7280] mb-2">Report Type</p>
                 <div className="flex items-center gap-2">
-                  <p className="text-lg font-semibold text-[#E8EDF5]">{meta.label}</p>
+                  <p className="text-lg font-semibold text-[#0c3649]">{meta.label}</p>
                   <Badge variant={meta.badgeVariant}>{meta.badge}</Badge>
                 </div>
               </div>
 
-              <div className="pb-6 border-b border-[#2A3A55]">
-                <p className="text-sm text-[#8899BB] mb-2">Research Query</p>
-                <p className="text-[#E8EDF5] leading-relaxed">{state.query}</p>
+              <div className="pb-6 border-b border-[#e5e7eb]">
+                <p className="text-sm text-[#6b7280] mb-2">Research Query</p>
+                <p className="text-[#0c3649] leading-relaxed">{state.query}</p>
               </div>
 
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
-                  <p className="text-sm text-[#8899BB] mb-2">Research Depth</p>
-                  <p className="text-lg font-semibold text-[#E8EDF5] capitalize">{state.depth}</p>
+                  <p className="text-sm text-[#6b7280] mb-2">Research Depth</p>
+                  <p className="text-lg font-semibold text-[#0c3649] capitalize">{state.depth}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-[#8899BB] mb-2">Geographic Focus</p>
+                  <p className="text-sm text-[#6b7280] mb-2">Geographic Focus</p>
                   <div className="space-y-1">
                     {state.regions.map(region => (
-                      <p key={region} className="text-sm text-[#E8EDF5]">{region}</p>
+                      <p key={region} className="text-sm text-[#0c3649]">{region}</p>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-[#8899BB] mb-2">Configuration</p>
-                  <p className="text-sm text-[#E8EDF5]">{state.competitorCount} competitors</p>
-                  <p className="text-sm text-[#E8EDF5]">{state.forecastYears}-year forecast</p>
+                  <p className="text-sm text-[#6b7280] mb-2">Configuration</p>
+                  <p className="text-sm text-[#0c3649]">{state.competitorCount} competitors</p>
+                  <p className="text-sm text-[#0c3649]">{state.forecastYears}-year forecast</p>
                 </div>
               </div>
             </div>
@@ -200,11 +200,11 @@ export default function WizardConfirmPage() {
           <Card variant={hasEnoughCredits ? 'default' : 'highlighted'}>
             <div className="flex items-end justify-between">
               <div>
-                <p className="text-sm text-[#8899BB] mb-1">Current Balance</p>
+                <p className="text-sm text-[#6b7280] mb-1">Current Balance</p>
                 <p className="text-2xl font-bold" style={{ color: meta.accent }}>
                   {credits !== null ? `${credits}` : '...'} credits
                 </p>
-                <p className="text-sm text-[#8899BB] mt-2">
+                <p className="text-sm text-[#6b7280] mt-2">
                   Cost for this {meta.label.toLowerCase()}: <span className="font-semibold" style={{ color: meta.accent }}>{cost} credits</span>
                 </p>
               </div>

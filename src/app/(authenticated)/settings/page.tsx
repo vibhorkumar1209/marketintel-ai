@@ -86,8 +86,8 @@ export default function SettingsPage() {
     <div className="max-w-2xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[#FFFFFF] mb-2">Settings</h1>
-        <p className="text-[#8899BB]">Manage your account settings and preferences</p>
+        <h1 className="text-3xl font-bold text-[#0c3649] mb-2">Settings</h1>
+        <p className="text-[#6b7280]">Manage your account settings and preferences</p>
       </div>
 
       {success && (
@@ -152,7 +152,7 @@ export default function SettingsPage() {
 
           <div className="p-4 bg-[#0A1628] border border-[#2A3A55] rounded-lg">
             <p className="text-sm text-[#8899BB] mb-1">Member Since</p>
-            <p className="text-lg font-semibold text-[#FFFFFF]">
+            <p className="font-medium text-[#0c3649]">
               {session?.user && 'Recently joined'}
             </p>
           </div>
@@ -175,7 +175,7 @@ export default function SettingsPage() {
               className="w-5 h-5 mt-1 accent-teal-600 cursor-pointer"
             />
             <div>
-              <p className="font-medium text-[#FFFFFF]">Report Completion</p>
+              <p className="font-medium text-[#0c3649]">Report Completion</p>
               <p className="text-sm text-[#8899BB]">Get notified when your reports are ready</p>
             </div>
           </label>
@@ -187,7 +187,7 @@ export default function SettingsPage() {
               className="w-5 h-5 mt-1 accent-teal-600 cursor-pointer"
             />
             <div>
-              <p className="font-medium text-[#FFFFFF]">Low Credits Alert</p>
+              <p className="font-medium text-[#0c3649]">Low Credits Alert</p>
               <p className="text-sm text-[#8899BB]">Remind me when credits are running low</p>
             </div>
           </label>
@@ -198,7 +198,7 @@ export default function SettingsPage() {
               className="w-5 h-5 mt-1 accent-teal-600 cursor-pointer"
             />
             <div>
-              <p className="font-medium text-[#FFFFFF]">Product Updates</p>
+              <p className="font-medium text-[#0c3649]">Product Updates</p>
               <p className="text-sm text-[#8899BB]">Learn about new features and improvements</p>
             </div>
           </label>

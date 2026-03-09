@@ -111,7 +111,7 @@ export default function WizardQueryPage() {
               value={query}
               onChange={e => setQuery(e.target.value)}
               placeholder={copy.placeholder}
-              className="w-full px-4 py-3 bg-[#0A1628] border border-[#2A3A55] rounded-lg text-[#E8EDF5] placeholder-[#8899BB] focus:border-teal-600 focus:ring-2 focus:ring-teal-600 focus:ring-opacity-20 transition-all resize-none"
+              className="w-full px-4 py-3 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg text-[#0c3649] placeholder-[#9ca3af] focus:border-teal-600 focus:ring-2 focus:ring-teal-600 focus:ring-opacity-20 transition-all resize-none"
               rows={5}
             />
           </div>
@@ -134,10 +134,10 @@ export default function WizardQueryPage() {
                 {(['light', 'standard', 'deep'] as const).map(d => (
                   <button key={d} onClick={() => setDepth(d)} className={clsx(
                     'p-4 rounded-lg border-2 transition-all text-left',
-                    depth === d ? 'border-teal-600 bg-teal-600 bg-opacity-10' : 'border-[#2A3A55] hover:border-[#3A4A65]'
+                    depth === d ? 'border-teal-600 bg-teal-50' : 'border-[#e5e7eb] hover:border-teal-200'
                   )}>
-                    <p className="font-semibold text-[#E8EDF5] capitalize">{d}</p>
-                    <p className="text-sm text-[#8899BB] mt-1">
+                    <p className="font-semibold text-[#0c3649] capitalize">{d}</p>
+                    <p className="text-sm text-[#6b7280] mt-1">
                       {d === 'light' && '~15 pages'}{d === 'standard' && '~50 pages'}{d === 'deep' && '~150+ pages'}
                     </p>
                   </button>
@@ -155,15 +155,15 @@ export default function WizardQueryPage() {
               {regionOptions.map(region => (
                 <button key={region} onClick={() => toggleRegion(region)} className={clsx(
                   'p-3 rounded-lg border-2 transition-all text-left',
-                  regions.includes(region) ? 'border-teal-600 bg-teal-600 bg-opacity-10' : 'border-[#2A3A55] hover:border-[#3A4A65]'
+                  regions.includes(region) ? 'border-teal-600 bg-teal-50' : 'border-[#e5e7eb] hover:border-teal-200'
                 )}>
-                  <p className="text-sm font-medium text-[#E8EDF5]">{region}</p>
+                  <p className="text-sm font-medium text-[#0c3649]">{region}</p>
                 </button>
               ))}
               {regions.filter(r => !regionOptions.includes(r)).map(customRegion => (
                 <button key={customRegion} onClick={() => toggleRegion(customRegion)}
-                  className="p-3 rounded-lg border-2 transition-all text-left border-teal-600 bg-teal-600 bg-opacity-10">
-                  <p className="text-sm font-medium text-[#E8EDF5] flex justify-between">
+                  className="p-3 rounded-lg border-2 transition-all text-left border-teal-600 bg-teal-50">
+                  <p className="text-sm font-medium text-[#0c3649] flex justify-between">
                     <span>{customRegion}</span><span className="opacity-60 ml-2">✕</span>
                   </p>
                 </button>
@@ -174,9 +174,9 @@ export default function WizardQueryPage() {
                 type="text"
                 placeholder="Or enter a specific country..."
                 value={customCountry}
-                onChange={e => setCustomCountry(e.target.value)}
+                onChange={setCustomCountry ? e => setCustomCountry(e.target.value) : undefined}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddCustomCountry(); } }}
-                className="flex-1 px-4 py-2 bg-[#0A1628] border border-[#2A3A55] rounded-lg text-[#E8EDF5] placeholder-[#8899BB] focus:border-teal-600 focus:ring-2 focus:ring-teal-600 focus:ring-opacity-20 transition-all"
+                className="flex-1 px-4 py-2 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg text-[#0c3649] placeholder-[#9ca3af] focus:border-teal-600 focus:ring-2 focus:ring-teal-600 focus:ring-opacity-20 transition-all"
               />
               <Button variant="ghost" type="button" onClick={handleAddCustomCountry}>Add</Button>
             </div>
@@ -194,18 +194,18 @@ export default function WizardQueryPage() {
               {showAdvanced && (
                 <div className="mt-6 space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-[#E8EDF5] mb-2">Competitor Count: {competitorCount}</label>
+                    <label className="block text-sm font-medium text-[#0c3649] mb-2">Competitor Count: {competitorCount}</label>
                     <input type="range" min="5" max="20" value={competitorCount} onChange={e => setCompetitorCount(parseInt(e.target.value))}
-                      className="w-full h-2 bg-[#2A3A55] rounded-lg appearance-none cursor-pointer accent-teal-600" />
-                    <p className="text-xs text-[#8899BB] mt-1">More competitors = deeper analysis</p>
+                      className="w-full h-2 bg-[#e5e7eb] rounded-lg appearance-none cursor-pointer accent-teal-600" />
+                    <p className="text-xs text-[#6b7280] mt-1">More competitors = deeper analysis</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-[#E8EDF5] mb-3">Forecast Period</label>
+                    <label className="block text-sm font-medium text-[#0c3649] mb-3">Forecast Period</label>
                     <div className="flex gap-3">
                       {[5, 7, 10].map(years => (
                         <button key={years} onClick={() => setForecastYears(years)} className={clsx(
                           'px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium',
-                          forecastYears === years ? 'border-teal-600 bg-teal-600 bg-opacity-10 text-teal-400' : 'border-[#2A3A55] text-[#8899BB] hover:border-[#3A4A65]'
+                          forecastYears === years ? 'border-teal-600 bg-teal-50 text-teal-600' : 'border-[#e5e7eb] text-[#6b7280] hover:border-teal-200'
                         )}>
                           {years} years
                         </button>
@@ -223,9 +223,9 @@ export default function WizardQueryPage() {
       <Card variant="highlighted">
         <div className="flex items-end justify-between">
           <div>
-            <p className="text-sm text-[#8899BB]">Estimated Cost</p>
+            <p className="text-sm text-[#6b7280]">Estimated Cost</p>
             <p className="text-3xl font-bold mt-1" style={{ color: accent }}>{currentCost} credits</p>
-            <p className="text-xs text-[#8899BB] mt-2">Costs may vary based on complexity</p>
+            <p className="text-xs text-[#6b7280] mt-2">Costs may vary based on complexity</p>
           </div>
         </div>
       </Card>
