@@ -121,22 +121,33 @@ export default function ReportPage() {
     </div>
   );
 
-  const scopeSection = report.sections.find((s: any) => s.id === 'intro');
-  const otherSections = report.sections.filter((s: any) => s.id !== 'intro' && s.id !== 'appendix');
-  const appendixSection = report.sections.find((s: any) => s.id === 'appendix');
+  const isTrends = (report as any).reportType === 'trends_report';
 
-  const visibleSections = [
-    ...(scopeSection ? [scopeSection] : []),
-    ...otherSections,
-    ...(appendixSection ? [appendixSection] : [])
-  ];
+  let scopeSection: any, otherSections: any[], appendixSection: any, visibleSections: any[], tabs: string[];
 
-  const tabs = [
-    ...(scopeSection ? [scopeSection.title] : []),
-    'Executive Summary',
-    ...otherSections.map((s: any) => s.title),
-    ...(appendixSection ? [appendixSection.title] : [])
-  ];
+  if (isTrends) {
+    const trendsSection = report.sections.find((s: any) => s.id === 'dynamics');
+    if (trendsSection) trendsSection.title = 'Trend Report';
+    visibleSections = trendsSection ? [trendsSection] : [];
+    tabs = ['Trend Report'];
+  } else {
+    scopeSection = report.sections.find((s: any) => s.id === 'intro');
+    otherSections = report.sections.filter((s: any) => s.id !== 'intro' && s.id !== 'appendix');
+    appendixSection = report.sections.find((s: any) => s.id === 'appendix');
+
+    visibleSections = [
+      ...(scopeSection ? [scopeSection] : []),
+      ...otherSections,
+      ...(appendixSection ? [appendixSection] : [])
+    ];
+
+    tabs = [
+      ...(scopeSection ? [scopeSection.title] : []),
+      'Executive Summary',
+      ...otherSections.map((s: any) => s.title),
+      ...(appendixSection ? [appendixSection.title] : [])
+    ];
+  }
 
   return (
     // Full-bleed: break out of layout's 32px padding
@@ -211,8 +222,8 @@ export default function ReportPage() {
       {/* ── Section content ───────────────────────────────────────── */}
       <div style={{ padding: '32px', maxWidth: 1100, margin: '0 auto', width: '100%' }}>
 
-        {/* EXECUTIVE SUMMARY (Now at index 1) */}
-        {activeSection === 1 && (
+        {/* EXECUTIVE SUMMARY (Now at index 1 for standard industry report, Hidden for trends_report) */}
+        {!isTrends && activeSection === (scopeSection ? 1 : 0) && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Headline */}
             <Card>
@@ -273,9 +284,18 @@ export default function ReportPage() {
 
         {/* REGULAR SECTIONS (With index shift handling) */}
         {visibleSections.map((section: any, idx: number) => {
-          // idx 0 -> tabs[0] -> activeSection 0
-          // idx >= 1 -> tabs[idx+1] -> activeSection idx+1
-          const targetIndex = idx === 0 ? 0 : idx + 1;
+          let targetIndex;
+          if (isTrends) {
+            targetIndex = idx; // Direct mapping for Trends
+          } else {
+            // idx 0 -> tabs[0] -> activeSection 0
+            // idx >= 1 -> tabs[idx+1] -> activeSection idx+1
+            targetIndex = idx === 0 ? 0 : idx + 1;
+            // Adjust if scopeSection doesn't exist
+            if (!scopeSection) {
+              targetIndex = idx + 1; // Since idx 0 of visibleSections is otherSections[0], which sits after ExSumm
+            }
+          }
 
           return activeSection === targetIndex && (
             <div key={section.id} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
