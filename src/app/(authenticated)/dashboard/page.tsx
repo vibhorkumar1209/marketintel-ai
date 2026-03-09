@@ -69,7 +69,7 @@ export default function DashboardPage() {
         <div style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', top: -60, right: 120 }} />
         <div style={{ position: 'absolute', width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', bottom: -40, right: 40 }} />
         <div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.45)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 6 }}>Market Intelligence</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.45)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 6 }}>Industry Intelligence</p>
           <h1 style={{ fontSize: 26, fontWeight: 900, color: '#fff', marginBottom: 4 }}>Dashboard</h1>
           <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)' }}>
             {credits !== null && credits < 50 ? '⚠️ Low credit balance — consider topping up' : 'Your reports and market data, in one place'}

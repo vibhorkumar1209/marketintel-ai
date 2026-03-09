@@ -6,9 +6,12 @@ import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Spinner from '@/components/ui/Spinner';
+import { clsx } from 'clsx';
+
+type ReportType = 'industry_report' | 'datapack' | 'trends_report';
 
 interface WizardState {
-  reportType: 'industry_report' | 'datapack';
+  reportType: ReportType;
   query: string;
   depth: 'light' | 'standard' | 'deep';
   regions: string[];
@@ -17,9 +20,21 @@ interface WizardState {
 }
 
 const creditCosts = {
-  light: { industry_report: 30, datapack: 15 },
-  standard: { industry_report: 50, datapack: 30 },
-  deep: { industry_report: 100, datapack: 60 },
+  light: { industry_report: 30, datapack: 15, trends_report: 20 },
+  standard: { industry_report: 50, datapack: 30, trends_report: 35 },
+  deep: { industry_report: 100, datapack: 60, trends_report: 70 },
+};
+
+const PRODUCT_META: Record<ReportType, { label: string; badge: string; badgeVariant: 'teal' | 'amber' | 'navy'; accent: string; generateLabel: string }> = {
+  industry_report: { label: 'Industry Report', badge: '9 sections', badgeVariant: 'teal', accent: '#3491E8', generateLabel: 'Generate Report →' },
+  trends_report: { label: 'Trends Report', badge: '6 modules', badgeVariant: 'navy', accent: '#a855f7', generateLabel: 'Run Analysis →' },
+  datapack: { label: 'Market Datapack', badge: '10 sheets', badgeVariant: 'amber', accent: '#00BDA8', generateLabel: 'Generate Datapack →' },
+};
+
+const STEP_HEADING: Record<ReportType, { heading: string; subtitle: string }> = {
+  industry_report: { heading: 'Review & Generate', subtitle: 'Confirm your Industry Report configuration before generating' },
+  trends_report: { heading: 'Review & Run Analysis', subtitle: 'Confirm your Trends Report scope before running the analysis' },
+  datapack: { heading: 'Review & Build Datapack', subtitle: 'Confirm your datapack scope before generating the Excel file' },
 };
 
 export default function WizardConfirmPage() {
@@ -33,37 +48,21 @@ export default function WizardConfirmPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Get wizard state
         const wizardState = sessionStorage.getItem('wizardState');
-        if (!wizardState) {
-          router.push('/wizard');
-          return;
-        }
+        if (!wizardState) { router.push('/wizard'); return; }
         setState(JSON.parse(wizardState));
-
-        // Get credits
         const res = await fetch('/api/credits');
-        if (res.ok) {
-          const data = await res.json();
-          setCredits(data.balance);
-        }
+        if (res.ok) setCredits((await res.json()).balance);
       } catch (err) {
-        setError('Failed to load data');
-        console.error(err);
-      } finally {
-        setIsLoading(false);
-      }
+        setError('Failed to load data'); console.error(err);
+      } finally { setIsLoading(false); }
     };
-
     fetchData();
   }, [router]);
 
   const handleGenerate = async () => {
     if (!state) return;
-
-    setIsGenerating(true);
-    setError('');
-
+    setIsGenerating(true); setError('');
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
@@ -71,20 +70,14 @@ export default function WizardConfirmPage() {
         body: JSON.stringify({
           reportType: state.reportType,
           query: state.query,
-          config: {
-            depth: state.depth,
-            regions: state.regions,
-            competitorCount: state.competitorCount,
-            forecastYears: state.forecastYears,
-          },
+          config: { depth: state.depth, regions: state.regions, competitorCount: state.competitorCount, forecastYears: state.forecastYears },
         }),
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        setError(error.message || 'Failed to start generation');
-        setIsGenerating(false);
-        return;
+        const err = await res.json();
+        setError(err.message || 'Failed to start generation');
+        setIsGenerating(false); return;
       }
 
       const data = await res.json();
@@ -92,67 +85,50 @@ export default function WizardConfirmPage() {
       router.push(`/generate/${data.jobId}`);
     } catch (err) {
       setError('An error occurred. Please try again.');
-      setIsGenerating(false);
-      console.error(err);
+      setIsGenerating(false); console.error(err);
     }
   };
 
   const handleTopUp = async () => {
     try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId: 'starter' }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        window.location.href = data.url;
-      }
-    } catch (err) {
-      setError('Failed to redirect to checkout');
-    }
+      const res = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ planId: 'starter' }) });
+      if (res.ok) { const data = await res.json(); window.location.href = data.url; }
+    } catch { setError('Failed to redirect to checkout'); }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center space-y-4">
-          <Spinner size="lg" />
-          <p className="text-[#8899BB]">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-center space-y-4"><Spinner size="lg" /><p className="text-[#8899BB]">Loading...</p></div>
+    </div>
+  );
 
   if (!state) return null;
 
-  const cost = creditCosts[state.depth][state.reportType];
+  const meta = PRODUCT_META[state.reportType] || PRODUCT_META.industry_report;
+  const step = STEP_HEADING[state.reportType] || STEP_HEADING.industry_report;
+  const cost = (creditCosts[state.depth] as Record<string, number>)[state.reportType] ?? 35;
   const hasEnoughCredits = credits !== null && credits >= cost;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
+
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[#E8EDF5] mb-2">Review & Generate</h1>
-        <p className="text-[#8899BB]">Confirm your report configuration before generating</p>
+        <p style={{ fontSize: 11, fontWeight: 700, color: meta.accent, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
+          Step 3 of 3
+        </p>
+        <h1 style={{ fontSize: 26, fontWeight: 900, color: '#0c3649', marginBottom: 6 }}>{step.heading}</h1>
+        <p style={{ fontSize: 14, color: '#6b7280' }}>{step.subtitle}</p>
       </div>
 
-      {/* Progress Bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center text-sm font-semibold">
-            ✓
-          </div>
-          <div className="flex-1 h-1 bg-teal-600" />
-          <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center text-sm font-semibold">
-            ✓
-          </div>
-          <div className="flex-1 h-1 bg-teal-600" />
-          <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center text-sm font-semibold">
-            3
-          </div>
-        </div>
+      {/* Progress */}
+      <div className="flex items-center gap-4 flex-1">
+        {[1, 2, 3].map((s, i) => (
+          <React.Fragment key={s}>
+            <div className="w-8 h-8 rounded-full text-white flex items-center justify-center text-sm font-semibold" style={{ background: meta.accent }}>✓</div>
+            {i < 2 && <div className="flex-1 h-1 rounded" style={{ background: meta.accent }} />}
+          </React.Fragment>
+        ))}
       </div>
 
       {error && (
@@ -167,14 +143,8 @@ export default function WizardConfirmPage() {
           <div className="pb-6 border-b border-[#2A3A55]">
             <p className="text-sm text-[#8899BB] mb-2">Report Type</p>
             <div className="flex items-center gap-2">
-              <p className="text-lg font-semibold text-[#E8EDF5]">
-                {state.reportType === 'industry_report'
-                  ? 'Industry Report'
-                  : 'Market Datapack'}
-              </p>
-              <Badge variant={state.reportType === 'industry_report' ? 'teal' : 'amber'}>
-                {state.reportType === 'industry_report' ? '15 sections' : '10 sheets'}
-              </Badge>
+              <p className="text-lg font-semibold text-[#E8EDF5]">{meta.label}</p>
+              <Badge variant={meta.badgeVariant}>{meta.badge}</Badge>
             </div>
           </div>
 
@@ -188,83 +158,54 @@ export default function WizardConfirmPage() {
               <p className="text-sm text-[#8899BB] mb-2">Research Depth</p>
               <p className="text-lg font-semibold text-[#E8EDF5] capitalize">{state.depth}</p>
             </div>
-
             <div>
               <p className="text-sm text-[#8899BB] mb-2">Geographic Focus</p>
               <div className="space-y-1">
-                {state.regions.map((region) => (
-                  <p key={region} className="text-sm text-[#E8EDF5]">
-                    {region}
-                  </p>
+                {state.regions.map(region => (
+                  <p key={region} className="text-sm text-[#E8EDF5]">{region}</p>
                 ))}
               </div>
             </div>
-
             <div>
               <p className="text-sm text-[#8899BB] mb-2">Configuration</p>
-              <p className="text-sm text-[#E8EDF5]">
-                {state.competitorCount} competitors
-              </p>
-              <p className="text-sm text-[#E8EDF5]">
-                {state.forecastYears}-year forecast
-              </p>
+              <p className="text-sm text-[#E8EDF5]">{state.competitorCount} competitors</p>
+              <p className="text-sm text-[#E8EDF5]">{state.forecastYears}-year forecast</p>
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Credits Section */}
+      {/* Credits */}
       <Card variant={hasEnoughCredits ? 'default' : 'highlighted'}>
         <div className="flex items-end justify-between">
           <div>
             <p className="text-sm text-[#8899BB] mb-1">Current Balance</p>
-            <p className="text-2xl font-bold text-teal-600">
+            <p className="text-2xl font-bold" style={{ color: meta.accent }}>
               {credits !== null ? `${credits}` : '...'} credits
             </p>
             <p className="text-sm text-[#8899BB] mt-2">
-              Cost for this report: <span className="text-teal-400 font-semibold">{cost} credits</span>
+              Cost for this {meta.label.toLowerCase()}: <span className="font-semibold" style={{ color: meta.accent }}>{cost} credits</span>
             </p>
           </div>
           <div className="text-right">
-            <p className={clsx(
-              'text-xl font-bold',
-              hasEnoughCredits ? 'text-green-400' : 'text-amber-400'
-            )}>
-              {hasEnoughCredits
-                ? `✓ ${(credits ?? 0) - cost} remaining`
-                : `Need ${cost - (credits ?? 0)} more`}
+            <p className={clsx('text-xl font-bold', hasEnoughCredits ? 'text-green-400' : 'text-amber-400')}>
+              {hasEnoughCredits ? `✓ ${(credits ?? 0) - cost} remaining` : `Need ${cost - (credits ?? 0)} more`}
             </p>
           </div>
         </div>
       </Card>
 
-      {/* Action Buttons */}
+      {/* Buttons */}
       <div className="flex gap-4 justify-end">
-        <Button variant="ghost" href="/wizard/query" size="lg">
-          Back
-        </Button>
+        <Button variant="ghost" href="/wizard/query" size="lg">Back</Button>
         {hasEnoughCredits ? (
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={handleGenerate}
-            loading={isGenerating}
-            disabled={isGenerating}
-          >
-            Generate Report →
+          <Button variant="primary" size="lg" onClick={handleGenerate} loading={isGenerating} disabled={isGenerating}>
+            {meta.generateLabel}
           </Button>
         ) : (
-          <Button
-            variant="primary"
-            size="lg"
-            onClick={handleTopUp}
-          >
-            Top Up Credits →
-          </Button>
+          <Button variant="primary" size="lg" onClick={handleTopUp}>Top Up Credits →</Button>
         )}
       </div>
     </div>
   );
 }
-
-import { clsx } from 'clsx';
