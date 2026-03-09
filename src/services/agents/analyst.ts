@@ -206,7 +206,7 @@ ${enrichmentBundle && enrichmentBundle.enrichment_data.length > 0 ? `ENRICHMENT 
 ${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 4), null, 2)}` : ''}
 
 === LOCALIZED PARALLEL.AI SEARCH RESULTS EXACTLY FOR THIS SECTION ===
-${formattedSectionSources || 'No local parallel.ai results gathered.'}
+${formattedSectionSources.slice(0, 15000) || 'No local parallel.ai results gathered.'}
 ====================================================================
 
 OUTPUT the complete section JSON:`;
@@ -237,7 +237,7 @@ OUTPUT the complete section JSON:`;
     section_id: sectionId,
     section_title: sectionDef.title,
     word_count_target: wordTarget,
-    body_paragraphs: [text.slice(0, 2000) || 'Section generation incomplete'],
+    body_paragraphs: [text.slice(0, 4000) || 'Section generation incomplete'],
     key_table: null,
     chart_spec: null,
     citations: [],
