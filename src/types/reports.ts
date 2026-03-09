@@ -34,6 +34,12 @@ export interface ReportMetadata {
   sources: number;
   depth: string;
   geography: string;
+  executiveSummary?: {
+    headline: string;
+    kpiPanel: Array<{ label: string; value: string }>;
+    paragraphs: string[];
+    scenarios: { bull: string; base: string; bear: string };
+  };
 }
 
 export interface IndustryReport {

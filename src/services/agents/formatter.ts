@@ -56,6 +56,12 @@ export async function formatIndustryReport(
       sources: countUniqueSources(sections),
       depth: scope.depth_level,
       geography: scope.geography,
+      executiveSummary: {
+        headline: executiveSummary.market_headline,
+        kpiPanel: (executiveSummary.kpi_panel || []).map(k => ({ label: k.label, value: k.value })),
+        paragraphs: executiveSummary.body_paragraphs,
+        scenarios: executiveSummary.scenario_outlook,
+      }
     },
   };
 }

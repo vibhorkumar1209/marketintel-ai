@@ -24,7 +24,7 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
   const sections = (report.sections as unknown[]) || [];
 
   // Build executiveSummary from stored metadata/sizing since it's not a separate DB field
-  const executiveSummary = {
+  const executiveSummary = (metadata as any).executiveSummary || {
     headline: `${report.title} — ${String(metadata.geography || 'Global')} Market Analysis`,
     kpiPanel: [
       { label: 'Market Size', value: `${sizingResult.value || 'N/A'} ${sizingResult.unit || 'USD Million'}`, source_section: 'sizing_workings' },
