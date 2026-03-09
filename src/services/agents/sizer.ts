@@ -71,7 +71,7 @@ GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 5) ?? [])}
 SCOPE: ${scope.industry} | ${scope.product_scope} | ${scope.geography} | ${scope.base_year}–${scope.forecast_end_year}`;
 
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5',
+    model: 'claude-3-haiku-20240307',
     max_tokens: 3000,
     temperature: 0,
     system: systemPrompt,
