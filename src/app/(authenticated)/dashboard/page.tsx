@@ -200,62 +200,57 @@ export default function DashboardPage() {
         <p style={{ fontSize: 11, fontWeight: 700, color: C.blue, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 14 }}>
           Workspace Actions
         </p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-          {[
-            {
-              href: '/wizard',
-              icon: Ico.report,
-              iconBg: `linear-gradient(135deg, ${C.blue}22 0%, ${C.blue}10 100%)`,
-              iconColor: C.blue,
-              title: 'New Industry Report',
-              desc: '9-section deep research report with market sizing, competitive intelligence & 3-scenario forecast',
-              cta: 'Start Report',
-              accentColor: C.blue,
-            },
-            {
-              href: '/wizard?type=datapack',
-              icon: Ico.grid,
-              iconBg: `linear-gradient(135deg, ${C.teal}22 0%, ${C.teal}10 100%)`,
-              iconColor: C.teal,
-              title: 'New Market Datapack',
-              desc: 'Structured Excel datapack with historical data, segment breakdowns & CAGR projections',
-              cta: 'Start Datapack',
-              accentColor: C.teal,
-            },
-          ].map((a, i) => (
-            <Link key={i} href={a.href} style={{ textDecoration: 'none' }}>
-              <div style={{
-                background: C.white, border: `1px solid ${C.border}`,
-                borderRadius: 14, padding: '24px 28px',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                transition: 'box-shadow 150ms ease, border-color 150ms ease',
-                cursor: 'pointer',
-              }}
-                onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${a.accentColor}20`;
-                  (e.currentTarget as HTMLElement).style.borderColor = `${a.accentColor}50`;
-                }}
-                onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)';
-                  (e.currentTarget as HTMLElement).style.borderColor = C.border;
-                }}
-              >
-                <div style={{
-                  width: 48, height: 48, borderRadius: 12,
-                  background: a.iconBg, color: a.iconColor,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: 16,
-                }}>
-                  {a.icon}
-                </div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 6 }}>{a.title}</h3>
-                <p style={{ fontSize: 13, color: C.sub, lineHeight: 1.65, marginBottom: 18 }}>{a.desc}</p>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: a.accentColor }}>
-                  {a.cta} {Ico.arrow}
-                </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, alignItems: 'stretch' }}>
+
+          {/* Industry Report — primary */}
+          <Link href="/wizard" style={{ textDecoration: 'none' }}>
+            <div style={{
+              background: C.white, border: `1px solid ${C.border}`,
+              borderRadius: 14, padding: '24px 28px', height: '100%',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+              transition: 'box-shadow 150ms ease, border-color 150ms ease',
+              cursor: 'pointer', display: 'flex', flexDirection: 'column',
+            }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${C.blue}20`; (e.currentTarget as HTMLElement).style.borderColor = `${C.blue}50`; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = C.border; }}
+            >
+              <div style={{ width: 48, height: 48, borderRadius: 12, background: `${C.blue}15`, color: C.blue, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>{Ico.report}</div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 6 }}>New Industry Report</h3>
+              <p style={{ fontSize: 13, color: C.sub, lineHeight: 1.65, marginBottom: 18, flex: 1 }}>
+                9-section deep research — market sizing, competitive intelligence, 3-scenario forecast, TEI driver table & full citations
+              </p>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: C.blue }}>
+                Start Report {Ico.arrow}
               </div>
-            </Link>
-          ))}
+            </div>
+          </Link>
+
+          {/* Market Datapack — download only */}
+          <Link href="/wizard?type=datapack" style={{ textDecoration: 'none' }}>
+            <div style={{
+              background: `linear-gradient(135deg, #f0fdf9 0%, #e6fff9 100%)`,
+              border: `1px solid ${C.teal}35`, borderRadius: 14, padding: '24px 28px', height: '100%',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+              transition: 'box-shadow 150ms ease, border-color 150ms ease',
+              cursor: 'pointer', display: 'flex', flexDirection: 'column',
+            }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${C.teal}20`; (e.currentTarget as HTMLElement).style.borderColor = `${C.teal}60`; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = `${C.teal}35`; }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 10, background: `${C.teal}18`, color: C.teal, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{Ico.grid}</div>
+                <span style={{ fontSize: 10, fontWeight: 700, background: `${C.teal}18`, color: C.teal, border: `1px solid ${C.teal}40`, borderRadius: 20, padding: '3px 10px', letterSpacing: '1px' }}>XLSX ONLY</span>
+              </div>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: C.navy, marginBottom: 6 }}>Market Datapack</h3>
+              <p style={{ fontSize: 12, color: C.sub, lineHeight: 1.65, marginBottom: 16, flex: 1 }}>
+                TAM time-series (5yr historical + base + forecast), segment breakdowns by type / geography / application, 3-scenario CAGR & competitive share table
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ color: C.teal }}>{Ico.download}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.teal }}>Download as XLSX</span>
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
 
