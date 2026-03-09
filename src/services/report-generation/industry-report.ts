@@ -160,6 +160,12 @@ export async function runIndustryReportPipeline(
     const job = await db.job.findUnique({ where: { id: jobId } });
     if (job) await refundCredits(userId, job.estimatedCredits);
 
+    // Note: If Vercel forces a shutdown at 300s, this won't be hit, but normal errors will be
+    await db.job.update({
+      where: { id: jobId },
+      data: { status: 'failed', errorMessage: errorMsg },
+    });
+
     throw err;
   }
 }

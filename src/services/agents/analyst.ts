@@ -251,7 +251,7 @@ export async function draftSectionsParallel(
   onSectionComplete?: (sectionId: string, draft: SectionDraft) => void
 ): Promise<SectionDraft[]> {
   const results: SectionDraft[] = [];
-  const CONCURRENCY = 4; // limit to 4 simultaneous Anthropic connections to avoid 300s Vercel timeout
+  const CONCURRENCY = 10; // Maximized concurrency to draft all sections instantly and defeat the 300s Vercel hard timeout
 
   for (let i = 0; i < sectionIds.length; i += CONCURRENCY) {
     const batch = sectionIds.slice(i, i + CONCURRENCY);

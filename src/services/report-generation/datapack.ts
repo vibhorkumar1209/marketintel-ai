@@ -136,6 +136,11 @@ export async function runDatapackPipeline(
     const job = await db.job.findUnique({ where: { id: jobId } });
     if (job) await refundCredits(userId, job.estimatedCredits);
 
+    await db.job.update({
+      where: { id: jobId },
+      data: { status: 'failed', errorMessage: errorMsg },
+    });
+
     throw err;
   }
 }
