@@ -4,62 +4,71 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Spinner from '@/components/ui/Spinner';
 
-// ── SVG icon components ──────────────────────────────────────────────────────
+// ── Tokens ────────────────────────────────────────────────────────────────────
+const C = {
+  navy: '#0c3649',
+  teal: '#00BDA8',
+  blue: '#3491E8',
+  red: '#E63946',
+  amber: '#f59e0b',
+  green: '#16a34a',
+  bg: '#f1f5f9',
+  white: '#ffffff',
+  border: '#e2e8f0',
+  text: '#0f172a',
+  sub: '#475569',
+  muted: '#94a3b8',
+};
 
-const IconReport = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" y1="13" x2="8" y2="13" />
-    <line x1="16" y1="17" x2="8" y2="17" />
-    <polyline points="10 9 9 9 8 9" />
-  </svg>
-);
+// ── SVG Icons ─────────────────────────────────────────────────────────────────
+const Ico = {
+  credit: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  ),
+  report: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
+    </svg>
+  ),
+  grid: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M3 9h18M3 15h18M9 3v18" />
+    </svg>
+  ),
+  clock: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  view: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
+    </svg>
+  ),
+  download: (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+      <polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
+    </svg>
+  ),
+  plus: (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  ),
+  arrow: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
+    </svg>
+  ),
+};
 
-const IconDatapack = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <path d="M3 9h18M3 15h18M9 3v18" />
-  </svg>
-);
-
-const IconView = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
-
-const IconDownload = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-);
-
-const IconCredit = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-    <line x1="1" y1="10" x2="23" y2="10" />
-  </svg>
-);
-
-const IconPlus = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-  </svg>
-);
-
-const IconArrow = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="5" y1="12" x2="19" y2="12" />
-    <polyline points="12 5 19 12 12 19" />
-  </svg>
-);
-
-// ── Types ────────────────────────────────────────────────────────────────────
-
+// ── Types ─────────────────────────────────────────────────────────────────────
 interface Job {
   id: string;
   title: string;
@@ -69,24 +78,20 @@ interface Job {
   reportId?: string;
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-const STATUS_CONFIG: Record<string, { label: string; bg: string; color: string; dot: string }> = {
-  completed: { label: 'Completed', bg: '#f0fdf4', color: '#16a34a', dot: '#16a34a' },
-  processing: { label: 'Processing', bg: '#eff6ff', color: '#3491E8', dot: '#3491E8' },
-  failed: { label: 'Failed', bg: '#fff5f5', color: '#E63946', dot: '#E63946' },
-  pending: { label: 'Pending', bg: '#f9fafb', color: '#6b7280', dot: '#d1d5db' },
+const STATUS: Record<string, { label: string; color: string; dot: string; bg: string }> = {
+  completed: { label: 'Completed', color: C.green, dot: C.green, bg: '#f0fdf4' },
+  processing: { label: 'Processing', color: C.blue, dot: C.blue, bg: '#eff6ff' },
+  failed: { label: 'Failed', color: C.red, dot: C.red, bg: '#fff5f5' },
+  pending: { label: 'Pending', color: C.muted, dot: C.muted, bg: '#f8fafc' },
 };
 
-const formatDate = (dateStr: string) =>
-  new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const fmt = (d: string) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-// ── Component ────────────────────────────────────────────────────────────────
-
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [credits, setCredits] = useState<number | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -96,118 +101,157 @@ export default function DashboardPage() {
         if (cRes.ok) setCredits((await cRes.json()).balance);
         setJobs((jRes.ok ? (await jRes.json()).jobs : null) || []);
       } catch { setError('Failed to load dashboard data'); }
-      finally { setIsLoading(false); }
+      finally { setLoading(false); }
     })();
   }, []);
 
-  if (isLoading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
-        <div style={{ textAlign: 'center' }}>
-          <Spinner size="lg" />
-          <p style={{ color: '#6b7280', marginTop: 12, fontSize: 14 }}>Loading dashboard...</p>
-        </div>
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
+      <div style={{ textAlign: 'center' }}>
+        <Spinner size="lg" />
+        <p style={{ color: C.muted, marginTop: 12, fontSize: 14 }}>Loading...</p>
       </div>
-    );
-  }
+    </div>
+  );
 
-  const completedCount = jobs.filter(j => j.status === 'completed').length;
-  const processingCount = jobs.filter(j => j.status === 'processing').length;
+  const completed = jobs.filter(j => j.status === 'completed').length;
+  const processing = jobs.filter(j => j.status === 'processing').length;
+
+  const kpis = [
+    { label: 'Available Credits', value: credits !== null ? String(credits) : '—', color: C.blue, icon: Ico.credit, gradient: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)' },
+    { label: 'Completed Reports', value: String(completed), color: C.green, icon: Ico.report, gradient: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' },
+    { label: 'In Progress', value: String(processing), color: C.amber, icon: Ico.clock, gradient: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' },
+    { label: 'Total Reports', value: String(jobs.length), color: C.navy, icon: Ico.grid, gradient: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)' },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
 
-      {/* ── Page header ── */}
-      <div>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0c3649', marginBottom: 4 }}>Dashboard</h1>
-        <p style={{ fontSize: 14, color: '#6b7280' }}>Welcome back — your market intelligence workspace</p>
+      {/* ── Hero header ─────────────────────────────────────────────────────── */}
+      <div style={{
+        background: `linear-gradient(120deg, ${C.navy} 0%, #1a4a6b 100%)`,
+        borderRadius: 16, padding: '32px 36px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: 20,
+        boxShadow: '0 4px 24px rgba(12,54,73,0.18)',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Decorative circles */}
+        <div style={{ position: 'absolute', width: 200, height: 200, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', top: -60, right: 120, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', bottom: -40, right: 40, pointerEvents: 'none' }} />
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 6 }}>
+            Market Intelligence
+          </p>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 6 }}>Dashboard</h1>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>
+            {credits !== null && credits < 50
+              ? '⚠️ Low credit balance — consider topping up'
+              : 'Your reports and market data, in one place'}
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 10, flexShrink: 0 }}>
+          <Link href="/wizard" style={{ textDecoration: 'none' }}>
+            <button style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '11px 22px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+              background: C.red, color: '#fff', border: 'none', cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(230,57,70,0.35)',
+            }}>
+              {Ico.plus} New Report
+            </button>
+          </Link>
+          <Link href="/billing" style={{ textDecoration: 'none' }}>
+            <button style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              padding: '11px 22px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+              background: 'rgba(255,255,255,0.12)', color: '#fff',
+              border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+            }}>
+              {Ico.credit} Top Up Credits
+            </button>
+          </Link>
+        </div>
       </div>
 
       {error && (
-        <div style={{ background: '#fff5f5', border: '1px solid #fecaca', borderRadius: 8, padding: '12px 16px', color: '#dc2626', fontSize: 13 }}>
-          {error}
-        </div>
+        <div style={{ background: '#fff5f5', border: '1px solid #fecaca', borderRadius: 10, padding: '12px 16px', color: C.red, fontSize: 13 }}>{error}</div>
       )}
 
-      {/* ── KPI strip ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
-        {[
-          { label: 'Available Credits', value: credits !== null ? String(credits) : '—', accent: '#3491E8', icon: <IconCredit /> },
-          { label: 'Reports Completed', value: String(completedCount), accent: '#16a34a', icon: <IconReport /> },
-          { label: 'In Progress', value: String(processingCount), accent: '#f59e0b', icon: <IconDatapack /> },
-          { label: 'Total Reports', value: String(jobs.length), accent: '#0c3649', icon: <IconReport /> },
-        ].map((kpi, i) => (
+      {/* ── KPI strip ───────────────────────────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        {kpis.map((k, i) => (
           <div key={i} style={{
-            background: '#fff', border: '1px solid #e5e7eb',
-            borderTop: `3px solid ${kpi.accent}`,
-            borderRadius: 10, padding: '16px 20px',
+            background: k.gradient, border: `1px solid ${C.border}`,
+            borderRadius: 14, padding: '20px 24px',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, color: '#9ca3af', letterSpacing: '1.5px', textTransform: 'uppercase' }}>{kpi.label}</p>
-              <span style={{ color: kpi.accent, opacity: 0.7 }}>{kpi.icon}</span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: C.sub, letterSpacing: '1.5px', textTransform: 'uppercase' }}>{k.label}</p>
+              <span style={{ color: k.color, opacity: 0.8 }}>{k.icon}</span>
             </div>
-            <p style={{ fontSize: 26, fontWeight: 900, color: kpi.accent, fontFamily: 'DM Mono, monospace' }}>{kpi.value}</p>
+            <p style={{ fontSize: 32, fontWeight: 900, color: k.color, fontFamily: 'DM Mono, monospace', lineHeight: 1 }}>{k.value}</p>
           </div>
         ))}
       </div>
 
-      {/* ── Quick Actions ── */}
+      {/* ── Actions ─────────────────────────────────────────────────────────── */}
       <div>
-        <h2 style={{ fontWeight: 700, color: '#3491E8', letterSpacing: '1px', marginBottom: 16, textTransform: 'uppercase', fontSize: 11 }}>
+        <p style={{ fontSize: 11, fontWeight: 700, color: C.blue, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 14 }}>
           Workspace Actions
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {[
             {
               href: '/wizard',
-              icon: <IconReport />,
-              accent: '#3491E8',
+              icon: Ico.report,
+              iconBg: `linear-gradient(135deg, ${C.blue}22 0%, ${C.blue}10 100%)`,
+              iconColor: C.blue,
               title: 'New Industry Report',
               desc: '9-section deep research report with market sizing, competitive intelligence & 3-scenario forecast',
               cta: 'Start Report',
+              accentColor: C.blue,
             },
             {
               href: '/wizard?type=datapack',
-              icon: <IconDatapack />,
-              accent: '#0c3649',
+              icon: Ico.grid,
+              iconBg: `linear-gradient(135deg, ${C.teal}22 0%, ${C.teal}10 100%)`,
+              iconColor: C.teal,
               title: 'New Market Datapack',
               desc: 'Structured Excel datapack with historical data, segment breakdowns & CAGR projections',
               cta: 'Start Datapack',
+              accentColor: C.teal,
             },
-          ].map((action, i) => (
-            <Link key={i} href={action.href} style={{ textDecoration: 'none' }}>
-              <div
-                style={{
-                  background: '#fff', border: '1px solid #e5e7eb',
-                  borderRadius: 12, padding: 24,
-                  transition: 'border-color 150ms ease, box-shadow 150ms ease',
-                  cursor: 'pointer',
-                }}
+          ].map((a, i) => (
+            <Link key={i} href={a.href} style={{ textDecoration: 'none' }}>
+              <div style={{
+                background: C.white, border: `1px solid ${C.border}`,
+                borderRadius: 14, padding: '24px 28px',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+                transition: 'box-shadow 150ms ease, border-color 150ms ease',
+                cursor: 'pointer',
+              }}
                 onMouseEnter={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = action.accent;
-                  (e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 3px ${action.accent}18`;
+                  (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${a.accentColor}20`;
+                  (e.currentTarget as HTMLElement).style.borderColor = `${a.accentColor}50`;
                 }}
                 onMouseLeave={e => {
-                  (e.currentTarget as HTMLElement).style.borderColor = '#e5e7eb';
-                  (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                  (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)';
+                  (e.currentTarget as HTMLElement).style.borderColor = C.border;
                 }}
               >
                 <div style={{
-                  width: 44, height: 44, borderRadius: 10,
-                  background: `${action.accent}12`,
-                  color: action.accent,
+                  width: 48, height: 48, borderRadius: 12,
+                  background: a.iconBg, color: a.iconColor,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: 14,
+                  marginBottom: 16,
                 }}>
-                  {action.icon}
+                  {a.icon}
                 </div>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#0c3649', marginBottom: 6 }}>{action.title}</h3>
-                <p style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.6, marginBottom: 16 }}>{action.desc}</p>
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  fontSize: 13, fontWeight: 700, color: action.accent,
-                }}>
-                  {action.cta} <IconArrow />
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 6 }}>{a.title}</h3>
+                <p style={{ fontSize: 13, color: C.sub, lineHeight: 1.65, marginBottom: 18 }}>{a.desc}</p>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 700, color: a.accentColor }}>
+                  {a.cta} {Ico.arrow}
                 </div>
               </div>
             </Link>
@@ -215,112 +259,133 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Report History ── */}
+      {/* ── Report history ──────────────────────────────────────────────────── */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <h2 style={{ fontSize: 11, fontWeight: 700, color: '#3491E8', letterSpacing: '1.5px', textTransform: 'uppercase' }}>
-            Report History
-          </h2>
-          <span style={{ fontSize: 12, color: '#9ca3af' }}>{jobs.length} total</span>
+          <p style={{ fontSize: 11, fontWeight: 700, color: C.blue, letterSpacing: '2px', textTransform: 'uppercase' }}>Report History</p>
+          <span style={{
+            fontSize: 11, fontWeight: 700, background: '#eff6ff', color: C.blue,
+            border: `1px solid #bfdbfe`, borderRadius: 20, padding: '3px 12px',
+          }}>
+            {jobs.length} total
+          </span>
         </div>
 
         {jobs.length === 0 ? (
           <div style={{
-            background: '#fff', border: '1px dashed #d1d5db', borderRadius: 12,
-            padding: '48px 24px', textAlign: 'center',
+            background: C.white, border: `1.5px dashed ${C.border}`,
+            borderRadius: 14, padding: '56px 24px', textAlign: 'center',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
           }}>
-            <div style={{ width: 48, height: 48, background: '#f3f4f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#9ca3af' }}>
-              <IconReport />
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%',
+              background: '#f1f5f9', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', margin: '0 auto 16px', color: C.muted,
+            }}>
+              {Ico.report}
             </div>
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#374151', marginBottom: 6 }}>No reports yet</p>
-            <p style={{ fontSize: 13, color: '#9ca3af', marginBottom: 20 }}>Generate your first market intelligence report to get started</p>
+            <p style={{ fontSize: 16, fontWeight: 700, color: C.text, marginBottom: 6 }}>No reports yet</p>
+            <p style={{ fontSize: 14, color: C.muted, marginBottom: 24 }}>
+              Generate your first market intelligence report to get started
+            </p>
             <Link href="/wizard" style={{ textDecoration: 'none' }}>
               <button style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                padding: '10px 20px', borderRadius: 8,
-                background: '#E63946', color: '#fff',
-                border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 700,
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '11px 22px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+                background: C.red, color: '#fff', border: 'none', cursor: 'pointer',
               }}>
-                <IconPlus /> Create Report
+                {Ico.plus} Create Your First Report
               </button>
             </Link>
           </div>
         ) : (
-          <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{
+            background: C.white, border: `1px solid ${C.border}`,
+            borderRadius: 14, overflow: 'hidden',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+          }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
+                <tr style={{ background: '#f8fafc', borderBottom: `1px solid ${C.border}` }}>
                   {['Report Title', 'Type', 'Status', 'Created', 'Actions'].map(h => (
                     <th key={h} style={{
-                      padding: '11px 18px', textAlign: 'left',
-                      fontSize: 10, fontWeight: 700, color: '#3491E8',
-                      textTransform: 'uppercase', letterSpacing: '1px',
+                      padding: '12px 20px', textAlign: 'left',
+                      fontSize: 10, fontWeight: 700, color: C.blue,
+                      textTransform: 'uppercase', letterSpacing: '1.2px',
                     }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {jobs.slice(0, 12).map((job, rowIdx) => {
-                  const st = STATUS_CONFIG[job.status] || STATUS_CONFIG.pending;
+                {jobs.slice(0, 15).map((job, ri) => {
+                  const st = STATUS[job.status] || STATUS.pending;
                   return (
-                    <tr key={job.id} style={{
-                      borderBottom: rowIdx < jobs.length - 1 ? '1px solid #f3f4f6' : 'none',
-                      background: rowIdx % 2 === 0 ? '#fff' : '#fafafa',
-                    }}>
-                      <td style={{ padding: '13px 18px', maxWidth: 320 }}>
-                        <span style={{ fontWeight: 600, color: '#0c3649', display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <tr
+                      key={job.id}
+                      style={{ borderBottom: ri < jobs.length - 1 ? `1px solid #f1f5f9` : 'none' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#fafcff'}
+                      onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                    >
+                      <td style={{ padding: '14px 20px', maxWidth: 340 }}>
+                        <span style={{
+                          fontWeight: 600, color: C.text,
+                          display: 'block', overflow: 'hidden',
+                          textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
                           {job.title || 'Untitled Report'}
                         </span>
                       </td>
-                      <td style={{ padding: '13px 18px' }}>
+                      <td style={{ padding: '14px 20px' }}>
                         <span style={{
-                          fontSize: 11, fontWeight: 700, borderRadius: 4, padding: '3px 8px',
+                          fontSize: 11, fontWeight: 700,
                           background: job.type === 'industry_report' ? '#eff6ff' : '#f0fdf4',
-                          color: job.type === 'industry_report' ? '#3491E8' : '#16a34a',
-                          border: `1px solid ${job.type === 'industry_report' ? '#bfdbfe' : '#bbf7d0'}`,
+                          color: job.type === 'industry_report' ? C.blue : C.teal,
+                          border: `1px solid ${job.type === 'industry_report' ? '#bfdbfe' : '#6ee7b7'}`,
+                          borderRadius: 20, padding: '3px 10px',
                         }}>
                           {job.type === 'industry_report' ? 'Report' : 'Datapack'}
                         </span>
                       </td>
-                      <td style={{ padding: '13px 18px' }}>
+                      <td style={{ padding: '14px 20px' }}>
                         <span style={{
-                          display: 'inline-flex', alignItems: 'center', gap: 5,
-                          fontSize: 11, fontWeight: 700, borderRadius: 4, padding: '3px 8px',
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
+                          fontSize: 11, fontWeight: 700,
                           background: st.bg, color: st.color,
+                          borderRadius: 20, padding: '3px 10px',
                         }}>
                           <span style={{ width: 6, height: 6, borderRadius: '50%', background: st.dot, flexShrink: 0 }} />
                           {st.label}
                         </span>
                       </td>
-                      <td style={{ padding: '13px 18px', color: '#9ca3af', whiteSpace: 'nowrap' }}>
-                        {formatDate(job.createdAt)}
+                      <td style={{ padding: '14px 20px', color: C.muted, whiteSpace: 'nowrap', fontSize: 12 }}>
+                        {fmt(job.createdAt)}
                       </td>
-                      <td style={{ padding: '13px 18px' }}>
+                      <td style={{ padding: '14px 20px' }}>
                         {job.status === 'completed' && job.reportId ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                             <Link href={`/report/${job.reportId}`} style={{
                               display: 'inline-flex', alignItems: 'center', gap: 5,
-                              fontSize: 12, fontWeight: 700, color: '#3491E8', textDecoration: 'none',
+                              fontSize: 12, fontWeight: 700, color: C.blue, textDecoration: 'none',
                             }}>
-                              <IconView /> View
+                              {Ico.view} View
                             </Link>
                             <a href={`/api/report/${job.reportId}/download/pdf`} target="_blank" rel="noopener noreferrer" style={{
                               display: 'inline-flex', alignItems: 'center', gap: 5,
-                              fontSize: 12, fontWeight: 700, color: '#6b7280', textDecoration: 'none',
+                              fontSize: 12, fontWeight: 600, color: C.sub, textDecoration: 'none',
                             }}>
-                              <IconDownload /> PDF
+                              {Ico.download} PDF
                             </a>
                             <a href={`/api/report/${job.reportId}/download/xlsx`} style={{
                               display: 'inline-flex', alignItems: 'center', gap: 5,
-                              fontSize: 12, fontWeight: 700, color: '#6b7280', textDecoration: 'none',
+                              fontSize: 12, fontWeight: 600, color: C.sub, textDecoration: 'none',
                             }}>
-                              <IconDownload /> Excel
+                              {Ico.download} Excel
                             </a>
                           </div>
                         ) : job.status === 'processing' ? (
                           <Spinner size="sm" />
                         ) : (
-                          <span style={{ color: '#d1d5db', fontSize: 12 }}>—</span>
+                          <span style={{ color: C.muted, fontSize: 12 }}>—</span>
                         )}
                       </td>
                     </tr>
@@ -331,7 +396,6 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-
     </div>
   );
 }
