@@ -224,7 +224,7 @@ ${formattedSectionSources.slice(0, 15000) || 'No local parallel.ai results gathe
 OUTPUT the complete section JSON:`;
 
   const response = await client.messages.create({
-    model: useHighQualityModel ? 'claude-3-sonnet-20240229' : 'claude-3-haiku-20240307',
+    model: useHighQualityModel ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001',
     max_tokens: 8000,
     temperature: 0.3,
     system: systemPrompt,
@@ -321,7 +321,7 @@ ${JSON.stringify(sizingJSON, null, 2)}
 Output the JSON:`;
 
   const response = await client.messages.create({
-    model: 'claude-3-sonnet-20240229',
+    model: 'claude-sonnet-4-6',
     max_tokens: 4000,
     temperature: 0.3,
     system: systemPrompt,
@@ -387,7 +387,7 @@ export function buildAppendixSection(sections: SectionDraft[], scope: ScopeJSON)
 
 export async function generateReportTitle(scope: ScopeJSON): Promise<string> {
   const response = await client.messages.create({
-    model: 'claude-3-haiku-20240307',
+    model: 'claude-haiku-4-5-20251001',
     max_tokens: 100,
     temperature: 0.3,
     messages: [{
