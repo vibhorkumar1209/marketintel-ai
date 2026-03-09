@@ -14,6 +14,12 @@ export interface ReportSection {
     yAxis?: string;
     dataSource: string;
   };
+  subsections?: Array<{
+    title: string;
+    content: string[];
+    keyTable?: { title: string; headers: string[]; rows: string[][] };
+    chartSpec?: { type: string; title: string; xAxis?: string; yAxis?: string; dataSource: string };
+  }>;
   citations: Array<{ claim: string; source: string; tier: string; date: string }>;
   flags: string[];
 }

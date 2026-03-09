@@ -347,28 +347,28 @@ export default function ReportPage() {
                     <div key={subi} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                       <h3 style={{ fontSize: 18, fontWeight: 700, color: T.text, borderBottom: `1px solid ${T.cardBorder}`, paddingBottom: 8 }}>{sub.title}</h3>
 
-                      {sub.body_paragraphs && sub.body_paragraphs.length > 0 && (
+                      {sub.content && sub.content.length > 0 && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                          {sub.body_paragraphs.map((p: string, pii: number) => (
+                          {sub.content.map((p: string, pii: number) => (
                             <p key={pii} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{p}</p>
                           ))}
                         </div>
                       )}
 
-                      {sub.key_table && (
+                      {sub.keyTable && (
                         <div style={{ background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: 'hidden' }}>
                           <div style={{ background: '#0a1624', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: `1px solid ${T.cardBorder}` }}>
                             <span style={{ color: T.teal }}><IconTable /></span>
                             <h3 style={{ fontSize: 12, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                              {sub.key_table.title || 'Data Table'}
+                              {sub.keyTable.title || 'Data Table'}
                             </h3>
                           </div>
                           <div style={{ overflowX: 'auto' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                              {sub.key_table.headers && (
+                              {sub.keyTable.headers && (
                                 <thead>
                                   <tr style={{ background: '#0a1624' }}>
-                                    {sub.key_table.headers.map((h: string, hi: number) => (
+                                    {sub.keyTable.headers.map((h: string, hi: number) => (
                                       <th key={hi} style={{
                                         padding: '10px 16px', textAlign: 'left',
                                         fontSize: 10, fontWeight: 700, color: T.teal,
@@ -380,7 +380,7 @@ export default function ReportPage() {
                                 </thead>
                               )}
                               <tbody>
-                                {(sub.key_table.rows || []).map((row: any[], ri: number) => (
+                                {(sub.keyTable.rows || []).map((row: any[], ri: number) => (
                                   <tr key={ri} style={{ borderBottom: `1px solid ${T.cardBorder}`, background: ri % 2 === 0 ? T.card : T.cardSurface }}>
                                     {(Array.isArray(row) ? row : Object.values(row)).map((cell: any, ci: number) => (
                                       <td key={ci} style={{
@@ -400,18 +400,18 @@ export default function ReportPage() {
                         </div>
                       )}
 
-                      {sub.chart_spec && (
+                      {sub.chartSpec && (
                         <Card>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                             <span style={{ color: T.teal }}><IconChart /></span>
                             <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text }}>
-                              {sub.chart_spec.title || 'Market Chart'}
+                              {sub.chartSpec.title || 'Market Chart'}
                             </h3>
                           </div>
                           <p style={{ fontSize: 11, color: T.muted, marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                            {sub.chart_spec.type || 'stacked_column'} chart
+                            {sub.chartSpec.type || 'stacked_column'} chart
                           </p>
-                          <ReportChart chartSpec={sub.chart_spec} sizing={(report as any).sizing} tableData={sub.key_table} />
+                          <ReportChart chartSpec={sub.chartSpec} sizing={(report as any).sizing} tableData={sub.keyTable} />
                         </Card>
                       )}
                     </div>
@@ -419,37 +419,7 @@ export default function ReportPage() {
                 </div>
               )}
 
-              {/* Citations */}
-              {section.citations && section.citations.length > 0 && (
-                <div style={{ background: T.cardSurface, border: `1px solid ${T.cardBorder}`, borderRadius: 12, padding: 20 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                    <span style={{ color: T.muted }}><IconSource /></span>
-                    <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, letterSpacing: '2px', textTransform: 'uppercase' }}>Sources</p>
-                  </div>
-                  <ul style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    {section.citations.map((cit: any, ci: number) => (
-                      <li key={ci} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
-                        <span style={{
-                          fontSize: 10, fontWeight: 700,
-                          background: `${T.teal}18`, color: T.teal,
-                          border: `1px solid ${T.teal}33`,
-                          borderRadius: 4, padding: '3px 8px', flexShrink: 0, marginTop: 1,
-                        }}>
-                          {String(cit.tier || 'N/A')}
-                        </span>
-                        <div>
-                          <span style={{ fontSize: 13, color: T.text }}>
-                            &ldquo;{String(cit.claim || '')}&rdquo;
-                          </span>
-                          <span style={{ fontSize: 11, color: T.muted, marginLeft: 8 }}>
-                            {String(cit.source || '')} ({String(cit.date || 'N/A')})
-                          </span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+
             </div>
           )
         )}

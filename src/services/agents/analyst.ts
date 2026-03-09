@@ -33,7 +33,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 4
   dynamics: {
     title: 'Market Trends, Drivers & Barriers',
-    desc: 'Three sub-sections: (4A) Trends — cover macroeconomic, demand-side, supply-side, commercial/pricing, regulatory, technology trends; each must have a named company or quantified event example. (4B) Growth Drivers TEI table — min 6 rows: # | Driver | Scenario Type | Est. Market Impact | Impact (H/M/L) | Affected Segments | Risk Horizon | Strategic Implication. (4C) Barriers TEI table — min 5 rows, same format + Mitigation Signal column + Barrier Type (Cost|Regulatory|Competitive|Structural|Cyclical).',
+    desc: 'You must output EXACTLY 3 subsections named: "Trends", "Drivers", and "Barriers". Each subsection must contain EXACTLY 2 introductory lines, a highly detailed table, and a relevant chart. Inside each table, you MUST include rows analyzing the following dimensions: Supply, Demand, Technology, Commercial, Pricing, Regulatory, and Others.',
     tone: 'Evidence-anchored. Every driver and barrier must cite a real named company, regulation, or quantified market signal. No generic statements.',
   },
   // Section 5
@@ -116,7 +116,7 @@ CORE RULES (NON-NEGOTIABLE):
    T5: Research Aggregators (sanity check only — NOT primary)
    T6: Media / Press (only when no other source available)
    BANNED as primary: Grand View Research, Mordor Intelligence, IMARC, Transparency Market Research.
-5. TWO-LINE INTRO + TABLE + CHART — For every section or subsection, begin with EXACTLY two lines (sentences) of introduction, followed immediately by a dedicated table and its associated graph/chart.
+5. TWO-LINE INTRO + TABLE + CHART — For every section or subsection, begin with EXACTLY two lines (sentences) of introduction, followed immediately by a dedicated, detailed table and its associated relevant graph/chart. You MUST generate charts for every non-subsection section too!
 6. SOURCE NAMING RESTRICTION — DO NOT include or mention any sources or citations in the body text or tables of any section or subsection. All sources must ONLY be placed in the citations array without any name-dropping in the text or tables.
 7. VOLUME AND VALUE — all market size figures must include USD value AND physical volume where applicable.
 8. TONE: ${sectionTone}
@@ -125,7 +125,7 @@ CORE RULES (NON-NEGOTIABLE):
 ${['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
 SPECIAL SUBSECTION REQUIREMENT: 
 This section requires granular dimensions. You MUST output a "subsections" array instead of a single top-level table/chart. 
-- If Dynamics (Trends, Drivers, Barriers): create detailed subsections for Supply, Demand, Technology, Regulatory, Pricing, and Commercial. Each subsection must have exactly 2 lines of intro, a table with its detailed examples/impacts, and a chart (preferably a stacked column chart for current/historical or forecast years).
+- If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the highly detailed table MUST encompass rows for Supply, Demand, Technology, Commercial, Pricing, Regulatory, and Others dimensions. Each subsection must have exactly 2 lines of intro, its highly detailed table, and a relevant chart (e.g., stacked column).
 - If Competitive: create an individual subsection for each major company detailing its current operations, with its own table and chart.
 - If Segmentation / Regional: create subsections for each major segment/region, each with its own 2-line intro, table, and chart.
 
@@ -154,8 +154,8 @@ OUTPUT FORMAT:
   "section_title": "string",
   "word_count_target": number,
   "body_paragraphs": ["Exactly 2 sentences introducing the section."],
-  "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] } or null,
-  "chart_spec": { "type": "line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" } or null,
+  "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] },
+  "chart_spec": { "type": "line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" },
   "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
   "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
 }`}

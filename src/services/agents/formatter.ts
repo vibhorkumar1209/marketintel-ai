@@ -23,6 +23,12 @@ export async function formatIndustryReport(
     chartSpec: s.chart_spec
       ? { type: s.chart_spec.type, title: s.chart_spec.title, xAxis: s.chart_spec.x_axis, yAxis: s.chart_spec.y_axis, dataSource: s.chart_spec.data_source }
       : undefined,
+    subsections: s.subsections?.map(sub => ({
+      title: sub.title,
+      content: sub.body_paragraphs,
+      keyTable: sub.key_table ? { title: sub.key_table.title, headers: sub.key_table.headers, rows: sub.key_table.rows } : undefined,
+      chartSpec: sub.chart_spec ? { type: sub.chart_spec.type, title: sub.chart_spec.title, xAxis: sub.chart_spec.x_axis, yAxis: sub.chart_spec.y_axis, dataSource: sub.chart_spec.data_source } : undefined,
+    })),
     citations: s.citations,
     flags: s.section_flags,
   }));
