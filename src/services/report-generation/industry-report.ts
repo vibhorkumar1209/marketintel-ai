@@ -21,14 +21,14 @@ export async function runIndustryReportPipeline(
   const SECTION_IDS = reportType === 'trends_report' ? [
     'dynamics'
   ] : [
-    'intro',            // Section 1 — Scope of Study
-    'sizing_workings',  // Section 2 — Market Size Estimation
-    'segmentation',     // Section 3 — Market Segmentation
-    'dynamics',         // Section 4 — Trends, Drivers & Barriers
-    'regulatory',       // Section 5 — Regulatory Overview
-    'tech_developments',// Section 6 — Technology Trends
-    'competitive',      // Section 7 — Competitive Analysis
-    'opportunities',    // Section 8 — Market Forecast (3 Scenarios)
+    'intro',            // Section 1 — Market Report Scope
+    'sizing_workings',  // Section 2 — Market Size
+    'segmentation',     // Section 3 — Market Size by Segment
+    'dynamics',         // Section 4 — Trends
+    'tech_developments',// Section 5 — Tech Tends
+    'regulatory',       // Section 6 — Regulatory Overview
+    'competitive',      // Section 7 — Competition Analysis
+    'opportunities',    // Section 8 — Market Forecast
   ];
 
   const stream = new StreamHandler(jobId);

@@ -45,7 +45,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   },
   // Section 6
   tech_developments: {
-    title: 'Tech Trends',
+    title: 'Tech Tends',
     desc: 'Top 5–8 tech trends. You MUST output a highly detailed table using these EXACT headers: ["Name of Tech Trend", "Impact", "Description", "Examples (news/events)"]. Ensure each trend (AI, Automation, Patents, etc.) includes specific company examples and news events in the Examples column.',
     tone: 'Forward-looking. Named examples required for every trend. No generic technology commentary.',
   },
