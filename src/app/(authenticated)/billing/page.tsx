@@ -133,17 +133,17 @@ export default function BillingPage() {
         <Card variant="highlighted">
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <p className="text-sm text-[#8899BB] mb-2">Current Balance</p>
+              <p className="text-sm text-[#64748b] mb-2">Current Balance</p>
               <p className="text-4xl font-bold text-teal-600">
                 {creditsData.balance}
               </p>
-              <p className="text-xs text-[#8899BB] mt-2">credits available</p>
+              <p className="text-xs text-[#64748b] mt-2">credits available</p>
             </div>
 
             {creditsData.subscription && (
               <>
                 <div>
-                  <p className="text-sm text-[#8899BB] mb-2">Current Plan</p>
+                  <p className="text-sm text-[#64748b] mb-2">Current Plan</p>
                   <p className="text-2xl font-bold text-[#0c3649] capitalize">
                     {creditsData.subscription.plan}
                   </p>
@@ -154,7 +154,7 @@ export default function BillingPage() {
 
                 {creditsData.subscription.renewalDate && (
                   <div>
-                    <p className="text-sm text-[#8899BB] mb-2">Renewal Date</p>
+                    <p className="text-sm text-[#64748b] mb-2">Renewal Date</p>
                     <p className="text-2xl font-bold text-[#0c3649]">
                       {new Date(creditsData.subscription.renewalDate).toLocaleDateString()}
                     </p>
@@ -172,14 +172,14 @@ export default function BillingPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-[#2A3A55]">
-                  <th className="text-left px-4 py-3 font-semibold text-[#8899BB]">
+                <tr className="border-b border-[#e5e7eb]">
+                  <th className="text-left px-4 py-3 font-semibold text-[#64748b]">
                     Description
                   </th>
-                  <th className="text-right px-4 py-3 font-semibold text-[#8899BB]">
+                  <th className="text-right px-4 py-3 font-semibold text-[#64748b]">
                     Credits Used
                   </th>
-                  <th className="text-right px-4 py-3 font-semibold text-[#8899BB]">
+                  <th className="text-right px-4 py-3 font-semibold text-[#64748b]">
                     Date
                   </th>
                 </tr>
@@ -188,15 +188,15 @@ export default function BillingPage() {
                 {usage.slice(0, 10).map((item) => (
                   <tr
                     key={item.id}
-                    className="border-b border-[#2A3A55] hover:bg-[#111827]"
+                    className="border-b border-[#e5e7eb] hover:bg-[#f9fafb]"
                   >
-                    <td className="px-4 py-3 text-[#E8EDF5]">
+                    <td className="px-4 py-3 text-[#0c3649]">
                       {item.description}
                     </td>
                     <td className="px-4 py-3 text-right text-teal-400 font-semibold">
                       -{item.creditsUsed}
                     </td>
-                    <td className="px-4 py-3 text-right text-[#8899BB]">
+                    <td className="px-4 py-3 text-right text-[#64748b]">
                       {new Date(item.createdAt).toLocaleDateString()}
                     </td>
                   </tr>
@@ -223,9 +223,9 @@ export default function BillingPage() {
                   <div className="mt-3 space-y-1">
                     <div>
                       <span className="text-4xl font-bold text-teal-600">${plan.price}</span>
-                      <span className="text-[#8899BB] ml-2">{plan.period}</span>
+                      <span className="text-teal-600 ml-2">{plan.period}</span>
                     </div>
-                    <p className="text-[#8899BB] text-sm">
+                    <p className="text-[#64748b] text-sm">
                       {typeof plan.credits === 'number'
                         ? `${plan.credits.toLocaleString()} credits`
                         : 'Unlimited credits'}
@@ -237,7 +237,7 @@ export default function BillingPage() {
                   {plan.features.map((feature, idx) => (
                     <li
                       key={idx}
-                      className="flex items-start gap-2 text-[#E8EDF5] text-sm"
+                      className="flex items-start gap-2 text-[#0c3649] text-sm"
                     >
                       <span className="text-teal-500 mt-0.5">✓</span>
                       {feature}
@@ -262,40 +262,40 @@ export default function BillingPage() {
       <Card title="Frequently Asked Questions">
         <div className="space-y-6">
           <div>
-            <h4 className="font-semibold text-[#E8EDF5] mb-2">
+            <h4 className="font-semibold text-[#0c3649] mb-2">
               How are credits calculated?
             </h4>
-            <p className="text-[#8899BB] text-sm">
+            <p className="text-[#64748b] text-sm">
               Industry reports cost 30-100 credits depending on depth level. Market
               datapacks cost 15-60 credits. Actual costs may vary based on complexity.
             </p>
           </div>
 
-          <div className="border-t border-[#2A3A55] pt-6">
-            <h4 className="font-semibold text-[#E8EDF5] mb-2">
+          <div className="border-t border-[#e5e7eb] pt-6">
+            <h4 className="font-semibold text-[#0c3649] mb-2">
               Can I use credits from different purchases?
             </h4>
-            <p className="text-[#8899BB] text-sm">
+            <p className="text-[#64748b] text-sm">
               Yes, all credits are pooled into your account balance. You can use them
               in any order, and they don't expire as long as your account is active.
             </p>
           </div>
 
-          <div className="border-t border-[#2A3A55] pt-6">
-            <h4 className="font-semibold text-[#E8EDF5] mb-2">
+          <div className="border-t border-[#e5e7eb] pt-6">
+            <h4 className="font-semibold text-[#0c3649] mb-2">
               What happens when I run out of credits?
             </h4>
-            <p className="text-[#8899BB] text-sm">
+            <p className="text-[#64748b] text-sm">
               You'll be notified and prompted to purchase more credits. Your existing
               reports will remain available for download.
             </p>
           </div>
 
-          <div className="border-t border-[#2A3A55] pt-6">
-            <h4 className="font-semibold text-[#E8EDF5] mb-2">
+          <div className="border-t border-[#e5e7eb] pt-6">
+            <h4 className="font-semibold text-[#0c3649] mb-2">
               Can I cancel my subscription?
             </h4>
-            <p className="text-[#8899BB] text-sm">
+            <p className="text-[#64748b] text-sm">
               Yes, you can cancel anytime. No refunds are issued for partial months,
               but you can use remaining credits indefinitely.
             </p>

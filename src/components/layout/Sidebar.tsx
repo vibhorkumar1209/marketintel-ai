@@ -85,8 +85,8 @@ const Sidebar: React.FC = () => {
         style={{
           width: isCollapsed ? 68 : 220,
           minWidth: isCollapsed ? 68 : 220,
-          background: '#052e16',
-          borderRight: '1px solid #064e3b',
+          background: '#064e3b',
+          borderRight: '1px solid #065f46',
           display: 'flex',
           flexDirection: 'column',
           transition: 'width 250ms ease, min-width 250ms ease',
@@ -129,9 +129,9 @@ const Sidebar: React.FC = () => {
           style={{
             position: 'absolute', top: 16, right: isCollapsed ? -12 : -12,
             width: 24, height: 24, borderRadius: '50%',
-            background: '#052e16', border: '1px solid #064e3b',
+            background: '#064e3b', border: '1px solid #065f46',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#34d399', zIndex: 30,
+            color: '#10b981', zIndex: 30,
             boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
           }}
         >
@@ -189,15 +189,15 @@ const Sidebar: React.FC = () => {
         <div style={{ borderTop: '1px solid #064e3b', padding: '12px' }}>
           {!isCollapsed && credits !== null && (
             <div style={{
-              background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.2)',
+              background: '#f0fdf4', border: '1px solid #dcfce7',
               borderRadius: 8, padding: '8px 12px', marginBottom: 10,
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
               </svg>
-              <span style={{ fontSize: 11, color: '#34d399', fontWeight: 600 }}>CREDITS</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#10b981', fontFamily: 'DM Mono, monospace', marginLeft: 'auto' }}>
+              <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 600 }}>CREDITS</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#16a34a', fontFamily: 'DM Mono, monospace', marginLeft: 'auto' }}>
                 {credits}
               </span>
             </div>
@@ -232,7 +232,7 @@ const Sidebar: React.FC = () => {
       {/* ── Mobile: Top bar + slide-out ── */}
       <div className="md:hidden" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
         <div style={{
-          height: 56, background: '#052e16', borderBottom: '1px solid #064e3b',
+          height: 56, background: '#064e3b', borderBottom: '1px solid #065f46',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -243,14 +243,14 @@ const Sidebar: React.FC = () => {
             }} />
             <span style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>RefractOne</span>
           </div>
-          <button onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', color: '#7eaabf', cursor: 'pointer' }}>
+          <button onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               {mobileOpen ? <path d="M6 18L18 6M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
             </svg>
           </button>
         </div>
         {mobileOpen && (
-          <div style={{ background: '#052e16', borderBottom: '1px solid #064e3b', padding: '8px 0' }}>
+          <div style={{ background: '#064e3b', borderBottom: '1px solid #065f46', padding: '8px 0' }}>
             {NAV_ITEMS.map(item => (
               <Link key={item.label} href={item.href} onClick={() => setMobileOpen(false)}>
                 <div style={{

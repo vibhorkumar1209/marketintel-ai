@@ -10,27 +10,28 @@
   --navy: #0c3649;
   --navy-light: #0e4a62;
   --navy-xlight: #163f56;
-  --navy-border: #1a5270;
+  --navy-border: #e5e7eb;
   --red: #E63946;
   --red-muted: #ff6b75;
   --blue: #3491E8;
   --blue-muted: #6ab8ff;
+  --green-brand: #00BDA8;
   --black: #000000;
 
   /* Text */
-  --text-primary: #E8F0F5;
-  --text-muted: #7eaabf;
+  --text-primary: #0f172a;
+  --text-muted: #64748b;
   --white: #FFFFFF;
 
-  /* Surface (dark terminal aesthetic) */
-  --background: #080f16;
-  --surface: #0f2535;
-  --card: #132d40;
-  --card-border: #1e4a68;
-  --foreground: #E8F0F5;
+  /* Surface (Light Theme) */
+  --background: #f9fafb;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-border: #e5e7eb;
+  --foreground: #0f172a;
 
   /* Legacy compat aliases */
-  --teal: #3491E8;
+  --teal: #00BDA8;
 }
 
 * {

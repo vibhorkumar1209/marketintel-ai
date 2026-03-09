@@ -125,7 +125,7 @@ export default function SettingsPage() {
             helperText="Email cannot be changed at this time"
           />
 
-          <div className="flex gap-3 justify-end pt-4 border-t border-[#2A3A55]">
+          <div className="flex gap-3 justify-end pt-4 border-t border-[#e5e7eb]">
             <Button variant="ghost" href="/dashboard" size="md">
               Cancel
             </Button>
@@ -145,19 +145,19 @@ export default function SettingsPage() {
       {/* Account Information */}
       <Card title="Account Information">
         <div className="space-y-4">
-          <div className="p-4 bg-[#0A1628] border border-[#2A3A55] rounded-lg">
-            <p className="text-sm text-[#8899BB] mb-1">Account Status</p>
-            <p className="text-lg font-semibold text-green-400">✓ Active</p>
+          <div className="p-4 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg">
+            <p className="text-sm text-[#64748b] mb-1">Account Status</p>
+            <p className="text-lg font-semibold text-green-600">✓ Active</p>
           </div>
 
-          <div className="p-4 bg-[#0A1628] border border-[#2A3A55] rounded-lg">
-            <p className="text-sm text-[#8899BB] mb-1">Member Since</p>
+          <div className="p-4 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg">
+            <p className="text-sm text-[#64748b] mb-1">Member Since</p>
             <p className="font-medium text-[#0c3649]">
               {session?.user && 'Recently joined'}
             </p>
           </div>
 
-          <div className="pt-4 border-t border-[#2A3A55]">
+          <div className="pt-4 border-t border-[#e5e7eb]">
             <Button variant="outline" href="/billing" size="md">
               View Billing & Subscription
             </Button>
@@ -168,7 +168,7 @@ export default function SettingsPage() {
       {/* Notification Preferences */}
       <Card title="Notification Preferences">
         <div className="space-y-4">
-          <label className="flex items-start gap-3 p-4 bg-[#0A1628] border border-[#2A3A55] rounded-lg cursor-pointer hover:border-[#3A4A65] transition-colors">
+          <label className="flex items-start gap-3 p-4 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg cursor-pointer hover:border-teal-200 transition-colors">
             <input
               type="checkbox"
               defaultChecked
@@ -176,11 +176,11 @@ export default function SettingsPage() {
             />
             <div>
               <p className="font-medium text-[#0c3649]">Report Completion</p>
-              <p className="text-sm text-[#8899BB]">Get notified when your reports are ready</p>
+              <p className="text-sm text-[#64748b]">Get notified when your reports are ready</p>
             </div>
           </label>
 
-          <label className="flex items-start gap-3 p-4 bg-[#0A1628] border border-[#2A3A55] rounded-lg cursor-pointer hover:border-[#3A4A65] transition-colors">
+          <label className="flex items-start gap-3 p-4 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg cursor-pointer hover:border-teal-200 transition-colors">
             <input
               type="checkbox"
               defaultChecked
@@ -188,18 +188,18 @@ export default function SettingsPage() {
             />
             <div>
               <p className="font-medium text-[#0c3649]">Low Credits Alert</p>
-              <p className="text-sm text-[#8899BB]">Remind me when credits are running low</p>
+              <p className="text-sm text-[#64748b]">Remind me when credits are running low</p>
             </div>
           </label>
 
-          <label className="flex items-start gap-3 p-4 bg-[#0A1628] border border-[#2A3A55] rounded-lg cursor-pointer hover:border-[#3A4A65] transition-colors">
+          <label className="flex items-start gap-3 p-4 bg-[#f9fafb] border border-[#e5e7eb] rounded-lg cursor-pointer hover:border-teal-200 transition-colors">
             <input
               type="checkbox"
               className="w-5 h-5 mt-1 accent-teal-600 cursor-pointer"
             />
             <div>
               <p className="font-medium text-[#0c3649]">Product Updates</p>
-              <p className="text-sm text-[#8899BB]">Learn about new features and improvements</p>
+              <p className="text-sm text-[#64748b]">Learn about new features and improvements</p>
             </div>
           </label>
         </div>
