@@ -34,7 +34,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 4
   dynamics: {
     title: 'Trends',
-    desc: 'You must output EXACTLY 3 subsections named: "Trends", "Drivers", and "Barriers". Each subsection must contain EXACTLY 2 introductory lines, a highly detailed table, and a relevant chart. Inside each table, you MUST include rows analyzing the following dimensions: Supply, Demand, Technology, Commercial, Pricing, Regulatory, and Others.',
+    desc: 'You must output EXACTLY 3 subsections named: "Trends", "Drivers", and "Barriers". Each subsection must contain EXACTLY 2 introductory lines and a highly detailed table. Each table MUST use these EXACT headers: ["Name of Trend/Driver/Barrier", "Impact", "Description", "Examples (news/events)"]. In the Examples column, you MUST cite specific news, company events, or data points from the research.',
     tone: 'Evidence-anchored. Every driver and barrier must cite a real named company, regulation, or quantified market signal. No generic statements.',
   },
   // Section 5
@@ -148,7 +148,7 @@ CORE RULES (NON-NEGOTIABLE):
 ${['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
 SPECIAL SUBSECTION REQUIREMENT: 
 This section requires granular dimensions. You MUST output a "subsections" array instead of a single top-level table/chart. 
-- If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the highly detailed table MUST encompass rows for Supply, Demand, Technology, Commercial, Pricing, Regulatory, and Others dimensions. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
+- If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the table MUST follow these headers: ["Name of Trend/Driver/Barrier", "Impact", "Description", "Examples (news/events)"]. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
 - If Competitive: create an individual subsection for each major company detailing its current operations, with its own table and chart.
 - If Segmentation / Regional: create subsections for each major segment/region, each with its own 2-line intro, table, and MUST use a \`"type": "stacked_column_line"\` chart.
 
