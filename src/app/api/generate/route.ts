@@ -9,7 +9,7 @@ import { z } from 'zod';
 export const maxDuration = 300;
 
 const GenerateSchema = z.object({
-  reportType: z.enum(['industry_report', 'datapack']),
+  reportType: z.enum(['industry_report', 'datapack', 'trends_report']),
   query: z.string().min(10).max(2000),
   config: z.object({
     depth: z.enum(['light', 'standard', 'deep']).default('standard'),

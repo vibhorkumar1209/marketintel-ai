@@ -65,8 +65,8 @@ export async function GET(
         });
         if (updated.count > 0) {
           let pipelineFn: typeof runIndustryReportPipeline | typeof runDatapackPipeline;
-          if (job.reportType === 'industry_report') {
-            pipelineFn = runIndustryReportPipeline;
+          if (job.reportType === 'industry_report' || job.reportType === 'trends_report') {
+            pipelineFn = (jobId: string, userId: string, query: string, config: any) => runIndustryReportPipeline(jobId, userId, query, config, job.reportType);
           } else {
             pipelineFn = runDatapackPipeline;
           }

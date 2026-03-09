@@ -9,26 +9,26 @@ import { refundCredits } from '@/lib/stripe';
 import { cacheReport } from '@/lib/redis';
 import { ReportConfig } from '@/types/agents';
 
-// Full 9-section pipeline — ordered as per master prompt
-const SECTION_IDS = [
-  'intro',            // Section 1 — Scope of Study
-  'sizing_workings',  // Section 2 — Market Size Estimation
-  'segmentation',     // Section 3 — Market Segmentation
-  'dynamics',         // Section 4 — Trends, Drivers & Barriers
-  'regulatory',       // Section 5 — Regulatory Overview
-  'tech_developments',// Section 6 — Technology Trends
-  'competitive',      // Section 7 — Competitive Analysis
-  'opportunities',    // Section 8 — Market Forecast (3 Scenarios)
-  // Section 9 (Executive Summary) is generated last, placed first
-  // Appendix is generated as a final aggregation step
-];
+// Section IDs will be defined dynamically inside the function based on reportType
 
 export async function runIndustryReportPipeline(
   jobId: string,
   userId: string,
   query: string,
-  config: ReportConfig
+  config: ReportConfig,
+  reportType: string = 'industry_report'
 ) {
+  const SECTION_IDS = [
+    'intro',            // Section 1 — Scope of Study
+    'sizing_workings',  // Section 2 — Market Size Estimation
+    ...(reportType === 'industry_report' ? ['segmentation'] : []), // Section 3 — Market Segmentation
+    'dynamics',         // Section 4 — Trends, Drivers & Barriers
+    'regulatory',       // Section 5 — Regulatory Overview
+    'tech_developments',// Section 6 — Technology Trends
+    ...(reportType === 'industry_report' ? ['competitive'] : []),  // Section 7 — Competitive Analysis
+    'opportunities',    // Section 8 — Market Forecast (3 Scenarios)
+  ];
+
   const stream = new StreamHandler(jobId);
 
   try {
@@ -131,7 +131,7 @@ export async function runIndustryReportPipeline(
       data: {
         jobId,
         userId,
-        reportType: 'industry_report',
+        reportType,
         query,
         title: reportTitle,
         sections: formattedReport.sections as object,

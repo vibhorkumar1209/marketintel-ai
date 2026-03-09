@@ -9,6 +9,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 export const CREDIT_COSTS = {
   industry_report: 50,
   datapack: 30,
+  trends_report: 35,
 } as const;
 
 // ─── PLAN DEFINITIONS ─────────────────────────────────────────────────────────
