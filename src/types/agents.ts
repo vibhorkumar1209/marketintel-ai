@@ -97,6 +97,12 @@ export interface SectionDraft {
     rows: string[][];
   } | null;
   chart_spec: ChartSpec | null;
+  subsections?: Array<{
+    title: string;
+    body_paragraphs: string[];
+    key_table: { title: string; headers: string[]; rows: string[][] } | null;
+    chart_spec: ChartSpec | null;
+  }>;
   citations: SectionCitation[];
   section_flags: string[];
 }

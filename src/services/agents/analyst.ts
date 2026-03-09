@@ -116,23 +116,50 @@ CORE RULES (NON-NEGOTIABLE):
    T5: Research Aggregators (sanity check only — NOT primary)
    T6: Media / Press (only when no other source available)
    BANNED as primary: Grand View Research, Mordor Intelligence, IMARC, Transparency Market Research.
-5. TABLES FIRST — wherever 3+ comparable data points exist, use a structured table.
-6. NO SOURCE NAMES IN BODY PARAGRAPHS — citations appear only at the section end in the citations array.
+5. TWO-LINE INTRO + TABLE + CHART — For every section or subsection, begin with EXACTLY two lines (sentences) of introduction, followed immediately by a dedicated table and its associated graph/chart.
+6. SOURCE NAMING RESTRICTION — DO NOT mention any source by name in the body text unless it is highly credible (e.g. Govt Authority, Regional Association, Company filing). Other sources (T4-T6) must only be placed in the citations array without name-dropping.
 7. VOLUME AND VALUE — all market size figures must include USD value AND physical volume where applicable.
 8. TONE: ${sectionTone}
-9. Output structured JSON ONLY — no prose outside the JSON structure.
+9. Output structured JSON ONLY.
+
+${['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
+SPECIAL SUBSECTION REQUIREMENT: 
+This section requires granular dimensions. You MUST output a "subsections" array instead of a single top-level table/chart. 
+- If Dynamics (Trends, Drivers, Barriers): create detailed subsections for Supply, Demand, Technology, Regulatory, Pricing, and Commercial. Each subsection must have exactly 2 lines of intro, a table with its detailed examples/impacts, and a chart (preferably a stacked column chart for current/historical or forecast years).
+- If Competitive: create an individual subsection for each major company detailing its current operations, with its own table and chart.
+- If Segmentation / Regional: create subsections for each major segment/region, each with its own 2-line intro, table, and chart.
 
 OUTPUT FORMAT:
 {
   "section_id": "string",
   "section_title": "string",
   "word_count_target": number,
-  "body_paragraphs": ["2-4 analytical paragraphs — each ≤120 words — insight-driven not descriptive"],
-  "key_table": { "title": "string", "headers": ["Col1","Col2","Col3"], "rows": [["val","val","val"]] } or null,
+  "body_paragraphs": ["Exactly 2 sentences introducing the overall section context."],
+  "key_table": null,
+  "chart_spec": null,
+  "subsections": [
+    {
+      "title": "Subsection Title (e.g. Supply / Company A / Segment)",
+      "body_paragraphs": ["Exactly 2 sentences introducing this subsection."],
+      "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] },
+      "chart_spec": { "type": "stacked_column|bar|pie|line", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" }
+    }
+  ],
+  "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
+  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
+}` : `
+OUTPUT FORMAT:
+{
+  "section_id": "string",
+  "section_title": "string",
+  "word_count_target": number,
+  "body_paragraphs": ["Exactly 2 sentences introducing the section."],
+  "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] } or null,
   "chart_spec": { "type": "line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" } or null,
-  "citations": [{ "claim": "string ≤60 chars", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string or empty" }],
-  "section_flags": ["SOURCING_GAP: description" or "DATA_QUALITY: note" or "METHODOLOGY_NOTE: note"]
-}`;
+  "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
+  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
+}`}
+`;
 
   const userPrompt = `Draft Section: "${sectionDef.title}"
 Section purpose: ${sectionDef.desc}
@@ -333,7 +360,7 @@ export function buildAppendixSection(sections: SectionDraft[], scope: ScopeJSON)
     .map(([t, n]) => `${t}: ${n}`).join(' | ');
 
   const primaryPct = uniqueCitations.length > 0
-    ? Math.round(uniqueCitations.filter(c => ['T1','T2','T3'].includes(c.tier || '')).length / uniqueCitations.length * 100)
+    ? Math.round(uniqueCitations.filter(c => ['T1', 'T2', 'T3'].includes(c.tier || '')).length / uniqueCitations.length * 100)
     : 0;
 
   const tableRows = uniqueCitations.map((c, i) => [
