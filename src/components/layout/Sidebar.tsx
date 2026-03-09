@@ -85,8 +85,8 @@ const Sidebar: React.FC = () => {
         style={{
           width: isCollapsed ? 68 : 220,
           minWidth: isCollapsed ? 68 : 220,
-          background: '#064e3b',
-          borderRight: '1px solid #065f46',
+          background: 'linear-gradient(180deg, #0C3649 0%, #1a4a6b 100%)',
+          borderRight: '1px solid #1a4a6b',
           display: 'flex',
           flexDirection: 'column',
           transition: 'width 250ms ease, min-width 250ms ease',
@@ -108,7 +108,7 @@ const Sidebar: React.FC = () => {
           {/* Triangle logo mark */}
           <div style={{
             width: 30, height: 30, flexShrink: 0,
-            background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+            background: 'linear-gradient(135deg, #3491E8 0%, #E63946 100%)',
             clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
           }} />
           {!isCollapsed && (
@@ -116,7 +116,7 @@ const Sidebar: React.FC = () => {
               <div style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
                 RefractOne
               </div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: '#34d399', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: '#7eaabf', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
                 Industry Report Hub
               </div>
             </div>
@@ -129,9 +129,9 @@ const Sidebar: React.FC = () => {
           style={{
             position: 'absolute', top: 16, right: isCollapsed ? -12 : -12,
             width: 24, height: 24, borderRadius: '50%',
-            background: '#064e3b', border: '1px solid #065f46',
+            background: '#1a4a6b', border: '1px solid rgba(255,255,255,0.15)',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: '#10b981', zIndex: 30,
+            color: '#3491E8', zIndex: 30,
             boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
           }}
         >
@@ -153,9 +153,9 @@ const Sidebar: React.FC = () => {
                   padding: isCollapsed ? '11px 0' : '11px 20px',
                   justifyContent: isCollapsed ? 'center' : 'flex-start',
                   margin: '2px 0',
-                  borderLeft: active ? '3px solid #10b981' : '3px solid transparent',
-                  background: active ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
-                  color: active ? '#ffffff' : '#a7f3d0',
+                  borderLeft: active ? '3px solid #E63946' : '3px solid transparent',
+                  background: active ? 'rgba(230, 57, 70, 0.1)' : 'transparent',
+                  color: active ? '#ffffff' : '#7eaabf',
                   cursor: 'pointer',
                   transition: 'all 150ms ease',
                 }}
@@ -168,7 +168,7 @@ const Sidebar: React.FC = () => {
                   onMouseLeave={e => {
                     if (!active) {
                       (e.currentTarget as HTMLElement).style.background = 'transparent';
-                      (e.currentTarget as HTMLElement).style.color = '#a7f3d0';
+                      (e.currentTarget as HTMLElement).style.color = '#7eaabf';
                     }
                   }}
                   title={isCollapsed ? item.label : ''}
@@ -189,15 +189,15 @@ const Sidebar: React.FC = () => {
         <div style={{ borderTop: '1px solid #064e3b', padding: '12px' }}>
           {!isCollapsed && credits !== null && (
             <div style={{
-              background: '#f0fdf4', border: '1px solid #dcfce7',
+              background: 'rgba(52, 145, 232, 0.1)', border: '1px solid rgba(52, 145, 232, 0.2)',
               borderRadius: 8, padding: '8px 12px', marginBottom: 10,
               display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3491E8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="1" y="4" width="22" height="16" rx="2" /><line x1="1" y1="10" x2="23" y2="10" />
               </svg>
-              <span style={{ fontSize: 11, color: '#16a34a', fontWeight: 600 }}>CREDITS</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#16a34a', fontFamily: 'DM Mono, monospace', marginLeft: 'auto' }}>
+              <span style={{ fontSize: 11, color: '#3491E8', fontWeight: 600 }}>CREDITS</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: '#3491E8', fontFamily: 'DM Mono, monospace', marginLeft: 'auto' }}>
                 {credits}
               </span>
             </div>
@@ -209,7 +209,7 @@ const Sidebar: React.FC = () => {
           }}>
             <div style={{
               width: 32, height: 32, borderRadius: '50%',
-              background: '#10b981', color: '#fff',
+              background: '#3491E8', color: '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontSize: 13, fontWeight: 700, flexShrink: 0,
             }}>
@@ -220,7 +220,7 @@ const Sidebar: React.FC = () => {
                 <div style={{ fontSize: 12, fontWeight: 600, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130 }}>
                   {session?.user?.name || 'User'}
                 </div>
-                <div style={{ fontSize: 10, color: '#34d399', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130 }}>
+                <div style={{ fontSize: 10, color: '#7eaabf', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130 }}>
                   {session?.user?.email || ''}
                 </div>
               </div>
@@ -232,32 +232,32 @@ const Sidebar: React.FC = () => {
       {/* ── Mobile: Top bar + slide-out ── */}
       <div className="md:hidden" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
         <div style={{
-          height: 56, background: '#064e3b', borderBottom: '1px solid #065f46',
+          height: 56, background: 'linear-gradient(90deg, #0C3649 0%, #1a4a6b 100%)', borderBottom: '1px solid #1a4a6b',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <div style={{
               width: 26, height: 26,
-              background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+              background: 'linear-gradient(135deg, #3491E8 0%, #E63946 100%)',
               clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
             }} />
             <span style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>RefractOne</span>
           </div>
-          <button onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer' }}>
+          <button onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', color: '#3491E8', cursor: 'pointer' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               {mobileOpen ? <path d="M6 18L18 6M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
             </svg>
           </button>
         </div>
         {mobileOpen && (
-          <div style={{ background: '#064e3b', borderBottom: '1px solid #065f46', padding: '8px 0' }}>
+          <div style={{ background: 'linear-gradient(180deg, #0C3649 0%, #1a4a6b 100%)', borderBottom: '1px solid #1a4a6b', padding: '8px 0' }}>
             {NAV_ITEMS.map(item => (
               <Link key={item.label} href={item.href} onClick={() => setMobileOpen(false)}>
                 <div style={{
                   display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px',
-                  color: isActive(item.href) ? '#ffffff' : '#a7f3d0',
-                  borderLeft: isActive(item.href) ? '3px solid #10b981' : '3px solid transparent',
-                  background: isActive(item.href) ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                  color: isActive(item.href) ? '#ffffff' : '#7eaabf',
+                  borderLeft: isActive(item.href) ? '3px solid #E63946' : '3px solid transparent',
+                  background: isActive(item.href) ? 'rgba(230, 57, 70, 0.1)' : 'transparent',
                   fontSize: 14, fontWeight: 500,
                 }}>
                   {item.icon}<span>{item.label}</span>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Spinner from '@/components/ui/Spinner';
 
 const C = {
-  navy: '#064e3b', teal: '#00BDA8', blue: '#10b981', red: '#E63946',
+  navy: '#0C3649', teal: '#3491E8', blue: '#3491E8', red: '#E63946',
   amber: '#f59e0b', green: '#16a34a', white: '#ffffff', border: '#e5e7eb',
   text: '#0f172a', sub: '#475569', muted: '#94a3b8',
 };
@@ -50,10 +50,10 @@ export default function DashboardPage() {
   const processing = jobs.filter(j => j.status === 'processing').length;
 
   const kpis = [
-    { label: 'Available Credits', value: credits !== null ? String(credits) : '—', color: C.blue, icon: Ico.credit, gradient: 'linear-gradient(135deg,#f0fdf4,#dcfce7)' },
-    { label: 'Completed Reports', value: String(completed), color: C.green, icon: Ico.report, gradient: 'linear-gradient(135deg,#fcfdf2,#f7fee7)' },
+    { label: 'Available Credits', value: credits !== null ? String(credits) : '—', color: C.blue, icon: Ico.credit, gradient: 'linear-gradient(135deg,#eff6ff,#dbeafe)' },
+    { label: 'Completed Reports', value: String(completed), color: C.green, icon: Ico.report, gradient: 'linear-gradient(135deg,#f0fdf4,#dcfce7)' },
     { label: 'In Progress', value: String(processing), color: C.amber, icon: Ico.clock, gradient: 'linear-gradient(135deg,#fffbeb,#fef3c7)' },
-    { label: 'Total Reports', value: String(jobs.length), color: C.navy, icon: Ico.grid, gradient: 'linear-gradient(135deg,#f8fafc,#f1f5f9)' },
+    { label: 'Total Reports', value: String(jobs.length), color: C.navy, icon: Ico.grid, gradient: 'linear-gradient(135deg,#f8fafc,#e2e8f0)' },
   ];
 
   return (
@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
       {/* Hero banner */}
       <div style={{
-        background: 'linear-gradient(120deg,#064e3b 0%,#065f46 100%)',
+        background: 'linear-gradient(120deg,#0C3649 0%,#1a4a6b 100%)',
         borderRadius: 16, padding: '28px 32px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16,
         boxShadow: '0 4px 24px rgba(12,54,73,0.18)', position: 'relative', overflow: 'hidden',
