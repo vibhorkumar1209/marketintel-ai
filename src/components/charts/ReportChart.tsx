@@ -67,7 +67,7 @@ function buildStackedTimeSeriesData(tableData: any, sizing: SizingData | undefin
 
     let segments: { name: string; size: number; cagr: number }[] = [];
     if (tableData && tableData.rows && tableData.rows.length > 0) {
-        segments = tableData.rows.map((row: any) => {
+        segments = (tableData.rows || []).map((row: any) => {
             const cells = Array.isArray(row) ? row : Object.values(row as object);
             let size = parseFloat(String(cells[1] || '').replace(/[^0-9.]/g, ''));
             let cagr = 5.0;
@@ -277,7 +277,7 @@ export default function ReportChart({ chartSpec, sizing, tableData }: ReportChar
     if (type.includes('pie') || type.includes('donut') || type.includes('share')) {
         let segments: any[] = [];
         if (tableData && tableData.rows && tableData.rows.length > 0) {
-            segments = tableData.rows.map(row => {
+            segments = (tableData.rows || []).map(row => {
                 const cells = Array.isArray(row) ? row : Object.values(row as object);
                 let val = parseFloat(String(cells[1] || '').replace(/[^0-9.]/g, ''));
                 if (isNaN(val) && cells.length > 2) val = parseFloat(String(cells[2] || '').replace(/[^0-9.]/g, ''));
@@ -310,7 +310,7 @@ export default function ReportChart({ chartSpec, sizing, tableData }: ReportChar
     // ── Competitive matrix / bar fallback ──────────────────────────────────────
     let competitorData: any[] = [];
     if (tableData && tableData.rows && tableData.rows.length > 0) {
-        competitorData = tableData.rows.map(row => {
+        competitorData = (tableData.rows || []).map(row => {
             const cells = Array.isArray(row) ? row : Object.values(row as object);
             let val = parseFloat(String(cells[1] || '').replace(/[^0-9.]/g, ''));
             if (isNaN(val) && cells.length > 2) val = parseFloat(String(cells[2] || '').replace(/[^0-9.]/g, ''));
