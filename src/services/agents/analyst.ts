@@ -229,7 +229,7 @@ export async function draftSectionsParallel(
   onSectionComplete?: (sectionId: string, draft: SectionDraft) => void
 ): Promise<SectionDraft[]> {
   const results: SectionDraft[] = [];
-  const CONCURRENCY = 2; // limit to 2 simultaneous Anthropic connections
+  const CONCURRENCY = 4; // limit to 4 simultaneous Anthropic connections to avoid 300s Vercel timeout
 
   for (let i = 0; i < sectionIds.length; i += CONCURRENCY) {
     const batch = sectionIds.slice(i, i + CONCURRENCY);
