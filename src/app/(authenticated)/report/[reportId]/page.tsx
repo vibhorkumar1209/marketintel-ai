@@ -342,7 +342,11 @@ export default function ReportPage() {
                   <p style={{ fontSize: 11, color: T.muted, marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
                     {String((section.chartSpec as { type?: unknown }).type || 'line')} chart
                   </p>
-                  <ReportChart chartSpec={section.chartSpec as any} sizing={(report as any).sizing} />
+                  <ReportChart
+                    chartSpec={section.chartSpec as any}
+                    sizing={(report as any).sizing}
+                    tableData={section.keyTable as any}
+                  />
                 </Card>
               )}
 

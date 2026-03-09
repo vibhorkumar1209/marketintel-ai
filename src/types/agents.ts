@@ -83,6 +83,7 @@ export interface SectionCitation {
   source: string;
   tier: string;
   date: string;
+  url?: string;
 }
 
 export interface SectionDraft {

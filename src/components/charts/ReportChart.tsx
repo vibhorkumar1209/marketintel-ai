@@ -34,6 +34,11 @@ interface SizingData {
 interface ReportChartProps {
     chartSpec: ChartSpec;
     sizing?: SizingData;
+    tableData?: {
+        title?: string;
+        headers?: string[];
+        rows?: any[][];
+    };
 }
 
 // ─── Data generation helpers ───────────────────────────────────────────────────
@@ -103,7 +108,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 // ─── Main component ────────────────────────────────────────────────────────────
 
-export default function ReportChart({ chartSpec, sizing }: ReportChartProps) {
+export default function ReportChart({ chartSpec, sizing, tableData }: ReportChartProps) {
     const type = chartSpec?.type?.toLowerCase() ?? '';
     const xAxisValues = typeof chartSpec?.xAxis === 'object' && chartSpec?.xAxis !== null && 'values' in chartSpec.xAxis
         ? (chartSpec.xAxis as { values?: (string | number)[] }).values ?? []
@@ -180,12 +185,23 @@ export default function ReportChart({ chartSpec, sizing }: ReportChartProps) {
 
     // ── Pie / market share ─────────────────────────────────────────────────────
     if (type.includes('pie') || type.includes('donut') || type.includes('share')) {
-        const segments = [
-            { name: 'Motorcycles', value: 58 },
-            { name: 'Scooters', value: 28 },
-            { name: 'Mopeds & Other', value: 9 },
-            { name: 'Electric', value: 5 },
-        ];
+        let segments: any[] = [];
+        if (tableData && tableData.rows && tableData.rows.length > 0) {
+            segments = tableData.rows.map(row => {
+                const cells = Array.isArray(row) ? row : Object.values(row as object);
+                let val = parseFloat(String(cells[1] || '').replace(/[^0-9.]/g, ''));
+                if (isNaN(val) && cells.length > 2) val = parseFloat(String(cells[2] || '').replace(/[^0-9.]/g, ''));
+                return { name: String(cells[0] || 'Unknown').substring(0, 12), value: isNaN(val) ? 0 : val };
+            }).filter(s => s.value > 0).slice(0, 8);
+        }
+        if (segments.length === 0) {
+            segments = [
+                { name: 'Motorcycles', value: 58 },
+                { name: 'Scooters', value: 28 },
+                { name: 'Mopeds & Other', value: 9 },
+                { name: 'Electric', value: 5 },
+            ];
+        }
         return (
             <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -202,14 +218,25 @@ export default function ReportChart({ chartSpec, sizing }: ReportChartProps) {
     }
 
     // ── Competitive matrix / bar fallback ──────────────────────────────────────
-    const competitorData = [
-        { name: 'Honda', share: 28, ev: 15 },
-        { name: 'Yamaha', share: 22, ev: 20 },
-        { name: 'Kawasaki', share: 18, ev: 8 },
-        { name: 'Suzuki', share: 14, ev: 10 },
-        { name: 'KTM', share: 10, ev: 5 },
-        { name: 'Others', share: 8, ev: 2 },
-    ];
+    let competitorData: any[] = [];
+    if (tableData && tableData.rows && tableData.rows.length > 0) {
+        competitorData = tableData.rows.map(row => {
+            const cells = Array.isArray(row) ? row : Object.values(row as object);
+            let val = parseFloat(String(cells[1] || '').replace(/[^0-9.]/g, ''));
+            if (isNaN(val) && cells.length > 2) val = parseFloat(String(cells[2] || '').replace(/[^0-9.]/g, ''));
+            return { name: String(cells[0] || 'Unknown').substring(0, 15), share: isNaN(val) ? 0 : val };
+        }).filter(s => s.share > 0).slice(0, 10);
+    }
+    if (competitorData.length === 0) {
+        competitorData = [
+            { name: 'Honda', share: 28 },
+            { name: 'Yamaha', share: 22 },
+            { name: 'Kawasaki', share: 18 },
+            { name: 'Suzuki', share: 14 },
+            { name: 'KTM', share: 10 },
+            { name: 'Others', share: 8 },
+        ];
+    }
     return (
         <ResponsiveContainer width="100%" height={300}>
             <BarChart data={competitorData} margin={{ top: 10, right: 20, left: 0, bottom: 10 }} layout="vertical">
@@ -218,8 +245,7 @@ export default function ReportChart({ chartSpec, sizing }: ReportChartProps) {
                 <YAxis dataKey="name" type="category" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} width={70} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ color: '#8899BB', fontSize: 12 }} />
-                <Bar dataKey="share" name="Market Share %" fill="#00BFA5" radius={[0, 4, 4, 0]} />
-                <Bar dataKey="ev" name="EV Share %" fill="#1565C0" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="share" name="Value" fill="#00BFA5" radius={[0, 4, 4, 0]} />
             </BarChart>
         </ResponsiveContainer>
     );

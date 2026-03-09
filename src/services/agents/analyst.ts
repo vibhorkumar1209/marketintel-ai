@@ -84,6 +84,9 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   },
 };
 
+// High-quality sections that warrant Sonnet instead of Haiku
+const SONNET_SECTIONS = new Set(['sizing_workings', 'competitive', 'dynamics', 'opportunities']);
+
 // ─── STEP 5: DRAFT ONE SECTION ─────────────────────────────────────────────────
 
 export async function draftSection(
@@ -95,6 +98,7 @@ export async function draftSection(
 ): Promise<SectionDraft> {
   const sectionDef = SECTION_DEFINITIONS[sectionId] || { title: sectionId, desc: '' };
   const wordTarget = scope.token_budget_per_section;
+  const useHighQualityModel = SONNET_SECTIONS.has(sectionId);
 
   const sectionTone = sectionDef.tone || 'Analytical and evidence-backed.';
 
@@ -113,18 +117,20 @@ CORE RULES (NON-NEGOTIABLE):
    T6: Media / Press (only when no other source available)
    BANNED as primary: Grand View Research, Mordor Intelligence, IMARC, Transparency Market Research.
 5. TABLES FIRST — wherever 3+ comparable data points exist, use a structured table.
-6. TONE: ${sectionTone}
-7. Output structured JSON ONLY — no prose outside the JSON structure.
+6. NO SOURCE NAMES IN BODY PARAGRAPHS — citations appear only at the section end in the citations array.
+7. VOLUME AND VALUE — all market size figures must include USD value AND physical volume where applicable.
+8. TONE: ${sectionTone}
+9. Output structured JSON ONLY — no prose outside the JSON structure.
 
 OUTPUT FORMAT:
 {
   "section_id": "string",
   "section_title": "string",
   "word_count_target": number,
-  "body_paragraphs": ["2-3 concise paragraphs — each ≤100 words — analytical not descriptive"],
+  "body_paragraphs": ["2-4 analytical paragraphs — each ≤120 words — insight-driven not descriptive"],
   "key_table": { "title": "string", "headers": ["Col1","Col2","Col3"], "rows": [["val","val","val"]] } or null,
-  "chart_spec": { "type": "line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label" } or null,
-  "citations": [{ "claim": "string ≤60 chars", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY" }],
+  "chart_spec": { "type": "line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" } or null,
+  "citations": [{ "claim": "string ≤60 chars", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string or empty" }],
   "section_flags": ["SOURCING_GAP: description" or "DATA_QUALITY: note" or "METHODOLOGY_NOTE: note"]
 }`;
 
@@ -138,22 +144,23 @@ ${JSON.stringify({
     validated_market_size: sizingJSON.validated_market_size,
     cagr: sizingJSON.cagr_estimate,
     confidence: sizingJSON.confidence_interval,
+    top_down: sizingJSON.top_down,
   }, null, 2)}
 
-KEY DATA POINTS (cite by source_name):
-${JSON.stringify(researchBundle.data_points.slice(0, 8).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 120), source_name: dp.source_name, confidence: dp.confidence })), null, 2)}
+KEY DATA POINTS (cite by source_name — use ALL available):
+${JSON.stringify(researchBundle.data_points.slice(0, 20).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 200), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
 
-DATA GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 5) ?? [])}
+DATA GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 8) ?? [])}
 
-${enrichmentBundle && enrichmentBundle.enrichment_data.length > 0 ? `ENRICHMENT (top 2 companies):
-${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 2), null, 2)}` : ''}
+${enrichmentBundle && enrichmentBundle.enrichment_data.length > 0 ? `ENRICHMENT (company intelligence):
+${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 4), null, 2)}` : ''}
 
 OUTPUT the complete section JSON:`;
 
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5',
-    max_tokens: 3000,
-    temperature: 0.4,
+    model: useHighQualityModel ? 'claude-sonnet-4-5' : 'claude-haiku-4-5',
+    max_tokens: 5000,
+    temperature: 0.3,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],
   });
@@ -299,3 +306,65 @@ OUTPUT FORMAT:
   };
 }
 
+
+// ─── APPENDIX BUILDER ──────────────────────────────────────────────────────────
+// Aggregates ALL citations from all sections into one source log (master prompt Rule 2).
+
+export function buildAppendixSection(sections: SectionDraft[], scope: ScopeJSON): SectionDraft {
+  const allCitations = sections.flatMap(s =>
+    (s.citations || []).map(c => ({ ...c, usedIn: s.section_title }))
+  );
+
+  const seen = new Set<string>();
+  const uniqueCitations = allCitations.filter(c => {
+    const key = (c.source || '').toLowerCase().trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  const tierCounts: Record<string, number> = {};
+  for (const c of uniqueCitations) {
+    const t = c.tier || 'T6';
+    tierCounts[t] = (tierCounts[t] || 0) + 1;
+  }
+  const tierSummary = Object.entries(tierCounts)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([t, n]) => `${t}: ${n}`).join(' | ');
+
+  const primaryPct = uniqueCitations.length > 0
+    ? Math.round(uniqueCitations.filter(c => ['T1','T2','T3'].includes(c.tier || '')).length / uniqueCitations.length * 100)
+    : 0;
+
+  const tableRows = uniqueCitations.map((c, i) => [
+    String(i + 1),
+    c.source || '[Unknown]',
+    c.claim || '',
+    c.tier || 'T6',
+    c.date || 'N/A',
+    (c as { url?: string }).url || '',
+    (c as { usedIn?: string }).usedIn || '',
+  ]);
+
+  return {
+    section_id: 'appendix',
+    section_title: 'Appendix: Source Log & Methodology',
+    word_count_target: 0,
+    body_paragraphs: [
+      `This appendix consolidates all ${uniqueCitations.length} unique sources cited across the ${sections.length} report sections. Tiers: T1 Government/Regulatory, T2 Company Filings, T3 Trade Bodies, T4 Consulting, T5 Aggregators (sanity-check only), T6 Media/Press.`,
+      `Distribution: ${tierSummary}. Primary sources (T1-T3) = ${primaryPct}% of citations. Banned aggregators (Grand View Research, Mordor, IMARC, Transparency Market Research) excluded as primary.`,
+      `Methodology: Dual-method triangulation. Top-Down via government statistics and trade data. Bottom-Up via confirmed player revenues divided by coverage ratio. Geography: ${scope.geography}. Base Year: ${scope.base_year}. Forecast Year: ${scope.forecast_end_year}. All estimates tagged HIGH/MEDIUM/LOW.`,
+    ],
+    key_table: {
+      title: `Complete Source Log - ${uniqueCitations.length} Unique Sources`,
+      headers: ['#', 'Source', 'Claim / Data Point', 'Tier', 'Date', 'URL', 'Used In Section'],
+      rows: tableRows,
+    },
+    chart_spec: null,
+    citations: [],
+    section_flags: [
+      `METHODOLOGY_NOTE: ${uniqueCitations.length} unique sources across ${sections.length} sections`,
+      `SOURCE_MIX: ${tierSummary}`,
+    ],
+  };
+}

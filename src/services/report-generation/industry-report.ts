@@ -2,20 +2,25 @@ import { db } from '@/lib/db';
 import { extractScope, generateResearchPlan } from '@/services/agents/planner';
 import { executeResearch, executeEnrichment } from '@/services/agents/researcher';
 import { runMarketSizing } from '@/services/agents/sizer';
-import { draftSectionsParallel, generateExecutiveSummary } from '@/services/agents/analyst';
+import { draftSectionsParallel, generateExecutiveSummary, buildAppendixSection } from '@/services/agents/analyst';
 import { formatIndustryReport, generateReportTitle } from '@/services/agents/formatter';
 import { StreamHandler } from './stream-handler';
 import { refundCredits } from '@/lib/stripe';
 import { cacheReport } from '@/lib/redis';
 import { ReportConfig } from '@/types/agents';
 
+// Full 9-section pipeline — ordered as per master prompt
 const SECTION_IDS = [
-  'dynamics',
-  'sizing_workings',
-  'segmentation',
-  'competitive',
-  'opportunities',
-  'regional_analysis',
+  'intro',            // Section 1 — Scope of Study
+  'sizing_workings',  // Section 2 — Market Size Estimation
+  'segmentation',     // Section 3 — Market Segmentation
+  'dynamics',         // Section 4 — Trends, Drivers & Barriers
+  'regulatory',       // Section 5 — Regulatory Overview
+  'tech_developments',// Section 6 — Technology Trends
+  'competitive',      // Section 7 — Competitive Analysis
+  'opportunities',    // Section 8 — Market Forecast (3 Scenarios)
+  // Section 9 (Executive Summary) is generated last, placed first
+  // Appendix is generated as a final aggregation step
 ];
 
 export async function runIndustryReportPipeline(
@@ -106,11 +111,15 @@ export async function runIndustryReportPipeline(
     const executiveSummary = await generateExecutiveSummary(sectionDrafts, sizingJSON, scope);
     await stream.stepComplete(7, 'Executive Summary', { headline: executiveSummary.market_headline });
 
+    // Build appendix — aggregates all citations as source log (placed last per master prompt Rule 2)
+    const appendixDraft = buildAppendixSection(sectionDrafts, scope);
+    const allSectionDrafts = [...sectionDrafts, appendixDraft];
+
     // ── STEP 8: Format & Persist ─────────────────────────────────────────
     await stream.stepStart(8, 'Formatting Report');
     const reportTitle = await generateReportTitle(scope);
     const formattedReport = await formatIndustryReport(
-      sectionDrafts,
+      allSectionDrafts,
       executiveSummary,
       sizingJSON,
       scope,
