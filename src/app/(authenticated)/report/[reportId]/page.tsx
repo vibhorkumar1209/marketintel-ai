@@ -144,7 +144,7 @@ export default function ReportPage() {
     tabs = [
       ...(scopeSection ? [scopeSection.title] : []),
       'Executive Summary',
-      ...otherSections.map((s: any) => s.title),
+      ...(otherSections || []).map((s: any) => s.title),
       ...(appendixSection ? [appendixSection.title] : [])
     ];
   }
@@ -198,7 +198,7 @@ export default function ReportPage() {
         overflowX: 'auto', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
       }}>
         <div style={{ display: 'flex', padding: '0 24px', whiteSpace: 'nowrap', minWidth: 'max-content' }}>
-          {tabs.map((tab, idx) => {
+          {(tabs || []).map((tab, idx) => {
             const active = activeSection === idx;
             return (
               <button
@@ -235,7 +235,7 @@ export default function ReportPage() {
 
             {/* KPI panel */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 14 }}>
-              {report.executiveSummary.kpiPanel.map((kpi, i) => (
+              {(report.executiveSummary?.kpiPanel || []).map((kpi, i) => (
                 <div key={i} style={{
                   background: T.card, border: `1px solid ${T.cardBorder}`,
                   borderTop: `3px solid ${i % 2 === 0 ? T.teal : T.blue}`,
@@ -254,7 +254,7 @@ export default function ReportPage() {
             <Card>
               <SectionLabel text="Summary" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {report.executiveSummary.paragraphs.map((p, i) => (
+                {(report.executiveSummary?.paragraphs || []).map((p, i) => (
                   <p key={i} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{p}</p>
                 ))}
               </div>
@@ -265,9 +265,9 @@ export default function ReportPage() {
               <SectionLabel text="3-Scenario Forecast" />
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
                 {[
-                  { label: 'Pessimistic', value: report.executiveSummary.scenarios.bear, color: T.red },
-                  { label: 'Base Case', value: report.executiveSummary.scenarios.base, color: T.teal },
-                  { label: 'Optimistic', value: report.executiveSummary.scenarios.bull, color: T.blue },
+                  { label: 'Pessimistic', value: report.executiveSummary?.scenarios?.bear || 'N/A', color: T.red },
+                  { label: 'Base Case', value: report.executiveSummary?.scenarios?.base || 'N/A', color: T.teal },
+                  { label: 'Optimistic', value: report.executiveSummary?.scenarios?.bull || 'N/A', color: T.blue },
                 ].map((s, i) => (
                   <div key={i} style={{
                     background: T.cardSurface, border: `1px solid ${T.cardBorder}`,
@@ -283,7 +283,7 @@ export default function ReportPage() {
         )}
 
         {/* REGULAR SECTIONS (With index shift handling) */}
-        {visibleSections.map((section: any, idx: number) => {
+        {(visibleSections || []).map((section: any, idx: number) => {
           let targetIndex;
           if (isTrends) {
             targetIndex = idx; // Direct mapping for Trends
@@ -308,7 +308,7 @@ export default function ReportPage() {
               {/* Body text */}
               <Card>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {section.content.map((para: any, pi: number) => (
+                  {(section.content || []).map((para: any, pi: number) => (
                     <p key={pi} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{para}</p>
                   ))}
                 </div>
@@ -346,11 +346,11 @@ export default function ReportPage() {
                             borderBottom: `1px solid ${T.cardBorder}`,
                             transition: 'background 100ms ease',
                           }}>
-                            {Array.isArray(row) ? row.map((cell, ci) => (
+                            {Array.isArray(row) ? (row || []).map((cell, ci) => (
                               <td key={ci} style={{ padding: '12px 16px', color: ci === 0 ? T.text : T.muted }}>
                                 {String(cell)}
                               </td>
-                            )) : Object.values(row as object).map((cell, ci) => (
+                            )) : Object.values(row || {}).map((cell, ci) => (
                               <td key={ci} style={{ padding: '12px 16px', color: ci === 0 ? T.text : T.muted }}>
                                 {String(cell)}
                               </td>
@@ -396,11 +396,11 @@ export default function ReportPage() {
               {/* Subsections */}
               {section.subsections && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 10 }}>
-                  {section.subsections.map((sub: any, si: number) => (
+                  {(section.subsections || []).map((sub: any, si: number) => (
                     <Card key={si} style={{ borderLeft: `4px solid ${si % 2 === 0 ? T.teal : T.blue}` }}>
                       <h4 style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 16 }}>{sub.title}</h4>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {sub.content.map((p: string, pi: number) => (
+                        {(sub.content || []).map((p: string, pi: number) => (
                           <p key={pi} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{p}</p>
                         ))}
                       </div>
@@ -411,16 +411,16 @@ export default function ReportPage() {
                             {sub.keyTable.headers && (
                               <thead style={{ background: '#f8fafc' }}>
                                 <tr>
-                                  {sub.keyTable.headers.map((h: string, hi: number) => (
+                                  {(sub.keyTable.headers || []).map((h: string, hi: number) => (
                                     <th key={hi} style={{ padding: '8px 12px', textAlign: 'left', color: T.teal, fontSize: 9, textTransform: 'uppercase', fontWeight: 800 }}>{h}</th>
                                   ))}
                                 </tr>
                               </thead>
                             )}
                             <tbody>
-                              {sub.keyTable.rows.map((row: any[], ri: number) => (
+                              {(sub.keyTable.rows || []).map((row: any[], ri: number) => (
                                 <tr key={ri} style={{ borderTop: `1px solid ${T.cardBorder}` }}>
-                                  {row.map((cell, ci) => (
+                                  {(row || []).map((cell, ci) => (
                                     <td key={ci} style={{ padding: '8px 12px', color: ci === 0 ? T.text : T.muted }}>{String(cell)}</td>
                                   ))}
                                 </tr>
