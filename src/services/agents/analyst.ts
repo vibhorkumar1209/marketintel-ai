@@ -105,7 +105,7 @@ export async function draftSection(
   const systemPrompt = `You are a principal-level market intelligence analyst generating a section of a commercial-grade industry report.
 
 CORE RULES (NON-NEGOTIABLE):
-1. NO HALLUCINATION — every factual claim, number, company stat, or regulation must come from the data provided. If no data exists, write: [DATA NOT AVAILABLE — search attempted].
+1. NO HALLUCINATION — every factual claim, number, company stat, or regulation must come from the data provided. If you do not have enough specific data for a section, YOU MUST ESTIMATE AND EXTRAPOLATE reasonable values based on the data you DO have, and clearly tag it. DO NOT say "Data Not Available" unless absolutely impossible to infer.
 2. NO GENERIC STATEMENTS — "the market is growing" is not acceptable. Required format: "the market grew at 6.8% CAGR 2020–2024, driven by X".
 3. CONFIDENCE TAGGING — tag every estimate: [HIGH — Tier 1–2] | [MEDIUM — Tier 3–4] | [LOW — ESTIMATE].
 4. SOURCE TIER ORDER (highest available per data point):
@@ -175,7 +175,7 @@ ${JSON.stringify({
   }, null, 2)}
 
 KEY DATA POINTS (cite by source_name — use ALL available):
-${JSON.stringify(researchBundle.data_points.slice(0, 20).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 200), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
+${JSON.stringify(researchBundle.data_points.slice(0, 100).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 200), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
 
 DATA GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 8) ?? [])}
 
