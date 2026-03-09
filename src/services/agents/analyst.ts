@@ -1,4 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { parallelSearch, formatResultsForClaude } from './researcher';
 import {
   ScopeJSON,
   ResearchBundle,
@@ -100,6 +101,23 @@ export async function draftSection(
   const wordTarget = scope.token_budget_per_section;
   const useHighQualityModel = SONNET_SECTIONS.has(sectionId);
 
+  // EXECUTE Parallel.ai IN REAL TIME FOR THIS SPECIFIC SECTION/SUBSECTION
+  const searchObjective = `Market intelligence for ${scope.industry} in ${scope.geography}`;
+  const sectionQueries = [
+    `${scope.industry} ${scope.geography} ${sectionDef.title}`,
+    `${scope.product_scope} industry ${sectionDef.title} data statistics`,
+    `${scope.industry} ${scope.geography} ${sectionId === 'competitive' ? 'top players market share' : sectionId === 'regulatory' ? 'regulations policies' : sectionId === 'tech_developments' ? 'new technology innovation' : sectionId === 'segmentation' ? 'market breakdown by product application' : sectionId === 'sizing_workings' ? 'market size CAGR value USD' : 'drivers barriers trends'}`
+  ];
+
+  let formattedSectionSources = '';
+  try {
+    const rawSectionResults = await parallelSearch(searchObjective, sectionQueries);
+    // User requested: "Claude should not have constraint for data analysis in terms of links"
+    formattedSectionSources = formatResultsForClaude(rawSectionResults);
+  } catch (err) {
+    console.error(`Parallel.ai search failed for section ${sectionId}:`, err);
+  }
+
   const sectionTone = sectionDef.tone || 'Analytical and evidence-backed.';
 
   const systemPrompt = `You are a principal-level market intelligence analyst generating a section of a commercial-grade industry report.
@@ -182,11 +200,15 @@ DATA GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 8) ?? [])}
 ${enrichmentBundle && enrichmentBundle.enrichment_data.length > 0 ? `ENRICHMENT (company intelligence):
 ${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 4), null, 2)}` : ''}
 
+=== LOCALIZED PARALLEL.AI SEARCH RESULTS EXACTLY FOR THIS SECTION ===
+${formattedSectionSources || 'No local parallel.ai results gathered.'}
+====================================================================
+
 OUTPUT the complete section JSON:`;
 
   const response = await client.messages.create({
     model: useHighQualityModel ? 'claude-sonnet-4-5' : 'claude-haiku-4-5',
-    max_tokens: 5000,
+    max_tokens: 8000,
     temperature: 0.3,
     system: systemPrompt,
     messages: [{ role: 'user', content: userPrompt }],

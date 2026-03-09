@@ -7,13 +7,13 @@ const PARALLEL_ENDPOINT = 'https://api.parallel.ai/v1beta/search';
 
 // ─── PARALLEL.AI SEARCH HELPER ─────────────────────────────────────────────────
 
-interface ParallelResult {
+export interface ParallelResult {
   url: string;
   title: string;
   excerpts: string[];
 }
 
-async function parallelSearch(objective: string, queries: string[]): Promise<ParallelResult[]> {
+export async function parallelSearch(objective: string, queries: string[]): Promise<ParallelResult[]> {
   const res = await fetch(PARALLEL_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -32,8 +32,8 @@ async function parallelSearch(objective: string, queries: string[]): Promise<Par
   return data.results || [];
 }
 
-function formatResultsForClaude(results: ParallelResult[]): string {
-  return results.slice(0, 100).map((r, i) =>
+export function formatResultsForClaude(results: ParallelResult[]): string {
+  return results.map((r, i) =>
     `[${i + 1}] ${r.title}\nURL: ${r.url}\n${r.excerpts.slice(0, 5).join('\n').slice(0, 1000)}`
   ).join('\n\n---\n\n');
 }
