@@ -49,7 +49,7 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Arial',sans-serif;font-size:11pt;color:#1a1a1a;line-height:1.65;background:#fff}
-    .cover{background:#0A1628;color:#fff;padding:56px 48px;page-break-after:always}
+    .cover{background:#0C3649;color:#fff;padding:56px 48px;page-break-after:always}
     .cover h1{font-size:26pt;font-weight:700;margin-bottom:10px;line-height:1.2}
     .cover .sub{font-size:12pt;opacity:.75;margin-top:12px}
     .cover .kpi{display:flex;gap:32px;margin-top:40px;flex-wrap:wrap}
@@ -58,14 +58,14 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
     .cover .kpi-item span{font-size:18pt;font-weight:700}
     .cover .meta{margin-top:40px;font-size:9pt;opacity:.5}
     .toc{padding:40px 48px;page-break-after:always}
-    .toc h2{font-size:16pt;color:#0A1628;margin-bottom:20px}
+    .toc h2{font-size:16pt;color:#0C3649;margin-bottom:20px}
     .toc ol{padding-left:20px}.toc li{margin:8px 0;font-size:11pt}
     .section{padding:36px 48px;border-bottom:1px solid #e0e0e0;page-break-inside:avoid}
-    .section h2{font-size:14pt;font-weight:700;color:#0A1628;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #00BFA5}
+    .section h2{font-size:14pt;font-weight:700;color:#0C3649;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #3491E8}
     .section p{margin-bottom:12px}
-    .flag{background:#FFF8E1;border-left:4px solid #F57C00;padding:8px 12px;margin-bottom:16px;font-size:9pt;color:#795548}
+    .flag{background:#FFF8E1;border-left:4px solid #FFCD1A;padding:8px 12px;margin-bottom:16px;font-size:9pt;color:#795548}
     table{width:100%;border-collapse:collapse;font-size:10pt;margin:20px 0}
-    th{background:#0A1628;color:#fff;padding:8px 12px;text-align:left;font-size:9pt}
+    th{background:#0C3649;color:#fff;padding:8px 12px;text-align:left;font-size:9pt}
     td{padding:7px 12px;border-bottom:1px solid #e0e0e0}
     tr:nth-child(even) td{background:#f5f7fa}
     .citations{margin-top:20px;padding-top:12px;border-top:1px solid #e0e0e0}

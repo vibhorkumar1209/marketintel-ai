@@ -9,17 +9,17 @@ import { IndustryReport } from '@/types/reports';
 
 // ── Design tokens (dark-card aesthetic matching screenshot) ───────────────────
 const T = {
-  bg: '#f1f5f9',   // page background — light
-  card: '#0f1c2e',   // dark navy card
-  cardBorder: '#1e3a5f',   // card border
-  cardSurface: '#121f35',   // slightly lighter surface inside cards
-  teal: '#00BDA8',   // primary accent
-  blue: '#3491E8',   // secondary accent
-  red: '#E63946',   // danger / CTA
-  amber: '#f59e0b',   // warning
-  text: '#E8F0F5',   // primary text on dark
-  muted: '#7eaabf',   // secondary text on dark
-  navy: '#0c3649',   // header background
+  bg: '#f9fafb',   // page background — light
+  card: '#ffffff',   // light card
+  cardBorder: '#e5e7eb',   // card border
+  cardSurface: '#f3f4f6',   // slightly darker surface inside cards
+  teal: '#0C3649',   // primary accent (#0C3649)
+  blue: '#3491E8',   // secondary accent (#3491E8)
+  red: '#E63946',   // danger / CTA (#E63946)
+  amber: '#FFCD1A',   // warning (#FFCD1A)
+  text: '#0c3649',   // primary text
+  muted: '#64748b',   // secondary text
+  navy: '#0C3649',   // header background
 };
 
 // ── SVG Icons ─────────────────────────────────────────────────────────────────
@@ -149,7 +149,7 @@ export default function ReportPage() {
             <IconBack /> Back to Dashboard
           </a>
           <SectionLabel text="Industry Report" color={T.muted} />
-          <h1 style={{ fontSize: 21, fontWeight: 800, color: T.text, lineHeight: 1.3, marginBottom: 8 }}>{report.title}</h1>
+          <h1 style={{ fontSize: 21, fontWeight: 800, color: '#ffffff', lineHeight: 1.3, marginBottom: 8 }}>{report.title}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 12, color: T.muted }}>
               Generated {new Date(report.metadata.generatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -165,7 +165,7 @@ export default function ReportPage() {
           <a href={`/api/report/${reportId}/download/pdf`} target="_blank" rel="noopener noreferrer" style={{
             display: 'inline-flex', alignItems: 'center', gap: 7,
             padding: '9px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600,
-            background: 'rgba(255,255,255,0.08)', color: T.text,
+            background: 'rgba(255,255,255,0.08)', color: '#ffffff',
             border: `1px solid rgba(255,255,255,0.15)`, textDecoration: 'none',
           }}>
             <IconDownload /> Print / PDF
@@ -297,7 +297,7 @@ export default function ReportPage() {
               {/* Data table */}
               {section.keyTable && (
                 <div style={{ background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: 'hidden' }}>
-                  <div style={{ background: '#0a1624', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: `1px solid ${T.cardBorder}` }}>
+                  <div style={{ background: '#f8fafc', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: `1px solid ${T.cardBorder}` }}>
                     <span style={{ color: T.teal }}><IconTable /></span>
                     <h3 style={{ fontSize: 12, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '1px' }}>
                       {(section.keyTable as { title?: string }).title || 'Data Table'}
@@ -307,7 +307,7 @@ export default function ReportPage() {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
                       {(section.keyTable as { headers?: string[] }).headers && (
                         <thead>
-                          <tr style={{ background: '#0a1624' }}>
+                          <tr style={{ background: '#f8fafc' }}>
                             {((section.keyTable as { headers?: string[] }).headers || []).map((h, hi) => (
                               <th key={hi} style={{
                                 padding: '10px 16px', textAlign: 'left',
@@ -322,7 +322,7 @@ export default function ReportPage() {
                       <tbody>
                         {(section.keyTable as { rows?: any[][] }).rows?.map((row, ri) => (
                           <tr key={ri} style={{
-                            background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)',
+                            background: ri % 2 === 0 ? 'transparent' : '#f9fafb',
                             borderBottom: `1px solid ${T.cardBorder}`,
                             transition: 'background 100ms ease',
                           }}>
@@ -389,7 +389,7 @@ export default function ReportPage() {
                         <div style={{ marginTop: 20, borderRadius: 8, border: `1px solid ${T.cardBorder}`, overflow: 'hidden' }}>
                           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                             {sub.keyTable.headers && (
-                              <thead style={{ background: 'rgba(255,255,255,0.03)' }}>
+                              <thead style={{ background: '#f8fafc' }}>
                                 <tr>
                                   {sub.keyTable.headers.map((h: string, hi: number) => (
                                     <th key={hi} style={{ padding: '8px 12px', textAlign: 'left', color: T.teal, fontSize: 9, textTransform: 'uppercase', fontWeight: 800 }}>{h}</th>
@@ -439,8 +439,8 @@ export default function ReportPage() {
                       Admin Internal Methodology Log
                     </h3>
                   </div>
-                  <div style={{ background: '#0a1624', borderRadius: 8, padding: 16, border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                    <p style={{ color: '#f59e0b', fontSize: 13, lineHeight: 1.7, fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+                  <div style={{ background: '#fffbeb', borderRadius: 8, padding: 16, border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                    <p style={{ color: '#d97706', fontSize: 13, lineHeight: 1.7, fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
                       {section.adminMethodology}
                     </p>
                   </div>

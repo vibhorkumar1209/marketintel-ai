@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 
 // ─── Colour palette ────────────────────────────────────────────────────────────
-const PALETTE = ['#00BFA5', '#1565C0', '#F57C00', '#6A1B9A', '#AD1457', '#2E7D32'];
+const PALETTE = ['#0C3649', '#FFCD1A', '#3491E8', '#E63946'];
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -148,7 +148,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <div className="bg-[#0A1628] border border-[#2A3A55] rounded-lg p-3 shadow-xl text-sm">
             <p className="text-[#8899BB] mb-1 font-medium">{label}</p>
             {payload.map((entry: any, i: number) => (
-                <p key={i} style={{ color: entry.color || '#00BFA5' }}>
+                <p key={i} style={{ color: entry.color || '#3491E8' }}>
                     {entry.name}: <span className="font-bold">{typeof entry.value === 'number' ? entry.value.toFixed(2) : entry.value}</span>
                 </p>
             ))}
@@ -176,11 +176,11 @@ export default function ReportChart({ chartSpec, sizing, tableData }: ReportChar
                     <CartesianGrid strokeDasharray="3 3" stroke="#1B2A4A" />
                     <XAxis dataKey="year" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} />
                     <YAxis yAxisId="left" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} label={{ value: yLabel, angle: -90, position: 'insideLeft', fill: '#8899BB', fontSize: 11 }} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#00BFA5" tick={{ fill: '#00BFA5', fontSize: 12 }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#3491E8" tick={{ fill: '#3491E8', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend wrapperStyle={{ color: '#8899BB', fontSize: 12 }} />
-                    <Bar yAxisId="left" dataKey="value" name="Market Size" fill="#1565C0" radius={[4, 4, 0, 0]} barSize={30} />
-                    <Line yAxisId="right" type="monotone" dataKey="cagrLine" stroke="#00BFA5" strokeWidth={3} name="CAGR Trend" dot={{ r: 4, fill: '#00BFA5' }} />
+                    <Bar yAxisId="left" dataKey="value" name="Market Size" fill="#0C3649" radius={[4, 4, 0, 0]} barSize={30} />
+                    <Line yAxisId="right" type="monotone" dataKey="cagrLine" stroke="#3491E8" strokeWidth={3} name="CAGR Trend" dot={{ r: 4, fill: '#3491E8' }} />
                 </ComposedChart>
             </ResponsiveContainer>
         );
@@ -195,13 +195,13 @@ export default function ReportChart({ chartSpec, sizing, tableData }: ReportChar
                     <CartesianGrid strokeDasharray="3 3" stroke="#1B2A4A" />
                     <XAxis dataKey="year" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} />
                     <YAxis yAxisId="left" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} label={{ value: yLabel, angle: -90, position: 'insideLeft', fill: '#8899BB', fontSize: 11 }} />
-                    <YAxis yAxisId="right" orientation="right" stroke="#00BFA5" tick={{ fill: '#00BFA5', fontSize: 12 }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#3491E8" tick={{ fill: '#3491E8', fontSize: 12 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend wrapperStyle={{ color: '#8899BB', fontSize: 12 }} />
                     {keys.map((key, i) => (
                         <Bar key={key} yAxisId="left" dataKey={key} stackId="a" fill={PALETTE[i % PALETTE.length]} radius={i === keys.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} barSize={30} />
                     ))}
-                    <Line yAxisId="right" type="monotone" dataKey="cagrLine" stroke="#00BFA5" strokeWidth={3} name="Total CAGR Trend" dot={false} strokeDasharray="5 5" />
+                    <Line yAxisId="right" type="monotone" dataKey="cagrLine" stroke="#3491E8" strokeWidth={3} name="Total CAGR Trend" dot={false} strokeDasharray="5 5" />
                 </ComposedChart>
             </ResponsiveContainer>
         );
@@ -216,12 +216,12 @@ export default function ReportChart({ chartSpec, sizing, tableData }: ReportChar
                 <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <defs>
                         <linearGradient id="gradValue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#00BFA5" stopOpacity={0.25} />
-                            <stop offset="95%" stopColor="#00BFA5" stopOpacity={0} />
+                            <stop offset="5%" stopColor="#3491E8" stopOpacity={0.25} />
+                            <stop offset="95%" stopColor="#3491E8" stopOpacity={0} />
                         </linearGradient>
                         <linearGradient id="gradBand" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#1565C0" stopOpacity={0.1} />
-                            <stop offset="95%" stopColor="#1565C0" stopOpacity={0} />
+                            <stop offset="5%" stopColor="#0C3649" stopOpacity={0.1} />
+                            <stop offset="95%" stopColor="#0C3649" stopOpacity={0} />
                         </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#1B2A4A" />
@@ -229,9 +229,9 @@ export default function ReportChart({ chartSpec, sizing, tableData }: ReportChar
                     <YAxis stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} label={{ value: yLabel, angle: -90, position: 'insideLeft', fill: '#8899BB', fontSize: 11 }} />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend wrapperStyle={{ color: '#8899BB', fontSize: 12 }} />
-                    <Area type="monotone" dataKey="high" fill="url(#gradBand)" stroke="#1565C0" strokeDasharray="4 4" strokeWidth={1} name="High scenario" />
-                    <Area type="monotone" dataKey="value" fill="url(#gradValue)" stroke="#00BFA5" strokeWidth={2.5} name="Base forecast" dot={{ r: 4, fill: '#00BFA5' }} activeDot={{ r: 6 }} />
-                    <Area type="monotone" dataKey="low" fill="url(#gradBand)" stroke="#F57C00" strokeDasharray="4 4" strokeWidth={1} name="Low scenario" />
+                    <Area type="monotone" dataKey="high" fill="url(#gradBand)" stroke="#0C3649" strokeDasharray="4 4" strokeWidth={1} name="High scenario" />
+                    <Area type="monotone" dataKey="value" fill="url(#gradValue)" stroke="#3491E8" strokeWidth={2.5} name="Base forecast" dot={{ r: 4, fill: '#3491E8' }} activeDot={{ r: 6 }} />
+                    <Area type="monotone" dataKey="low" fill="url(#gradBand)" stroke="#FFCD1A" strokeDasharray="4 4" strokeWidth={1} name="Low scenario" />
                 </AreaChart>
             </ResponsiveContainer>
         );
@@ -335,7 +335,7 @@ export default function ReportChart({ chartSpec, sizing, tableData }: ReportChar
                 <YAxis dataKey="name" type="category" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} width={70} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend wrapperStyle={{ color: '#8899BB', fontSize: 12 }} />
-                <Bar dataKey="share" name="Value" fill="#00BFA5" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="share" name="Value" fill="#3491E8" radius={[0, 4, 4, 0]} />
             </BarChart>
         </ResponsiveContainer>
     );
