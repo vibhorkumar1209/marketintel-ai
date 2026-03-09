@@ -33,8 +33,8 @@ async function parallelSearch(objective: string, queries: string[]): Promise<Par
 }
 
 function formatResultsForClaude(results: ParallelResult[]): string {
-  return results.slice(0, 10).map((r, i) =>
-    `[${i + 1}] ${r.title}\nURL: ${r.url}\n${r.excerpts.slice(0, 3).join('\n').slice(0, 800)}`
+  return results.slice(0, 100).map((r, i) =>
+    `[${i + 1}] ${r.title}\nURL: ${r.url}\n${r.excerpts.slice(0, 5).join('\n').slice(0, 1000)}`
   ).join('\n\n---\n\n');
 }
 
@@ -44,8 +44,8 @@ export async function executeResearch(
   searchPlan: SearchPlan,
   scope: ScopeJSON
 ): Promise<ResearchBundle> {
-  // Execute top 6 searches via Parallel.ai
-  const queries = searchPlan.search_plan.slice(0, 6).map(s => s.search_query);
+  // Execute top 20 searches via Parallel.ai
+  const queries = searchPlan.search_plan.slice(0, 20).map(s => s.search_query);
   const objective = `Market intelligence for: ${scope.industry} | ${scope.product_scope} | ${scope.geography}`;
 
   let rawResults: ParallelResult[] = [];
@@ -71,7 +71,7 @@ export async function executeResearch(
 WEB SEARCH RESULTS:
 ${formattedSources}
 
-Extract data points with this structure (max 15 items, keep values concise):
+Extract data points with this structure (max 100 items, keep values concise):
 { "value": "string", "unit": "string", "context": "max 100 chars", "source_name": "string", "source_url": "string", "source_tier": "T1|T2|T3", "publication_date": "YYYY", "confidence": "high|medium|low", "staleness_warning": false }
 
 OUTPUT JSON: { "data_points": [...], "gaps": [...max 5 items...], "searches_executed": ${queries.length}, "sources_rejected": 0, "web_injection_flags": [] }`;
@@ -79,7 +79,7 @@ OUTPUT JSON: { "data_points": [...], "gaps": [...max 5 items...], "searches_exec
   try {
     const response = await claudeClient.messages.create({
       model: 'claude-haiku-4-5',
-      max_tokens: 3000,
+      max_tokens: 8000,
       temperature: 0,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
@@ -88,7 +88,7 @@ OUTPUT JSON: { "data_points": [...], "gaps": [...max 5 items...], "searches_exec
     const text = (response.content[0] as { text: string }).text.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text) as ResearchBundle;
-    parsed.data_points = (parsed.data_points || []).slice(0, 15);
+    parsed.data_points = (parsed.data_points || []).slice(0, 100);
     return parsed;
   } catch {
     return {

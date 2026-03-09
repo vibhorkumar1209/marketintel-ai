@@ -117,7 +117,7 @@ CORE RULES (NON-NEGOTIABLE):
    T6: Media / Press (only when no other source available)
    BANNED as primary: Grand View Research, Mordor Intelligence, IMARC, Transparency Market Research.
 5. TWO-LINE INTRO + TABLE + CHART — For every section or subsection, begin with EXACTLY two lines (sentences) of introduction, followed immediately by a dedicated table and its associated graph/chart.
-6. SOURCE NAMING RESTRICTION — DO NOT mention any source by name in the body text unless it is highly credible (e.g. Govt Authority, Regional Association, Company filing). Other sources (T4-T6) must only be placed in the citations array without name-dropping.
+6. SOURCE NAMING RESTRICTION — DO NOT include or mention any sources or citations in the body text or tables of any section or subsection. All sources must ONLY be placed in the citations array without any name-dropping in the text or tables.
 7. VOLUME AND VALUE — all market size figures must include USD value AND physical volume where applicable.
 8. TONE: ${sectionTone}
 9. Output structured JSON ONLY.

@@ -18,14 +18,16 @@ export async function runIndustryReportPipeline(
   config: ReportConfig,
   reportType: string = 'industry_report'
 ) {
-  const SECTION_IDS = [
+  const SECTION_IDS = reportType === 'trends_report' ? [
+    'dynamics'
+  ] : [
     'intro',            // Section 1 — Scope of Study
     'sizing_workings',  // Section 2 — Market Size Estimation
-    ...(reportType === 'industry_report' ? ['segmentation'] : []), // Section 3 — Market Segmentation
+    'segmentation',     // Section 3 — Market Segmentation
     'dynamics',         // Section 4 — Trends, Drivers & Barriers
     'regulatory',       // Section 5 — Regulatory Overview
     'tech_developments',// Section 6 — Technology Trends
-    ...(reportType === 'industry_report' ? ['competitive'] : []),  // Section 7 — Competitive Analysis
+    'competitive',      // Section 7 — Competitive Analysis
     'opportunities',    // Section 8 — Market Forecast (3 Scenarios)
   ];
 
