@@ -79,6 +79,7 @@ export async function runIndustryReportPipeline(
       researchBundle,
       sizingJSON,
       undefined,
+      reportType,
       async (sectionId) => {
         sectionsCompleted++;
         await stream.emit({

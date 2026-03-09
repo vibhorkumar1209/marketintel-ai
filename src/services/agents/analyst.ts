@@ -95,7 +95,8 @@ export async function draftSection(
   scope: ScopeJSON,
   researchBundle: ResearchBundle,
   sizingJSON: SizingJSON,
-  enrichmentBundle?: EnrichmentBundle
+  enrichmentBundle?: EnrichmentBundle,
+  reportType?: string
 ): Promise<SectionDraft> {
   const sectionDef = SECTION_DEFINITIONS[sectionId] || { title: sectionId, desc: '' };
   const wordTarget = scope.token_budget_per_section;
@@ -113,7 +114,6 @@ export async function draftSection(
   let formattedSectionSources = '';
   try {
     const rawSectionResults = await parallelSearch(searchObjective, sectionQueries);
-    // User requested: "Claude should not have constraint for data analysis in terms of links"
     formattedSectionSources = formatResultsForClaude(rawSectionResults);
   } catch (err) {
     console.error(`Parallel.ai search failed for section ${sectionId}:`, err);
@@ -149,9 +149,17 @@ CORE RULES (NON-NEGOTIABLE):
 ${['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
 SPECIAL SUBSECTION REQUIREMENT: 
 This section requires granular dimensions. You MUST output a "subsections" array instead of a single top-level table/chart. 
+${reportType === 'trends_report' && sectionId === 'dynamics' ? `
+- You must create EXACTLY 2 subsections named "Business" and "Technology". 
+- In "Business", categorize trends relating to Demand, Supply, Commercial, Pricing, Regulatory, and Macroeconomics.
+- In "Technology", detail trends related to both Traditional and Emerging technologies.
+- BOTH subsections must use a table with these EXACT headers: ["Trend name", "Impact of Trend on Industry", "Description of Trend", "Examples"].
+` : `
 - If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the table MUST follow these headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
+`}
 - If Competitive: create an individual subsection for each major company detailing its current operations, with its own table and chart.
 - If Segmentation / Regional: create subsections for each major segment/region, each with its own 2-line intro, table, and MUST use a \`"type": "stacked_column_line"\` chart.
+` : ''}
 
 OUTPUT FORMAT:
 {
@@ -172,8 +180,10 @@ OUTPUT FORMAT:
   ],
   "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
   "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
-}` : `
-OUTPUT FORMAT:
+}
+
+${!['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
+Wait, if this section is NOT one of the above, use this simpler structure:
 {
   "section_id": "string",
   "section_title": "string",
@@ -183,7 +193,7 @@ OUTPUT FORMAT:
   "chart_spec": { "type": "combination_column_line|line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" } | null,
   "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
   "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
-}`}
+}` : ''}
 `;
 
   const userPrompt = `Draft Section: "${sectionDef.title}"
@@ -214,7 +224,7 @@ ${formattedSectionSources.slice(0, 15000) || 'No local parallel.ai results gathe
 OUTPUT the complete section JSON:`;
 
   const response = await client.messages.create({
-    model: useHighQualityModel ? 'claude-sonnet-4-5' : 'claude-haiku-4-5',
+    model: useHighQualityModel ? 'claude-3-5-sonnet-20241022' : 'claude-3-5-haiku-20241022',
     max_tokens: 8000,
     temperature: 0.3,
     system: systemPrompt,
@@ -255,6 +265,7 @@ export async function draftSectionsParallel(
   researchBundle: ResearchBundle,
   sizingJSON: SizingJSON,
   enrichmentBundle?: EnrichmentBundle,
+  reportType?: string,
   onSectionComplete?: (sectionId: string, draft: SectionDraft) => void
 ): Promise<SectionDraft[]> {
   const results: SectionDraft[] = [];
@@ -264,7 +275,7 @@ export async function draftSectionsParallel(
     const batch = sectionIds.slice(i, i + CONCURRENCY);
     const batchDrafts = await Promise.all(
       batch.map(async (id) => {
-        const draft = await draftSection(id, scope, researchBundle, sizingJSON, enrichmentBundle);
+        const draft = await draftSection(id, scope, researchBundle, sizingJSON, enrichmentBundle, reportType);
         if (onSectionComplete) onSectionComplete(id, draft);
         return draft;
       })
@@ -299,36 +310,18 @@ REQUIREMENTS:
 
 Output ONLY valid JSON.`;
 
-  // Summarize sections to fit in context — keep only first paragraph per section
-  const sectionSummaries = sections.map(s => ({
-    section_id: s.section_id,
-    title: s.section_title,
-    key_point: String(s.body_paragraphs?.[0] || '').slice(0, 300),
-    top_citation: s.citations?.[0] || null,
-  }));
+  const userPrompt = `DRAFT THE EXECUTIVE SUMMARY for the following report on ${scope.industry}.
 
-  const userPrompt = `Write the Executive Summary for this ${scope.industry} market report.
+SECTIONS DRAFTED:
+${JSON.stringify(sections.map(s => ({ title: s.section_title, content: s.body_paragraphs.join(' ').slice(0, 500) })), null, 2)}
 
-MARKET: ${scope.industry} | ${scope.product_scope} | ${scope.geography}
-VALIDATED MARKET SIZE: ${sizingJSON.validated_market_size.value} ${sizingJSON.validated_market_size.unit} (${sizingJSON.validated_market_size.year})
-CAGR: ${sizingJSON.cagr_estimate.value}% (${sizingJSON.cagr_estimate.period})
-CONFIDENCE INTERVAL: ${sizingJSON.confidence_interval.low} – ${sizingJSON.confidence_interval.high} ${sizingJSON.validated_market_size.unit}
+SIZING DATA:
+${JSON.stringify(sizingJSON, null, 2)}
 
-SECTION SUMMARIES:
-${JSON.stringify(sectionSummaries, null, 2)}
-
-OUTPUT FORMAT:
-{
-  "section_id": "executive_summary",
-  "market_headline": "1-2 sentence market headline",
-  "kpi_panel": [{ "label": "string", "value": "string", "source_section": "string" }],
-  "body_paragraphs": ["array of 6-10 paragraph strings"],
-  "scenario_outlook": { "bull": "string", "base": "string", "bear": "string" },
-  "citations": [{ "claim": "string", "source": "string", "tier": "string", "date": "string" }]
-}`;
+Output the JSON:`;
 
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5',
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 4000,
     temperature: 0.3,
     system: systemPrompt,
@@ -336,48 +329,15 @@ OUTPUT FORMAT:
   });
 
   const text = (response.content[0] as { text: string }).text.trim();
-
-  const safeParse = (raw: string): ExecutiveSummary | null => {
-    try {
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      return JSON.parse(jsonMatch ? jsonMatch[0] : raw) as ExecutiveSummary;
-    } catch {
-      return null;
-    }
-  };
-
-  const parsed = safeParse(text);
-  if (parsed) return parsed;
-
-  return {
-    section_id: 'executive_summary',
-    market_headline: `${scope.industry} market analysis — ${scope.base_year}–${scope.forecast_end_year}`,
-    kpi_panel: [
-      { label: 'Market Size', value: `${sizingJSON.validated_market_size.value} ${sizingJSON.validated_market_size.unit}`, source_section: 'sizing_workings' },
-      { label: 'CAGR', value: `${sizingJSON.cagr_estimate.value}%`, source_section: 'sizing_workings' },
-    ],
-    body_paragraphs: [text.slice(0, 2000) || 'Executive summary generation incomplete'],
-    scenario_outlook: { bull: 'Strong growth trajectory', base: 'Steady growth', bear: 'Subdued growth if headwinds persist' },
-    citations: [],
-  };
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  return JSON.parse(jsonMatch ? jsonMatch[0] : text) as ExecutiveSummary;
 }
 
-
-// ─── APPENDIX BUILDER ──────────────────────────────────────────────────────────
-// Aggregates ALL citations from all sections into one source log (master prompt Rule 2).
+// ─── STEP 9: APPENDIX ─────────────────────────────────────────────────────────
 
 export function buildAppendixSection(sections: SectionDraft[], scope: ScopeJSON): SectionDraft {
-  const allCitations = sections.flatMap(s =>
-    (s.citations || []).map(c => ({ ...c, usedIn: s.section_title }))
-  );
-
-  const seen = new Set<string>();
-  const uniqueCitations = allCitations.filter(c => {
-    const key = (c.source || '').toLowerCase().trim();
-    if (!key || seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  const allCitations = sections.flatMap(s => s.citations.map(c => ({ ...c, usedIn: s.section_title })));
+  const uniqueCitations = Array.from(new Map(allCitations.map(c => [c.source + c.claim, c])).values());
 
   const tierCounts: Record<string, number> = {};
   for (const c of uniqueCitations) {
@@ -423,4 +383,24 @@ export function buildAppendixSection(sections: SectionDraft[], scope: ScopeJSON)
       `SOURCE_MIX: ${tierSummary}`,
     ],
   };
+}
+
+export async function generateReportTitle(scope: ScopeJSON): Promise<string> {
+  const response = await client.messages.create({
+    model: 'claude-3-5-haiku-20241022',
+    max_tokens: 100,
+    temperature: 0.3,
+    messages: [{
+      role: 'user',
+      content: `Generate a professional market intelligence report title for:
+    Industry: ${scope.industry}
+Product Scope: ${scope.product_scope}
+  Geography: ${scope.geography}
+Base Year: ${scope.base_year}
+Forecast Year: ${scope.forecast_end_year}
+
+Output ONLY the title (no quotes, no explanation). Example format: "Global PU Hot-Melt Adhesives Market — Analysis and Forecast 2024–2030"`,
+    }],
+  });
+  return (response.content[0] as { text: string }).text.trim();
 }

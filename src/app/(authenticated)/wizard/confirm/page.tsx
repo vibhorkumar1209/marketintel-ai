@@ -21,9 +21,9 @@ interface WizardState {
 }
 
 const creditCosts = {
-  light: { industry_report: 30, datapack: 15, trends_report: 20 },
-  standard: { industry_report: 50, datapack: 30, trends_report: 35 },
-  deep: { industry_report: 100, datapack: 60, trends_report: 70 },
+  light: { industry_report: 30, datapack: 15, trends_report: 25 },
+  standard: { industry_report: 50, datapack: 30, trends_report: 25 },
+  deep: { industry_report: 100, datapack: 60, trends_report: 25 },
 };
 
 const PRODUCT_META: Record<ReportType, { label: string; badge: string; badgeVariant: 'teal' | 'amber' | 'navy'; accent: string; generateLabel: string }> = {

@@ -131,7 +131,23 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
         };
     }, [jobId, router]);
 
-    const progress = Math.round((steps.filter((s) => s.status === 'completed').length / steps.length) * 100);
+    const [timeLeft, setTimeLeft] = useState(meta.label === 'Trends Report' ? 60 : 180);
+
+    useEffect(() => {
+        if (isComplete || timeLeft <= 0) return;
+        const timer = setInterval(() => {
+            setTimeLeft(prev => Math.max(0, prev - 1));
+        }, 1000);
+        return () => clearInterval(timer);
+    }, [isComplete, timeLeft]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}m ${secs}s`;
+    };
+
+    const progress = Math.min(99, Math.round((steps.filter((s) => s.status === 'completed').length / steps.length) * 100));
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -145,15 +161,20 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
             {/* Progress Bar Header */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-[#8899BB] uppercase tracking-wider">Overall Progress</p>
-                    <p className="text-sm font-bold" style={{ color: meta.accent }}>{progress}%</p>
+                    <p className="text-sm font-semibold text-[#8899BB] uppercase tracking-wider">Report Completion</p>
+                    <p className="text-sm font-bold" style={{ color: meta.accent }}>{isComplete ? '100%' : `${progress}%`}</p>
                 </div>
                 <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
                     <div
                         className="h-full transition-all duration-500 rounded-full"
-                        style={{ width: `${progress}%`, backgroundColor: meta.accent }}
+                        style={{ width: `${isComplete ? 100 : progress}%`, backgroundColor: meta.accent }}
                     />
                 </div>
+                {!isComplete && (
+                    <p className="text-center text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-2">
+                        Estimated Time Remaining: {formatTime(timeLeft)}
+                    </p>
+                )}
             </div>
 
             {/* Current Step Text */}
@@ -163,7 +184,7 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
                 ) : (
                     <p className="text-sm font-medium text-gray-500 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: meta.accent }}></span>
-                        {steps.find(s => s.status === 'running')?.name ? `Running: ${steps.find(s => s.status === 'running')?.name}` : 'Initializing...'}
+                        {currentStep > 0 ? 'Analyzing data and drafting report...' : 'Initializing research engine...'}
                     </p>
                 )}
             </div>

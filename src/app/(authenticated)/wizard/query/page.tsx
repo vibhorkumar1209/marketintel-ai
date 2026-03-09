@@ -50,13 +50,13 @@ export default function WizardQueryPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [customCountry, setCustomCountry] = useState('');
 
-  const creditCosts = {
-    light: { industry_report: 30, datapack: 15, trends_report: 20 },
-    standard: { industry_report: 50, datapack: 30, trends_report: 35 },
-    deep: { industry_report: 100, datapack: 60, trends_report: 70 },
-  };
+  const CREDIT_COSTS = {
+    industry_report: 50,
+    datapack: 30,
+    trends_report: 25,
+  } as const;
 
-  const currentCost = creditCosts[depth][reportType] ?? 35;
+  const currentCost = CREDIT_COSTS[reportType] ?? 35;
   const copy = PRODUCT_COPY[reportType] || PRODUCT_COPY.industry_report;
   const accent = ACCENT[reportType] || '#3491E8';
 
@@ -124,25 +124,27 @@ export default function WizardQueryPage() {
       {/* Configuration */}
       <Card>
         <div className="space-y-6">
-          {/* Depth */}
-          <div>
-            <label className="block text-sm font-semibold mb-3" style={{ color: '#0c3649' }}>
-              Research Depth
-            </label>
-            <div className="grid grid-cols-3 gap-4">
-              {(['light', 'standard', 'deep'] as const).map(d => (
-                <button key={d} onClick={() => setDepth(d)} className={clsx(
-                  'p-4 rounded-lg border-2 transition-all text-left',
-                  depth === d ? 'border-teal-600 bg-teal-600 bg-opacity-10' : 'border-[#2A3A55] hover:border-[#3A4A65]'
-                )}>
-                  <p className="font-semibold text-[#E8EDF5] capitalize">{d}</p>
-                  <p className="text-sm text-[#8899BB] mt-1">
-                    {d === 'light' && '~15 pages'}{d === 'standard' && '~50 pages'}{d === 'deep' && '~150+ pages'}
-                  </p>
-                </button>
-              ))}
+          {/* Depth - Only show for non-trends */}
+          {reportType !== 'trends_report' && (
+            <div>
+              <label className="block text-sm font-semibold mb-3" style={{ color: '#0c3649' }}>
+                Research Depth
+              </label>
+              <div className="grid grid-cols-3 gap-4">
+                {(['light', 'standard', 'deep'] as const).map(d => (
+                  <button key={d} onClick={() => setDepth(d)} className={clsx(
+                    'p-4 rounded-lg border-2 transition-all text-left',
+                    depth === d ? 'border-teal-600 bg-teal-600 bg-opacity-10' : 'border-[#2A3A55] hover:border-[#3A4A65]'
+                  )}>
+                    <p className="font-semibold text-[#E8EDF5] capitalize">{d}</p>
+                    <p className="text-sm text-[#8899BB] mt-1">
+                      {d === 'light' && '~15 pages'}{d === 'standard' && '~50 pages'}{d === 'deep' && '~150+ pages'}
+                    </p>
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Regions */}
           <div>
@@ -180,38 +182,40 @@ export default function WizardQueryPage() {
             </div>
           </div>
 
-          {/* Advanced Options */}
-          <div className="border-t border-[#2A3A55] pt-6">
-            <button onClick={() => setShowAdvanced(!showAdvanced)} className="flex items-center gap-2 text-teal-600 hover:text-teal-500 font-medium text-sm">
-              <svg className={clsx('w-4 h-4 transition-transform', showAdvanced && 'rotate-180')} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-              </svg>
-              Advanced Options
-            </button>
-            {showAdvanced && (
-              <div className="mt-6 space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-[#E8EDF5] mb-2">Competitor Count: {competitorCount}</label>
-                  <input type="range" min="5" max="20" value={competitorCount} onChange={e => setCompetitorCount(parseInt(e.target.value))}
-                    className="w-full h-2 bg-[#2A3A55] rounded-lg appearance-none cursor-pointer accent-teal-600" />
-                  <p className="text-xs text-[#8899BB] mt-1">More competitors = deeper analysis</p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#E8EDF5] mb-3">Forecast Period</label>
-                  <div className="flex gap-3">
-                    {[5, 7, 10].map(years => (
-                      <button key={years} onClick={() => setForecastYears(years)} className={clsx(
-                        'px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium',
-                        forecastYears === years ? 'border-teal-600 bg-teal-600 bg-opacity-10 text-teal-400' : 'border-[#2A3A55] text-[#8899BB] hover:border-[#3A4A65]'
-                      )}>
-                        {years} years
-                      </button>
-                    ))}
+          {/* Advanced Options - Only show for non-trends */}
+          {reportType !== 'trends_report' && (
+            <div className="border-t border-[#2A3A55] pt-6">
+              <button onClick={() => setShowAdvanced(!showAdvanced)} className="flex items-center gap-2 text-teal-600 hover:text-teal-500 font-medium text-sm">
+                <svg className={clsx('w-4 h-4 transition-transform', showAdvanced && 'rotate-180')} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+                Advanced Options
+              </button>
+              {showAdvanced && (
+                <div className="mt-6 space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-[#E8EDF5] mb-2">Competitor Count: {competitorCount}</label>
+                    <input type="range" min="5" max="20" value={competitorCount} onChange={e => setCompetitorCount(parseInt(e.target.value))}
+                      className="w-full h-2 bg-[#2A3A55] rounded-lg appearance-none cursor-pointer accent-teal-600" />
+                    <p className="text-xs text-[#8899BB] mt-1">More competitors = deeper analysis</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#E8EDF5] mb-3">Forecast Period</label>
+                    <div className="flex gap-3">
+                      {[5, 7, 10].map(years => (
+                        <button key={years} onClick={() => setForecastYears(years)} className={clsx(
+                          'px-4 py-2 rounded-lg border-2 transition-all text-sm font-medium',
+                          forecastYears === years ? 'border-teal-600 bg-teal-600 bg-opacity-10 text-teal-400' : 'border-[#2A3A55] text-[#8899BB] hover:border-[#3A4A65]'
+                        )}>
+                          {years} years
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
         </div>
       </Card>
 
