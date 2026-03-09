@@ -46,7 +46,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 6
   tech_developments: {
     title: 'Tech Trends',
-    desc: 'Top 5–8 tech trends: (1) AI Adoption — named adopter + quantified benefit (%, USD, time); (2) Automation & Industry 4.0 — company example + investment scale; (3) Patent & Innovation Signals — volume trend, top applicants, tech sub-categories; (4) Sustainability Technology — commercialisation timeline; (5) Digital & Commercial Model Shifts — adoption rate estimate. Each trend: name + named adopter + quantified impact.',
+    desc: 'Top 5–8 tech trends. You MUST output a highly detailed table using these EXACT headers: ["Name of Tech Trend", "Impact", "Description", "Examples (news/events)"]. Ensure each trend (AI, Automation, Patents, etc.) includes specific company examples and news events in the Examples column.',
     tone: 'Forward-looking. Named examples required for every trend. No generic technology commentary.',
   },
   // Section 7
