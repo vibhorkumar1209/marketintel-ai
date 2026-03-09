@@ -119,8 +119,22 @@ export default function ReportPage() {
     </div>
   );
 
-  const visibleSections = report.sections.filter((s: any) => s.id !== 'intro' && s.id !== 'appendix');
-  const tabs = ['Executive Summary', ...visibleSections.map((s: any) => s.title)];
+  const scopeSection = report.sections.find((s: any) => s.id === 'intro');
+  const otherSections = report.sections.filter((s: any) => s.id !== 'intro' && s.id !== 'appendix');
+  const appendixSection = report.sections.find((s: any) => s.id === 'appendix');
+
+  const visibleSections = [
+    ...(scopeSection ? [scopeSection] : []),
+    ...otherSections,
+    ...(appendixSection ? [appendixSection] : [])
+  ];
+
+  const tabs = [
+    ...(scopeSection ? [scopeSection.title] : []),
+    'Executive Summary',
+    ...otherSections.map((s: any) => s.title),
+    ...(appendixSection ? [appendixSection.title] : [])
+  ];
 
   return (
     // Full-bleed: break out of layout's 32px padding
@@ -195,8 +209,8 @@ export default function ReportPage() {
       {/* ── Section content ───────────────────────────────────────── */}
       <div style={{ padding: '32px', maxWidth: 1100, margin: '0 auto', width: '100%' }}>
 
-        {/* EXECUTIVE SUMMARY */}
-        {activeSection === 0 && (
+        {/* EXECUTIVE SUMMARY (Now at index 1) */}
+        {activeSection === 1 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Headline */}
             <Card>
@@ -255,9 +269,13 @@ export default function ReportPage() {
           </div>
         )}
 
-        {/* REGULAR SECTIONS */}
-        {visibleSections.map((section: any, idx: number) =>
-          activeSection === idx + 1 && (
+        {/* REGULAR SECTIONS (With index shift handling) */}
+        {visibleSections.map((section: any, idx: number) => {
+          // idx 0 -> tabs[0] -> activeSection 0
+          // idx >= 1 -> tabs[idx+1] -> activeSection idx+1
+          const targetIndex = idx === 0 ? 0 : idx + 1;
+
+          return activeSection === targetIndex && (
             <div key={section.id} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               {/* Section header */}
               <div style={{ borderBottom: `2px solid ${T.teal}`, paddingBottom: 14 }}>
@@ -300,16 +318,19 @@ export default function ReportPage() {
                         </thead>
                       )}
                       <tbody>
-                        {((section.keyTable as { rows?: unknown[] }).rows || []).map((row, ri) => (
-                          <tr key={ri} style={{ borderBottom: `1px solid ${T.cardBorder}`, background: ri % 2 === 0 ? T.card : T.cardSurface }}>
-                            {(Array.isArray(row) ? row : Object.values(row as object)).map((cell, ci) => (
-                              <td key={ci} style={{
-                                padding: '10px 16px',
-                                color: ci === 0 ? T.text : T.muted,
-                                fontWeight: ci === 0 ? 600 : 400,
-                                fontFamily: ci > 0 && String(cell ?? '').match(/^[\d$£€%.,\s\-]+$/) ? 'DM Mono, monospace' : 'inherit',
-                              }}>
-                                {String(cell ?? '')}
+                        {(section.keyTable as { rows?: any[][] }).rows?.map((row, ri) => (
+                          <tr key={ri} style={{
+                            background: ri % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)',
+                            borderBottom: `1px solid ${T.cardBorder}`,
+                            transition: 'background 100ms ease',
+                          }}>
+                            {Array.isArray(row) ? row.map((cell, ci) => (
+                              <td key={ci} style={{ padding: '12px 16px', color: ci === 0 ? T.text : T.muted }}>
+                                {String(cell)}
+                              </td>
+                            )) : Object.values(row as object).map((cell, ci) => (
+                              <td key={ci} style={{ padding: '12px 16px', color: ci === 0 ? T.text : T.muted }}>
+                                {String(cell)}
                               </td>
                             ))}
                           </tr>
@@ -323,80 +344,67 @@ export default function ReportPage() {
               {/* Chart */}
               {section.chartSpec && !section.subsections && (
                 <Card>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
                     <span style={{ color: T.teal }}><IconChart /></span>
-                    <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text }}>
-                      {String((section.chartSpec as { title?: unknown }).title || 'Market Chart')}
-                    </h3>
+                    <div>
+                      <h3 style={{ fontSize: 12, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '1px' }}>
+                        {String((section.chartSpec as { title?: unknown }).title || 'Market Chart')}
+                      </h3>
+                      <p style={{ fontSize: 10, color: T.muted, marginTop: 2 }}>
+                        {String((section.chartSpec as { type?: unknown }).type || 'line')} chart
+                      </p>
+                    </div>
                   </div>
-                  <p style={{ fontSize: 11, color: T.muted, marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                    {String((section.chartSpec as { type?: unknown }).type || 'line')} chart
-                  </p>
                   <ReportChart
                     chartSpec={section.chartSpec as any}
                     sizing={(report as any).sizing}
                     tableData={section.keyTable as any}
                   />
+                  <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.cardBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p style={{ fontSize: 10, color: T.muted }}>
+                      Data Source: {String((section.chartSpec as { data_source?: unknown }).data_source || 'MarketIntel Analysis')}
+                    </p>
+                    {section.flags?.includes('DATA_QUALITY') && (
+                      <span style={{ fontSize: 9, color: T.red, fontWeight: 700 }}>INDICATIVE ESTIMATE</span>
+                    )}
+                  </div>
                 </Card>
               )}
 
-              {/* Subsections rendering */}
-              {section.subsections && section.subsections.length > 0 && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 40, marginTop: 10 }}>
-                  {section.subsections.map((sub: any, subi: number) => (
-                    <div key={subi} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                      <h3 style={{ fontSize: 18, fontWeight: 700, color: T.text, borderBottom: `1px solid ${T.cardBorder}`, paddingBottom: 8 }}>{sub.title}</h3>
-
-                      {sub.content && sub.content.length > 0 && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                          {sub.content.map((p: string, pii: number) => (
-                            <p key={pii} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{p}</p>
-                          ))}
-                        </div>
-                      )}
+              {/* Subsections */}
+              {section.subsections && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 10 }}>
+                  {section.subsections.map((sub: any, si: number) => (
+                    <Card key={si} style={{ borderLeft: `4px solid ${si % 2 === 0 ? T.teal : T.blue}` }}>
+                      <h4 style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 16 }}>{sub.title}</h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        {sub.content.map((p: string, pi: number) => (
+                          <p key={pi} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{p}</p>
+                        ))}
+                      </div>
 
                       {sub.keyTable && (
-                        <div style={{ background: T.card, border: `1px solid ${T.cardBorder}`, borderRadius: 12, overflow: 'hidden' }}>
-                          <div style={{ background: '#0a1624', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: `1px solid ${T.cardBorder}` }}>
-                            <span style={{ color: T.teal }}><IconTable /></span>
-                            <h3 style={{ fontSize: 12, fontWeight: 700, color: T.text, textTransform: 'uppercase', letterSpacing: '1px' }}>
-                              {sub.keyTable.title || 'Data Table'}
-                            </h3>
-                          </div>
-                          <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-                              {sub.keyTable.headers && (
-                                <thead>
-                                  <tr style={{ background: '#0a1624' }}>
-                                    {sub.keyTable.headers.map((h: string, hi: number) => (
-                                      <th key={hi} style={{
-                                        padding: '10px 16px', textAlign: 'left',
-                                        fontSize: 10, fontWeight: 700, color: T.teal,
-                                        textTransform: 'uppercase', letterSpacing: '1px',
-                                        borderBottom: `1px solid ${T.cardBorder}`,
-                                      }}>{h}</th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                              )}
-                              <tbody>
-                                {(sub.keyTable.rows || []).map((row: any[], ri: number) => (
-                                  <tr key={ri} style={{ borderBottom: `1px solid ${T.cardBorder}`, background: ri % 2 === 0 ? T.card : T.cardSurface }}>
-                                    {(Array.isArray(row) ? row : Object.values(row)).map((cell: any, ci: number) => (
-                                      <td key={ci} style={{
-                                        padding: '10px 16px',
-                                        color: ci === 0 ? T.text : T.muted,
-                                        fontWeight: ci === 0 ? 600 : 400,
-                                        fontFamily: ci > 0 && String(cell ?? '').match(/^[\d$£€%.,\s\-]+$/) ? 'DM Mono, monospace' : 'inherit',
-                                      }}>
-                                        {String(cell ?? '')}
-                                      </td>
-                                    ))}
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                        <div style={{ marginTop: 20, borderRadius: 8, border: `1px solid ${T.cardBorder}`, overflow: 'hidden' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                            {sub.keyTable.headers && (
+                              <thead style={{ background: 'rgba(255,255,255,0.03)' }}>
+                                <tr>
+                                  {sub.keyTable.headers.map((h: string, hi: number) => (
+                                    <th key={hi} style={{ padding: '8px 12px', textAlign: 'left', color: T.teal, fontSize: 9, textTransform: 'uppercase', fontWeight: 800 }}>{h}</th>
+                                  ))}
+                                </tr>
+                              </thead>
+                            )}
+                            <tbody>
+                              {sub.keyTable.rows.map((row: any[], ri: number) => (
+                                <tr key={ri} style={{ borderTop: `1px solid ${T.cardBorder}` }}>
+                                  {row.map((cell, ci) => (
+                                    <td key={ci} style={{ padding: '8px 12px', color: ci === 0 ? T.text : T.muted }}>{String(cell)}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       )}
 
@@ -414,15 +422,15 @@ export default function ReportPage() {
                           <ReportChart chartSpec={sub.chartSpec} sizing={(report as any).sizing} tableData={sub.keyTable} />
                         </Card>
                       )}
-                    </div>
+                    </Card>
                   ))}
                 </div>
               )}
 
 
             </div>
-          )
-        )}
+          );
+        })}
       </div>
     </div>
   );

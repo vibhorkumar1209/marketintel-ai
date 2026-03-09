@@ -15,25 +15,25 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: string }> = {
   // Section 1
   intro: {
-    title: 'Scope of Study',
+    title: 'Market Report Scope',
     desc: 'Scope matrix table (product types × applications × geographies × time period), competitor shortlist table (Company | HQ | Est. revenue | Market presence), study assumptions log (base year, currency, triangulation method).',
     tone: 'Definitive. State precise market boundary before any sizing or competitive analysis.',
   },
   // Section 2
   sizing_workings: {
-    title: 'Market Size Estimation (TAM — Volume & Value)',
+    title: 'Market Size',
     desc: 'TWO independent sizing methods: (A) Top-Down — government stats → penetration rate → trade flow cross-check; (B) Bottom-Up — sum of confirmed player revenues ÷ coverage ratio. Mandatory triangulation table: Method | Value (USD M) | Volume | Key Assumption | Confidence | Source Tier. Include CAGR (historical + forecast) and Low/Base/High scenario range.',
     tone: 'Quantitative. Every figure must show method and source tier. Confidence must be tagged [HIGH/MEDIUM/LOW].',
   },
   // Section 3
   segmentation: {
-    title: 'Market Segmentation',
+    title: 'Market Size by Segment',
     desc: 'Break total market across ALL dimensions: (A) By Product Type — size + share + CAGR + key driver per type; (B) By Application — heatmap size × growth rate matrix; (C) By End-Use Industry — Pareto showing which 3 sectors = 80% of demand; (D) By Geography — country table with size, share, CAGR, top local player; (E) By Distribution Channel — channel mix with trend direction. Flag: [ESTIMATE — LOW DATA CONFIDENCE] for any segment with insufficient data.',
     tone: 'Structured. Use tables for all segmentation. Prose only for non-obvious insight.',
   },
   // Section 4
   dynamics: {
-    title: 'Market Trends, Drivers & Barriers',
+    title: 'Trends',
     desc: 'You must output EXACTLY 3 subsections named: "Trends", "Drivers", and "Barriers". Each subsection must contain EXACTLY 2 introductory lines, a highly detailed table, and a relevant chart. Inside each table, you MUST include rows analyzing the following dimensions: Supply, Demand, Technology, Commercial, Pricing, Regulatory, and Others.',
     tone: 'Evidence-anchored. Every driver and barrier must cite a real named company, regulation, or quantified market signal. No generic statements.',
   },
@@ -45,19 +45,19 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   },
   // Section 6
   tech_developments: {
-    title: 'Major Technology Trends',
+    title: 'Tech Trends',
     desc: 'Top 5–8 tech trends: (1) AI Adoption — named adopter + quantified benefit (%, USD, time); (2) Automation & Industry 4.0 — company example + investment scale; (3) Patent & Innovation Signals — volume trend, top applicants, tech sub-categories; (4) Sustainability Technology — commercialisation timeline; (5) Digital & Commercial Model Shifts — adoption rate estimate. Each trend: name + named adopter + quantified impact.',
     tone: 'Forward-looking. Named examples required for every trend. No generic technology commentary.',
   },
   // Section 7
   competitive: {
-    title: 'Key Player & Competitive Analysis',
+    title: 'Competition Analysis',
     desc: 'Market share ranking table: Rank | Company | Est. Share % | Revenue USD M | HQ | Primary Geography | Confidence Level. 2×2 Positioning Matrix: Market Presence (x) vs Innovation Score (y). M&A / JV Activity Tracker (past 3 years): Date | Acquirer | Target | Deal Value | Strategic Rationale. Company profile per player: Financials | Market Share | Recent Strategic Activity | Social Signal | Technology / R&D Signal.',
     tone: 'Analytical. Every sentence serves a competitive intelligence purpose. Not Wikipedia summaries.',
   },
   // Section 8
   opportunities: {
-    title: 'Market Forecast (3 Scenarios)',
+    title: 'Market Forecast',
     desc: 'Three mutually exclusive scenarios anchored in Section 4 drivers/barriers: (A) Pessimistic — apply top 2 barriers at max impact, state CAGR + market size at horizon + probability + key assumption; (B) Realistic (Base) — triangulated TAM grown at weighted net impact, must reconcile with Section 2 TAM; (C) Optimistic — apply top 2 drivers at max impact. Mandatory forecast table: Scenario | CAGR | Base Yr (USD M) | Forecast Yr (USD M) | Key Assumption | Confidence. Chart spec: 3-line chart (pessimistic=dashed red, base=solid blue, optimistic=dotted blue-muted).',
     tone: 'Scenario-driven. Base scenario must numerically reconcile with sizing section. Do NOT average scenarios.',
   },
