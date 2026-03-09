@@ -69,8 +69,8 @@ export const authOptions: NextAuthOptions = {
       await db.credits.create({
         data: {
           userId: user.id!,
-          balance: 100,       // 2 free reports on signup
-          lifetimeEarned: 100,
+          balance: 500,       // 10 free reports on signup (500 credits)
+          lifetimeEarned: 500,
         },
       });
     },

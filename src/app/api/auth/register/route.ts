@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         data: { name, email: normalizedEmail, password: hashedPassword },
       });
       await tx.credits.create({
-        data: { userId: newUser.id, balance: 100, lifetimeEarned: 100 },
+        data: { userId: newUser.id, balance: 500, lifetimeEarned: 500 },
       });
       return newUser;
     });
