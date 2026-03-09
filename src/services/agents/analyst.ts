@@ -34,7 +34,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 4
   dynamics: {
     title: 'Trends',
-    desc: 'You must output EXACTLY 3 subsections named: "Trends", "Drivers", and "Barriers". Each subsection must contain EXACTLY 2 introductory lines and a highly detailed table. Each table MUST use these EXACT headers: ["Name of Trend/Driver/Barrier", "Impact", "Description", "Examples (news/events)"]. In the Examples column, you MUST cite specific news, company events, or data points from the research.',
+    desc: 'You must output EXACTLY 3 subsections named: "Trends", "Drivers", and "Barriers". Each subsection must contain EXACTLY 2 introductory lines and a highly detailed table. Each table MUST use these EXACT headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"].',
     tone: 'Evidence-anchored. Every driver and barrier must cite a real named company, regulation, or quantified market signal. No generic statements.',
   },
   // Section 5
@@ -46,7 +46,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 6
   tech_developments: {
     title: 'Tech Tends',
-    desc: 'Top 5–8 tech trends. You MUST output a highly detailed table using these EXACT headers: ["Name of Tech Trend", "Impact", "Description", "Examples (news/events)"]. Ensure each trend (AI, Automation, Patents, etc.) includes specific company examples and news events in the Examples column.',
+    desc: 'Top 5–8 tech trends. You MUST output a highly detailed table using these EXACT headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Ensure each trend (AI, Automation, Patents, etc.) includes specific company examples and news events in the Examples column.',
     tone: 'Forward-looking. Named examples required for every trend. No generic technology commentary.',
   },
   // Section 7
@@ -148,7 +148,7 @@ CORE RULES (NON-NEGOTIABLE):
 ${['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
 SPECIAL SUBSECTION REQUIREMENT: 
 This section requires granular dimensions. You MUST output a "subsections" array instead of a single top-level table/chart. 
-- If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the table MUST follow these headers: ["Name of Trend/Driver/Barrier", "Impact", "Description", "Examples (news/events)"]. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
+- If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the table MUST follow these headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
 - If Competitive: create an individual subsection for each major company detailing its current operations, with its own table and chart.
 - If Segmentation / Regional: create subsections for each major segment/region, each with its own 2-line intro, table, and MUST use a \`"type": "stacked_column_line"\` chart.
 
