@@ -80,10 +80,10 @@ export async function runIndustryReportPipeline(
       async (sectionId) => {
         sectionsCompleted++;
         await stream.emit({
-          type: 'step_complete',
+          type: 'step_progress',
           step: 5,
-          stepName: `Section: ${sectionId} (${sectionsCompleted}/${SECTION_IDS.length})`,
-          data: { sectionId, progress: `${sectionsCompleted}/${SECTION_IDS.length}` },
+          stepName: `Drafting Report Sections`,
+          data: { sectionId, sectionsCompleted, totalSections: SECTION_IDS.length }
         });
       }
     );

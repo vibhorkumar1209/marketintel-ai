@@ -79,6 +79,17 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
                                         : s
                                 )
                             );
+                        } else if (data.type === 'step_progress') {
+                            setSteps((prev) =>
+                                prev.map((s) =>
+                                    s.step === data.step && data.data
+                                        ? {
+                                            ...s,
+                                            progressText: `Completed ${data.data.sectionsCompleted}/${data.data.totalSections} sections`
+                                        }
+                                        : s
+                                )
+                            );
                         } else if (data.type === 'step_error') {
                             setSteps((prev) =>
                                 prev.map((s) => (s.step === data.step ? { ...s, status: 'failed' } : s))
@@ -213,7 +224,9 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
                                                 <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: meta.accent, animationDelay: '0.1s' }} />
                                                 <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: meta.accent, animationDelay: '0.2s' }} />
                                             </div>
-                                            <span className="text-xs font-medium" style={{ color: meta.accent }}>Processing...</span>
+                                            <span className="text-xs font-medium" style={{ color: meta.accent }}>
+                                                {step.progressText ? step.progressText : 'Processing...'}
+                                            </span>
                                         </div>
                                     )}
                                 </div>

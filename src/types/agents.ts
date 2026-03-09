@@ -151,11 +151,11 @@ export interface ExecutiveSummary {
 // ─── STREAM EVENTS ────────────────────────────────────────────────────────────
 
 export interface StreamEvent {
-  type: 'step_start' | 'step_complete' | 'step_error' | 'job_complete';
+  type: 'step_start' | 'step_progress' | 'step_complete' | 'step_error' | 'job_complete';
   step: number;
   stepName: string;
   timestamp: string;
-  data?: object;
+  data?: any;
   error?: string;
   reportId?: string;
 }
@@ -167,6 +167,7 @@ export interface AgentStep {
   startedAt?: string;
   completedAt?: string;
   durationMs?: number;
+  progressText?: string;
 }
 
 // ─── REPORT CONFIG ────────────────────────────────────────────────────────────
