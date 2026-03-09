@@ -4,7 +4,7 @@ import React from 'react';
 import {
     LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    Area, AreaChart, ReferenceLine,
+    Area, AreaChart, ReferenceLine, ComposedChart
 } from 'recharts';
 
 // ─── Colour palette ────────────────────────────────────────────────────────────
@@ -56,8 +56,58 @@ function buildForecastData(sizing: SizingData | undefined, years?: number[]) {
             value: val,
             low: +(val * 0.85).toFixed(2),
             high: +(val * 1.15).toFixed(2),
+            cagrLine: val // used as the line graph point
         };
     });
+}
+
+function buildStackedTimeSeriesData(tableData: any, sizing: SizingData | undefined) {
+    const yrs = [2024, 2025, 2026, 2027, 2028, 2029, 2030, 2031, 2032, 2033];
+    const baseYear = yrs[0];
+
+    let segments: { name: string; size: number; cagr: number }[] = [];
+    if (tableData && tableData.rows && tableData.rows.length > 0) {
+        segments = tableData.rows.map((row: any) => {
+            const cells = Array.isArray(row) ? row : Object.values(row as object);
+            let size = parseFloat(String(cells[1] || '').replace(/[^0-9.]/g, ''));
+            let cagr = 5.0;
+            for (let i = cells.length - 1; i >= 2; i--) {
+                const val = parseFloat(String(cells[i] || '').replace(/[^0-9.-]/g, ''));
+                if (!isNaN(val) && val < 50 && val > -50) {
+                    cagr = val;
+                    break;
+                }
+            }
+            if (isNaN(size)) size = 0;
+            return { name: String(cells[0] || 'Unknown').substring(0, 15), size, cagr: cagr / 100 };
+        }).filter((s: any) => s.size > 0);
+    }
+
+    if (segments.length === 0) {
+        const base = sizing?.validated_market_size?.value ?? 10;
+        const cagr = (sizing?.cagr_estimate?.value ?? 5) / 100;
+        segments = [
+            { name: 'Segment A', size: base * 0.6, cagr: cagr * 1.1 },
+            { name: 'Segment B', size: base * 0.3, cagr: cagr * 0.9 },
+            { name: 'Segment C', size: base * 0.1, cagr: cagr },
+        ];
+    }
+
+    return {
+        keys: segments.map(s => s.name),
+        data: yrs.map(yr => {
+            const n = yr - baseYear;
+            const pt: any = { year: yr };
+            let total = 0;
+            segments.forEach(seg => {
+                const val = +(seg.size * Math.pow(1 + seg.cagr, n)).toFixed(2);
+                pt[seg.name] = val;
+                total += val;
+            });
+            pt.cagrLine = +total.toFixed(2);
+            return pt;
+        })
+    };
 }
 
 function buildTamSamSomData(sizing: SizingData | undefined) {
@@ -117,9 +167,49 @@ export default function ReportChart({ chartSpec, sizing, tableData }: ReportChar
         ? (chartSpec.yAxis as { label?: string }).label ?? ''
         : typeof chartSpec?.yAxis === 'string' ? chartSpec.yAxis : 'Value';
 
+    // ── Combination/Composed (Market Size & Forecast) ──────────────────────
+    if (type.includes('combination') || type.includes('composed')) {
+        const data = buildForecastData(sizing, xAxisValues as number[]);
+        return (
+            <ResponsiveContainer width="100%" height={340}>
+                <ComposedChart data={data} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1B2A4A" />
+                    <XAxis dataKey="year" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} />
+                    <YAxis yAxisId="left" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} label={{ value: yLabel, angle: -90, position: 'insideLeft', fill: '#8899BB', fontSize: 11 }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#00BFA5" tick={{ fill: '#00BFA5', fontSize: 12 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend wrapperStyle={{ color: '#8899BB', fontSize: 12 }} />
+                    <Bar yAxisId="left" dataKey="value" name="Market Size" fill="#1565C0" radius={[4, 4, 0, 0]} barSize={30} />
+                    <Line yAxisId="right" type="monotone" dataKey="cagrLine" stroke="#00BFA5" strokeWidth={3} name="CAGR Trend" dot={{ r: 4, fill: '#00BFA5' }} />
+                </ComposedChart>
+            </ResponsiveContainer>
+        );
+    }
+
+    // ── Stacked Column + Line (Segmentation) ──────────────────────────────────
+    if (type.includes('stacked_column')) {
+        const { keys, data } = buildStackedTimeSeriesData(tableData, sizing);
+        return (
+            <ResponsiveContainer width="100%" height={340}>
+                <ComposedChart data={data} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1B2A4A" />
+                    <XAxis dataKey="year" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} />
+                    <YAxis yAxisId="left" stroke="#8899BB" tick={{ fill: '#8899BB', fontSize: 12 }} label={{ value: yLabel, angle: -90, position: 'insideLeft', fill: '#8899BB', fontSize: 11 }} />
+                    <YAxis yAxisId="right" orientation="right" stroke="#00BFA5" tick={{ fill: '#00BFA5', fontSize: 12 }} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend wrapperStyle={{ color: '#8899BB', fontSize: 12 }} />
+                    {keys.map((key, i) => (
+                        <Bar key={key} yAxisId="left" dataKey={key} stackId="a" fill={PALETTE[i % PALETTE.length]} radius={i === keys.length - 1 ? [4, 4, 0, 0] : [0, 0, 0, 0]} barSize={30} />
+                    ))}
+                    <Line yAxisId="right" type="monotone" dataKey="cagrLine" stroke="#00BFA5" strokeWidth={3} name="Total CAGR Trend" dot={false} strokeDasharray="5 5" />
+                </ComposedChart>
+            </ResponsiveContainer>
+        );
+    }
+
     // ── Market forecast / line / area ──────────────────────────────────────────
     if (type.includes('line') || type.includes('forecast') || type.includes('area') ||
-        type.includes('combination') || type === '' || type.includes('trend')) {
+        type === '' || type.includes('trend')) {
         const data = buildForecastData(sizing, xAxisValues as number[]);
         return (
             <ResponsiveContainer width="100%" height={340}>

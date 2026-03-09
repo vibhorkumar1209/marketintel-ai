@@ -134,7 +134,12 @@ CORE RULES (NON-NEGOTIABLE):
    T5: Research Aggregators (sanity check only — NOT primary)
    T6: Media / Press (only when no other source available)
    BANNED as primary: Grand View Research, Mordor Intelligence, IMARC, Transparency Market Research.
-5. TWO-LINE INTRO + TABLE + CHART — For every section or subsection, begin with EXACTLY two lines (sentences) of introduction, followed immediately by a dedicated, detailed table and its associated relevant graph/chart. You MUST generate charts for every non-subsection section too!
+5. CHART REQUIREMENTS: 
+   - Market Size Estimation: MUST output a Combination chart specifying \`"type": "combination_column_line"\`.
+   - Market Segmentation: MUST output Stacked column charts specifying \`"type": "stacked_column_line"\`.
+   - Market Forecast: MUST output a Combination chart specifying \`"type": "combination_column_line"\`.
+   - Trends, Drivers, Barriers, Regulatory, Major Tech Trends: DO NOT generate any charts. Set \`chart_spec: null\`.
+   - For every section or subsection overall, begin with EXACTLY two lines (sentences) of introduction, followed immediately by a dedicated table.
 6. SOURCE NAMING RESTRICTION — DO NOT include or mention any sources or citations in the body text or tables of any section or subsection. All sources must ONLY be placed in the citations array without any name-dropping in the text or tables.
 7. VOLUME AND VALUE — all market size figures must include USD value AND physical volume where applicable.
 8. TONE: ${sectionTone}
@@ -143,9 +148,9 @@ CORE RULES (NON-NEGOTIABLE):
 ${['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
 SPECIAL SUBSECTION REQUIREMENT: 
 This section requires granular dimensions. You MUST output a "subsections" array instead of a single top-level table/chart. 
-- If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the highly detailed table MUST encompass rows for Supply, Demand, Technology, Commercial, Pricing, Regulatory, and Others dimensions. Each subsection must have exactly 2 lines of intro, its highly detailed table, and a relevant chart (e.g., stacked column).
+- If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the highly detailed table MUST encompass rows for Supply, Demand, Technology, Commercial, Pricing, Regulatory, and Others dimensions. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
 - If Competitive: create an individual subsection for each major company detailing its current operations, with its own table and chart.
-- If Segmentation / Regional: create subsections for each major segment/region, each with its own 2-line intro, table, and chart.
+- If Segmentation / Regional: create subsections for each major segment/region, each with its own 2-line intro, table, and MUST use a \`"type": "stacked_column_line"\` chart.
 
 OUTPUT FORMAT:
 {
@@ -160,7 +165,7 @@ OUTPUT FORMAT:
       "title": "Subsection Title (e.g. Supply / Company A / Segment)",
       "body_paragraphs": ["Exactly 2 sentences introducing this subsection."],
       "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] },
-      "chart_spec": { "type": "stacked_column|bar|pie|line", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" }
+      "chart_spec": { "type": "stacked_column_line|combination_column_line|bar|pie|line", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" } | null
     }
   ],
   "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
@@ -173,7 +178,7 @@ OUTPUT FORMAT:
   "word_count_target": number,
   "body_paragraphs": ["Exactly 2 sentences introducing the section."],
   "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] },
-  "chart_spec": { "type": "line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" },
+  "chart_spec": { "type": "combination_column_line|line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" } | null,
   "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
   "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
 }`}
