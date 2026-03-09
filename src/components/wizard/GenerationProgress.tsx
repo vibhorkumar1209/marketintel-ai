@@ -156,85 +156,17 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
                 </div>
             </div>
 
-            {/* Steps Card */}
-            <Card>
-                <div className="space-y-4">
-                    {steps.map((step, index) => {
-                        // Apply different branding colors instead of hardcoded teal/green
-                        const isCompleted = step.status === 'completed';
-                        const isRunning = step.status === 'running';
-                        const isFailed = step.status === 'failed';
-                        const isPending = step.status === 'pending';
-
-                        return (
-                            <div key={step.step} className="flex items-start gap-4">
-                                <div className="flex flex-col items-center">
-                                    <div
-                                        className={clsx(
-                                            'w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300',
-                                            isCompleted && 'bg-green-100 text-green-600',
-                                            isRunning && 'text-white animate-pulse shadow-md',
-                                            isFailed && 'bg-red-100 text-red-600',
-                                            isPending && 'bg-gray-100 text-gray-400 border border-gray-200'
-                                        )}
-                                        style={isRunning ? { backgroundColor: meta.accent, boxShadow: `0 4px 14px ${meta.accent}40` } : {}}
-                                    >
-                                        {isCompleted && '✓'}
-                                        {isRunning && '◆'}
-                                        {isFailed && '✗'}
-                                        {isPending && '○'}
-                                    </div>
-
-                                    {index < steps.length - 1 && (
-                                        <div
-                                            className={clsx(
-                                                'w-0.5 h-8 mt-2',
-                                                isCompleted ? 'bg-green-500' : 'bg-gray-200'
-                                            )}
-                                        />
-                                    )}
-                                </div>
-
-                                <div className="flex-1 pt-1.5">
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <span className="text-xl opacity-80">{STEP_ICONS[step.step]}</span>
-                                        <h3 className={clsx(
-                                            'font-semibold transition-colors',
-                                            isCompleted && 'text-green-600 font-bold',
-                                            isRunning && 'font-bold',
-                                            isFailed && 'text-red-500',
-                                            isPending && 'text-gray-400 font-medium'
-                                        )}
-                                            style={isRunning ? { color: meta.accent } : {}}
-                                        >
-                                            {step.name}
-                                        </h3>
-                                    </div>
-
-                                    {step.durationMs && (
-                                        <p className="text-xs text-gray-500 ml-9">
-                                            Completed in {(step.durationMs / 1000).toFixed(1)}s
-                                        </p>
-                                    )}
-
-                                    {isRunning && (
-                                        <div className="flex items-center gap-2 mt-2 ml-9">
-                                            <div className="flex gap-1.5">
-                                                <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: meta.accent }} />
-                                                <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: meta.accent, animationDelay: '0.1s' }} />
-                                                <div className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: meta.accent, animationDelay: '0.2s' }} />
-                                            </div>
-                                            <span className="text-xs font-medium" style={{ color: meta.accent }}>
-                                                {step.progressText ? step.progressText : 'Processing...'}
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </Card>
+            {/* Current Step Text */}
+            <div className="flex justify-center mt-6">
+                {isComplete ? (
+                    <p className="text-sm text-green-600 font-medium">Generation Complete!</p>
+                ) : (
+                    <p className="text-sm font-medium text-gray-500 flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: meta.accent }}></span>
+                        {steps.find(s => s.status === 'running')?.name ? `Running: ${steps.find(s => s.status === 'running')?.name}` : 'Initializing...'}
+                    </p>
+                )}
+            </div>
 
             {/* Completion Message */}
             {isComplete && (
