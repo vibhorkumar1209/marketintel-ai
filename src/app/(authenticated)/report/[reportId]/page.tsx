@@ -125,14 +125,17 @@ export default function ReportPage() {
 
   let scopeSection: any, otherSections: any[], appendixSection: any, visibleSections: any[], tabs: string[];
 
+  const HIDE_KEYWORDS = /(source|methodology|estimation|assumption|confidence|primary)/i;
+  const isAdmin = session?.user?.role === 'admin';
+
   if (isTrends) {
     const trendsSection = report.sections.find((s: any) => s.id === 'dynamics');
     if (trendsSection) trendsSection.title = 'Trend Report';
     visibleSections = trendsSection ? [trendsSection] : [];
     tabs = ['Trend Report'];
   } else {
-    scopeSection = report.sections.find((s: any) => s.id === 'intro');
-    otherSections = report.sections.filter((s: any) => s.id !== 'intro' && s.id !== 'appendix');
+    scopeSection = report.sections.find((s: any) => s.id === 'intro' || s.id === 'market_report_scope');
+    otherSections = report.sections.filter((s: any) => s.id !== 'intro' && s.id !== 'appendix' && s.id !== 'market_report_scope');
     appendixSection = report.sections.find((s: any) => s.id === 'appendix');
 
     visibleSections = [
@@ -145,7 +148,7 @@ export default function ReportPage() {
       ...(scopeSection ? [scopeSection.title] : []),
       'Executive Summary',
       ...(otherSections || []).map((s: any) => s.title),
-      ...(appendixSection ? [appendixSection.title] : [])
+      ...(appendixSection && isAdmin ? [appendixSection.title] : [])
     ];
   }
 
@@ -235,28 +238,34 @@ export default function ReportPage() {
 
             {/* KPI panel */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 14 }}>
-              {(report.executiveSummary?.kpiPanel || []).map((kpi, i) => (
-                <div key={i} style={{
-                  background: T.card, border: `1px solid ${T.cardBorder}`,
-                  borderTop: `3px solid ${i % 2 === 0 ? T.teal : T.blue}`,
-                  borderRadius: 10, padding: '16px 20px',
-                }}>
-                  <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 8 }}>{kpi.label}</p>
-                  <p style={{ fontSize: 22, fontWeight: 900, color: i % 2 === 0 ? T.teal : T.blue, fontFamily: 'DM Mono, monospace' }}>{kpi.value}</p>
-                  <p style={{ fontSize: 11, color: T.muted, marginTop: 6 }}>
-                    {(kpi as { source_section?: string }).source_section || 'Market Analysis'}
-                  </p>
-                </div>
-              ))}
+              {(report.executiveSummary?.kpiPanel || [])
+                .filter((kpi: any) => isAdmin || !HIDE_KEYWORDS.test(kpi.label))
+                .map((kpi, i) => (
+                  <div key={i} style={{
+                    background: T.card, border: `1px solid ${T.cardBorder}`,
+                    borderTop: `3px solid ${i % 2 === 0 ? T.teal : T.blue}`,
+                    borderRadius: 10, padding: '16px 20px',
+                  }}>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: T.muted, letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: 8 }}>{kpi.label}</p>
+                    <p style={{ fontSize: 22, fontWeight: 900, color: i % 2 === 0 ? T.teal : T.blue, fontFamily: 'DM Mono, monospace' }}>{kpi.value}</p>
+                    {isAdmin && (
+                      <p style={{ fontSize: 11, color: T.muted, marginTop: 6 }}>
+                        {(kpi as { source_section?: string }).source_section || 'Market Analysis'}
+                      </p>
+                    )}
+                  </div>
+                ))}
             </div>
 
             {/* Body paragraphs */}
             <Card>
               <SectionLabel text="Summary" />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {(report.executiveSummary?.paragraphs || []).map((p, i) => (
-                  <p key={i} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{p}</p>
-                ))}
+                {(report.executiveSummary?.paragraphs || [])
+                  .filter((p: string) => isAdmin || !HIDE_KEYWORDS.test(p))
+                  .map((p, i) => (
+                    <p key={i} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{p}</p>
+                  ))}
               </div>
             </Card>
 
@@ -308,9 +317,11 @@ export default function ReportPage() {
               {/* Body text */}
               <Card>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {(section.content || []).map((para: any, pi: number) => (
-                    <p key={pi} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{para}</p>
-                  ))}
+                  {(section.content || [])
+                    .filter((p: string) => isAdmin || !HIDE_KEYWORDS.test(p))
+                    .map((para: any, pi: number) => (
+                      <p key={pi} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{para}</p>
+                    ))}
                 </div>
               </Card>
 
@@ -328,35 +339,45 @@ export default function ReportPage() {
                       {(section.keyTable as { headers?: string[] }).headers && (
                         <thead>
                           <tr style={{ background: '#f8fafc' }}>
-                            {((section.keyTable as { headers?: string[] }).headers || []).map((h, hi) => (
-                              <th key={hi} style={{
-                                padding: '10px 16px', textAlign: 'left',
-                                fontSize: 10, fontWeight: 700, color: T.teal,
-                                textTransform: 'uppercase', letterSpacing: '1px',
-                                borderBottom: `1px solid ${T.cardBorder}`,
-                              }}>{String(h)}</th>
-                            ))}
+                            {((section.keyTable as { headers?: string[] }).headers || [])
+                              .filter(h => isAdmin || !HIDE_KEYWORDS.test(String(h)))
+                              .map((h, hi) => (
+                                <th key={hi} style={{
+                                  padding: '10px 16px', textAlign: 'left',
+                                  fontSize: 10, fontWeight: 700, color: T.teal,
+                                  textTransform: 'uppercase', letterSpacing: '1px',
+                                  borderBottom: `1px solid ${T.cardBorder}`,
+                                }}>{String(h)}</th>
+                              ))}
                           </tr>
                         </thead>
                       )}
                       <tbody>
-                        {(section.keyTable as { rows?: any[][] }).rows?.map((row, ri) => (
-                          <tr key={ri} style={{
-                            background: ri % 2 === 0 ? 'transparent' : '#f9fafb',
-                            borderBottom: `1px solid ${T.cardBorder}`,
-                            transition: 'background 100ms ease',
-                          }}>
-                            {Array.isArray(row) ? (row || []).map((cell, ci) => (
-                              <td key={ci} style={{ padding: '12px 16px', color: ci === 0 ? T.text : T.muted }}>
-                                {String(cell)}
-                              </td>
-                            )) : Object.values(row || {}).map((cell, ci) => (
-                              <td key={ci} style={{ padding: '12px 16px', color: ci === 0 ? T.text : T.muted }}>
-                                {String(cell)}
-                              </td>
-                            ))}
-                          </tr>
-                        ))}
+                        {(section.keyTable as { rows?: any[][] }).rows?.map((row, ri) => {
+                          const entries = Array.isArray(row) ? (row || []) : Object.values(row || {});
+                          const headers = (section.keyTable as { headers?: string[] }).headers || [];
+
+                          return (
+                            <tr key={ri} style={{
+                              background: ri % 2 === 0 ? 'transparent' : '#f9fafb',
+                              borderBottom: `1px solid ${T.cardBorder}`,
+                              transition: 'background 100ms ease',
+                            }}>
+                              {entries.map((cell, ci) => {
+                                // Skip cell if the header contains 'source' and user is not admin
+                                const header = headers[ci];
+                                if (!isAdmin && header && HIDE_KEYWORDS.test(String(header))) {
+                                  return null;
+                                }
+                                return (
+                                  <td key={ci} style={{ padding: '12px 16px', color: ci === 0 ? T.text : T.muted }}>
+                                    {String(cell)}
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -383,9 +404,11 @@ export default function ReportPage() {
                     tableData={section.keyTable as any}
                   />
                   <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${T.cardBorder}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ fontSize: 10, color: T.muted }}>
-                      Data Source: {String((section.chartSpec as { data_source?: unknown }).data_source || 'MarketIntel Analysis')}
-                    </p>
+                    {isAdmin ? (
+                      <p style={{ fontSize: 10, color: T.muted }}>
+                        Data Source: {String((section.chartSpec as { data_source?: unknown }).data_source || 'MarketIntel Analysis')}
+                      </p>
+                    ) : <div />}
                     {section.flags?.includes('DATA_QUALITY') && (
                       <span style={{ fontSize: 9, color: T.red, fontWeight: 700 }}>INDICATIVE ESTIMATE</span>
                     )}
@@ -396,62 +419,74 @@ export default function ReportPage() {
               {/* Subsections */}
               {section.subsections && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 10 }}>
-                  {(section.subsections || []).map((sub: any, si: number) => (
-                    <Card key={si} style={{ borderLeft: `4px solid ${si % 2 === 0 ? T.teal : T.blue}` }}>
-                      <h4 style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 16 }}>{sub.title}</h4>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                        {(sub.content || []).map((p: string, pi: number) => (
-                          <p key={pi} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{p}</p>
-                        ))}
-                      </div>
-
-                      {sub.keyTable && (
-                        <div style={{ marginTop: 20, borderRadius: 8, border: `1px solid ${T.cardBorder}`, overflow: 'hidden' }}>
-                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-                            {sub.keyTable.headers && (
-                              <thead style={{ background: '#f8fafc' }}>
-                                <tr>
-                                  {(sub.keyTable.headers || []).map((h: string, hi: number) => (
-                                    <th key={hi} style={{ padding: '8px 12px', textAlign: 'left', color: T.teal, fontSize: 9, textTransform: 'uppercase', fontWeight: 800 }}>{h}</th>
-                                  ))}
-                                </tr>
-                              </thead>
-                            )}
-                            <tbody>
-                              {(sub.keyTable.rows || []).map((row: any[], ri: number) => (
-                                <tr key={ri} style={{ borderTop: `1px solid ${T.cardBorder}` }}>
-                                  {(row || []).map((cell, ci) => (
-                                    <td key={ci} style={{ padding: '8px 12px', color: ci === 0 ? T.text : T.muted }}>{String(cell)}</td>
-                                  ))}
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                  {(section.subsections || [])
+                    .filter((sub: any) => isAdmin || !HIDE_KEYWORDS.test(sub.title))
+                    .map((sub: any, si: number) => (
+                      <Card key={si} style={{ borderLeft: `4px solid ${si % 2 === 0 ? T.teal : T.blue}` }}>
+                        <h4 style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 16 }}>{sub.title}</h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                          {(sub.content || [])
+                            .filter((p: string) => isAdmin || !HIDE_KEYWORDS.test(p))
+                            .map((p: string, pi: number) => (
+                              <p key={pi} style={{ color: T.muted, lineHeight: 1.8, fontSize: 14 }}>{p}</p>
+                            ))}
                         </div>
-                      )}
 
-                      {sub.chartSpec && (
-                        <Card>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                            <span style={{ color: T.teal }}><IconChart /></span>
-                            <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text }}>
-                              {sub.chartSpec.title || 'Market Chart'}
-                            </h3>
+                        {sub.keyTable && (
+                          <div style={{ marginTop: 20, borderRadius: 8, border: `1px solid ${T.cardBorder}`, overflow: 'hidden' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                              {sub.keyTable.headers && (
+                                <thead style={{ background: '#f8fafc' }}>
+                                  <tr>
+                                    {(sub.keyTable.headers || [])
+                                      .filter((h: string) => isAdmin || !HIDE_KEYWORDS.test(String(h)))
+                                      .map((h: string, hi: number) => (
+                                        <th key={hi} style={{ padding: '8px 12px', textAlign: 'left', color: T.teal, fontSize: 9, textTransform: 'uppercase', fontWeight: 800 }}>{h}</th>
+                                      ))}
+                                  </tr>
+                                </thead>
+                              )}
+                              <tbody>
+                                {(sub.keyTable.rows || []).map((row: any[], ri: number) => (
+                                  <tr key={ri} style={{ borderTop: `1px solid ${T.cardBorder}` }}>
+                                    {(row || []).map((cell, ci) => {
+                                      const header = sub.keyTable.headers?.[ci];
+                                      if (!isAdmin && header && HIDE_KEYWORDS.test(String(header))) {
+                                        return null;
+                                      }
+                                      return (
+                                        <td key={ci} style={{ padding: '8px 12px', color: ci === 0 ? T.text : T.muted }}>{String(cell)}</td>
+                                      );
+                                    })}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
                           </div>
-                          <p style={{ fontSize: 11, color: T.muted, marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
-                            {sub.chartSpec.type || 'stacked_column'} chart
-                          </p>
-                          <ReportChart chartSpec={sub.chartSpec} sizing={(report as any).sizing} tableData={sub.keyTable} />
-                        </Card>
-                      )}
-                    </Card>
-                  ))}
+                        )}
+
+                        {sub.chartSpec && (
+                          <Card>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                              <span style={{ color: T.teal }}><IconChart /></span>
+                              <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text }}>
+                                {sub.chartSpec.title || 'Market Chart'}
+                              </h3>
+                            </div>
+                            <p style={{ fontSize: 11, color: T.muted, marginBottom: 20, textTransform: 'uppercase', letterSpacing: '0.8px' }}>
+                              {sub.chartSpec.type || 'stacked_column'} chart
+                            </p>
+                            <ReportChart chartSpec={sub.chartSpec} sizing={(report as any).sizing} tableData={sub.keyTable} />
+                          </Card>
+                        )}
+                      </Card>
+                    ))}
                 </div>
               )}
 
 
               {/* Admin-only methodology log */}
-              {session?.user?.role === 'admin' && section.adminMethodology && (
+              {isAdmin && section.adminMethodology && (
                 <div style={{ marginTop: 20, border: '1px solid #f59e0b', borderRadius: 12, padding: 20, background: 'rgba(245, 158, 11, 0.05)' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                     <span style={{ color: '#f59e0b' }}>⚠️</span>

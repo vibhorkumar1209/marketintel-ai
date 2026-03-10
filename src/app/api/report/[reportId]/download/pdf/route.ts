@@ -22,19 +22,35 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
     keyTable?: { title?: string; headers?: string[]; rows?: unknown[][] };
   }>);
 
+  const getSectionTitle = (s: any) => {
+    if (session?.user?.role === 'admin') return s.title || 'Section';
+    if (String(s.title || '').toLowerCase().includes('appendix') || s.id === 'appendix') return 'Methodology';
+    return s.title || 'Section';
+  };
+
+  const HIDE_KEYWORDS = /(source|methodology|estimation|assumption|confidence|primary)/i;
+
   const sectionsHTML = sections.map(s => `
     <section class="section">
-      <h2>${s.title || 'Section'}</h2>
+      <h2>${getSectionTitle(s)}</h2>
       ${(s.flags || []).length > 0 ? `<div class="flag">${(s.flags || []).slice(0, 3).map(f => `<span>⚠ ${String(f).slice(0, 100)}</span>`).join(' ')}</div>` : ''}
-      ${(s.content || []).map(p => `<p>${p}</p>`).join('')}
+      ${(s.content || [])
+      .filter(p => session?.user?.role === 'admin' || !HIDE_KEYWORDS.test(p))
+      .map(p => `<p>${p}</p>`).join('')}
       ${s.keyTable && s.keyTable.rows?.length ? `
         <table>
-          ${s.keyTable.headers?.length ? `<thead><tr>${(s.keyTable.headers || []).map(h => `<th>${h}</th>`).join('')}</tr></thead>` : ''}
-          <tbody>${(s.keyTable.rows || []).map(row =>
-    `<tr>${(Array.isArray(row) ? row : Object.values(row as object)).map(cell => `<td>${String(cell ?? '')}</td>`).join('')}</tr>`
-  ).join('')}</tbody>
+          ${s.keyTable.headers?.filter(h => session?.user?.role === 'admin' || !HIDE_KEYWORDS.test(String(h))).length ? `<thead><tr>${(s.keyTable.headers || []).filter(h => session?.user?.role === 'admin' || !HIDE_KEYWORDS.test(String(h))).map(h => `<th>${h}</th>`).join('')}</tr></thead>` : ''}
+          <tbody>${(s.keyTable.rows || []).map(row => {
+        const entries = Array.isArray(row) ? row : Object.values(row as object);
+        const headers = s.keyTable?.headers || [];
+        return `<tr>${entries.map((cell, ci) => {
+          const h = headers[ci];
+          if (session?.user?.role !== 'admin' && h && HIDE_KEYWORDS.test(String(h))) return null;
+          return `<td>${String(cell ?? '')}</td>`;
+        }).filter(tc => tc !== null).join('')}</tr>`;
+      }).join('')}</tbody>
         </table>` : ''}
-      ${(s.citations || []).length > 0 ? `
+      ${(s.citations || []).length > 0 && session?.user?.role === 'admin' ? `
         <div class="citations">
           <strong>Sources</strong>
           ${(s.citations || []).map(c => `<cite>${String(c.claim || '')} — ${String(c.source || '')} (${String(c.date || 'N/A')}, ${String(c.tier || 'N/A')})</cite>`).join('')}
@@ -88,7 +104,7 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
 
   <div class="toc">
     <h2>Table of Contents</h2>
-    <ol>${['Executive Summary', ...sections.map(s => s.title || '')].map(t => `<li>${t}</li>`).join('')}</ol>
+    <ol>${['Executive Summary', ...sections.map(s => getSectionTitle(s))].map(t => `<li>${t}</li>`).join('')}</ol>
   </div>
 
   ${sectionsHTML}
