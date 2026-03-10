@@ -146,7 +146,7 @@ CORE RULES (NON-NEGOTIABLE):
 8. TONE: ${sectionTone}
 9. Output structured JSON ONLY.
 
-${['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
+${['dynamics', 'segmentation', 'regional_analysis', 'competitive', 'regulatory'].includes(sectionId) ? `
 SPECIAL SUBSECTION REQUIREMENT: 
 This section requires granular dimensions. You MUST output a "subsections" array instead of a single top-level table/chart. 
 ${reportType === 'trends_report' && sectionId === 'dynamics' ? `
@@ -156,9 +156,10 @@ ${reportType === 'trends_report' && sectionId === 'dynamics' ? `
 - BOTH subsections must use a table with these EXACT headers: ["Trend name", "Impact of Trend on Industry", "Description of Trend", "Examples"].
 ` : `
 - If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the table MUST follow these headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
-`}
+- If Regulatory: create EXACTLY 4 subsections: "Regulatory Bodies", "Regulation Tracker", "Trade & Compliance Barriers", and "Pending Regulations". Each must have its own table as defined in the section description.
 - If Competitive: create an individual subsection for each major company detailing its current operations, with its own table and chart.
 - If Segmentation / Regional: create subsections for each major segment/region, each with its own 2-line intro, table, and MUST use a \`"type": "stacked_column_line"\` chart.
+`}
 ` : ''}
 
 OUTPUT FORMAT:
@@ -167,9 +168,6 @@ OUTPUT FORMAT:
   "section_title": "string",
   "word_count_target": number,
   "body_paragraphs": ["Exactly 2 sentences introducing the overall section context."],
-  "admin_methodology": "DANGER: FOR ADMIN LOG ONLY. Detailed internal logic, triangulation calculations, assumptions, and data source quality notes. This will NOT be rendered for users.",
-  "key_table": null,
-  "chart_spec": null,
   "subsections": [
     {
       "title": "Subsection Title (e.g. Supply / Company A / Segment)",
@@ -179,7 +177,8 @@ OUTPUT FORMAT:
     }
   ],
   "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
-  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
+  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"],
+  "admin_methodology": "DANGER: FOR ADMIN LOG ONLY. Detailed internal logic, triangulation calculations, assumptions, and data source quality notes. This will NOT be rendered for users."
 }
 
 ${!['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
@@ -192,7 +191,8 @@ Wait, if this section is NOT one of the above, use this simpler structure:
   "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] },
   "chart_spec": { "type": "combination_column_line|line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" } | null,
   "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
-  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
+  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"],
+  "admin_methodology": "Detailed internal logic and assumptions."
 }` : ''}
 `;
 
@@ -259,7 +259,7 @@ OUTPUT the complete section JSON:`;
     section_id: sectionId,
     section_title: sectionDef.title,
     word_count_target: wordTarget,
-    body_paragraphs: [text.slice(0, 4000) || 'Section generation incomplete'],
+    body_paragraphs: [text.slice(0, 30000) || 'Section generation incomplete'],
     key_table: null,
     chart_spec: null,
     citations: [],
