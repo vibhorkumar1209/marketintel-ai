@@ -10,7 +10,9 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
 
   // Check cache first
   const cached = await getCachedReport(params.reportId);
-  if (cached) return NextResponse.json(cached);
+  if (cached && (cached as any).executiveSummary?.headline) {
+    return NextResponse.json(cached);
+  }
 
   const report = await db.report.findUnique({ where: { id: params.reportId } });
   if (!report || report.userId !== session.user.id) {
@@ -24,7 +26,8 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
   const sections = (report.sections as unknown[]) || [];
 
   // Build executiveSummary from stored metadata/sizing since it's not a separate DB field
-  const executiveSummary = (metadata as any).executiveSummary || {
+  const metaExSum = (metadata as any).executiveSummary;
+  const executiveSummary = (metaExSum && metaExSum.headline && metaExSum.paragraphs?.length > 0) ? metaExSum : {
     headline: `${report.title} — ${String(metadata.geography || 'Global')} Market Analysis`,
     kpiPanel: [
       { label: 'Market Size', value: `${sizingResult.value || 'N/A'} ${sizingResult.unit || 'USD Million'}`, source_section: 'sizing_workings' },
@@ -32,7 +35,9 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
       { label: 'Geography', value: String(metadata.geography || 'Global'), source_section: 'regional_analysis' },
       { label: 'Quality Score', value: `${metadata.qualityScore ?? 'N/A'}%`, source_section: 'methodology' },
     ],
-    paragraphs: (metadata.keyFindings as string[] || []).map(f => f),
+    paragraphs: (metadata.keyFindings as string[] || []).length > 0
+      ? (metadata.keyFindings as string[])
+      : [`The ${report.title} represents a comprehensive analysis of the ${String(metadata.geography || 'Global')} market landscape.`, `Strategic drivers and technological shifts are expected to maintain a CAGR of ${cagr.value || 'N/A'}% through the forecast period.`],
     scenarios: {
       bull: 'Strong growth trajectory if key drivers materialize.',
       base: 'Steady growth in line with historical CAGR trends.',

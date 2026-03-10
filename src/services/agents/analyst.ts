@@ -318,7 +318,22 @@ REQUIREMENTS:
 5. Every figure must be traceable to a section already drafted
 6. No new claims not in the drafted sections
 
-Output ONLY valid JSON.`;
+OUTPUT FORMAT (JSON ONLY):
+{
+  "market_headline": "string",
+  "kpi_panel": [
+    { "label": "Market Size", "value": "string", "source_section": "sizing_workings" },
+    { "label": "CAGR (%)", "value": "string", "source_section": "sizing_workings" },
+    { "label": "Major Trend", "value": "string", "source_section": "dynamics" }
+  ],
+  "body_paragraphs": ["string (paragraph 1)", "string (paragraph 2)"],
+  "scenario_outlook": {
+    "bull": "string",
+    "base": "string",
+    "bear": "string"
+  }
+}
+`;
 
   const userPrompt = `DRAFT THE EXECUTIVE SUMMARY for the following report on ${scope.industry}.
 
