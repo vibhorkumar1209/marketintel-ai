@@ -87,13 +87,11 @@ const Sidebar: React.FC = () => {
           minWidth: isCollapsed ? 68 : 220,
           background: 'linear-gradient(180deg, #0C3649 0%, #1a4a6b 100%)',
           borderRight: '1px solid #1a4a6b',
-          display: 'flex',
-          flexDirection: 'column',
           transition: 'width 250ms ease, min-width 250ms ease',
           position: 'relative',
           zIndex: 20,
         }}
-        className="hidden md:flex"
+        className="hidden md:flex flex-col"
       >
         {/* Logo */}
         <div style={{

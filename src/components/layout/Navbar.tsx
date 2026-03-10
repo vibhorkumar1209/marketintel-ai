@@ -32,13 +32,11 @@ const Navbar: React.FC = () => {
 
   return (
     <nav
-      className="hidden md:flex"
+      className="hidden md:flex items-center"
       style={{
         height: 56,
         background: '#ffffff',
         borderBottom: '1px solid #e5e7eb',
-        display: 'flex',
-        alignItems: 'center',
         paddingLeft: 24,
         paddingRight: 24,
         gap: 16,
