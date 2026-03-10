@@ -229,42 +229,94 @@ const Sidebar: React.FC = () => {
         </div>
       </aside>
 
-      {/* ── Mobile: Top bar + slide-out ── */}
-      <div className="md:hidden" style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50 }}>
-        <div style={{
-          height: 56, background: 'linear-gradient(90deg, #0C3649 0%, #1a4a6b 100%)', borderBottom: '1px solid #1a4a6b',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={{
-              width: 26, height: 26,
-              background: 'linear-gradient(135deg, #3491E8 0%, #E63946 100%)',
-              clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-            }} />
-            <span style={{ fontSize: 14, fontWeight: 800, color: '#ffffff' }}>RefractOne</span>
-          </div>
-          <button onClick={() => setMobileOpen(o => !o)} style={{ background: 'none', border: 'none', color: '#3491E8', cursor: 'pointer' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {mobileOpen ? <path d="M6 18L18 6M6 6l12 12" /> : <><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" /></>}
-            </svg>
-          </button>
-        </div>
-        {mobileOpen && (
-          <div style={{ background: 'linear-gradient(180deg, #0C3649 0%, #1a4a6b 100%)', borderBottom: '1px solid #1a4a6b', padding: '8px 0' }}>
-            {NAV_ITEMS.map(item => (
-              <Link key={item.label} href={item.href} onClick={() => setMobileOpen(false)}>
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 12, padding: '12px 20px',
-                  color: isActive(item.href) ? '#ffffff' : '#7eaabf',
-                  borderLeft: isActive(item.href) ? '3px solid #E63946' : '3px solid transparent',
-                  background: isActive(item.href) ? 'rgba(230, 57, 70, 0.1)' : 'transparent',
-                  fontSize: 14, fontWeight: 500,
-                }}>
-                  {item.icon}<span>{item.label}</span>
+      {/* ── Mobile: Navbar/Dropdown ── */}
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50">
+        <div className="h-14 bg-[#0C3649] border-b border-[#1a4a6b] flex items-center justify-between px-4 shadow-lg">
+          <Link href="/dashboard" className="flex items-center gap-2 no-underline">
+            <div className="w-7 h-7 bg-gradient-to-br from-[#3491E8] to-[#E63946] [clip-path:polygon(50%_0%,0%_100%,100%_100%)]" />
+            <span className="text-sm font-black text-white tracking-tight">REFRACTONE</span>
+          </Link>
+
+          <div className="relative">
+            <button
+              onClick={() => setMobileOpen(o => !o)}
+              className="flex items-center gap-2 bg-[#1a4a6b] px-3 py-1.5 rounded-lg border border-white/10 text-[#3491E8] active:scale-95 transition-transform"
+            >
+              <span className="text-xs font-bold text-white uppercase tracking-wider">Menu</span>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                {mobileOpen ? <path d="M18 10l-6-6-6 6" /> : <path d="M6 9l6 6 6-6" />}
+              </svg>
+            </button>
+
+            {/* Dropdown Menu Overlay */}
+            {mobileOpen && (
+              <div className="absolute top-12 right-0 w-72 bg-[#0C3649] border border-[#1a4a6b] rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="p-3 flex flex-col gap-1">
+
+                  {/* Global Search in Mobile Dropdown */}
+                  <div className="px-1 mb-3">
+                    <div className="relative">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7eaabf" strokeWidth="2.5" className="absolute left-3 top-1/2 -translate-y-1/2">
+                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="Search research..."
+                        className="w-full bg-[#162540] border border-[#1a4a6b] text-white text-xs rounded-lg py-2 pl-9 pr-3 focus:outline-none focus:border-[#3491E8]"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            setMobileOpen(false);
+                            // Navigate locally
+                            window.location.href = `/wizard?q=${encodeURIComponent((e.target as HTMLInputElement).value)}`;
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {NAV_ITEMS.map(item => {
+                    const active = isActive(item.href);
+                    return (
+                      <Link
+                        key={item.label}
+                        href={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg no-underline transition-colors ${active ? 'bg-[#E63946]/10 text-white' : 'text-[#7eaabf] hover:bg-white/5 hover:text-white'
+                          }`}
+                      >
+                        <span className={active ? 'text-[#E63946]' : 'text-inherit'}>{item.icon}</span>
+                        <span className="text-sm font-semibold">{item.label}</span>
+                        {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#E63946]" />}
+                      </Link>
+                    );
+                  })}
+
+                  {/* Bottom info in dropdown */}
+                  <div className="mt-2 pt-2 border-t border-[#1a4a6b] px-4 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-[#3491E8] flex items-center justify-center text-xs font-bold text-white">
+                        {initials}
+                      </div>
+                      <span className="text-xs font-bold text-white truncate max-w-[100px]">{session?.user?.name || 'User'}</span>
+                    </div>
+                    {credits !== null && (
+                      <div className="bg-[#3491E8]/10 px-2 py-1 rounded border border-[#3491E8]/20">
+                        <span className="text-[10px] font-black text-[#3491E8]">{credits} Cr</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </Link>
-            ))}
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Backdrop for mobile dropdown */}
+        {mobileOpen && (
+          <div
+            className="fixed inset-0 bg-black/40 -z-10 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
+          />
         )}
       </div>
     </>

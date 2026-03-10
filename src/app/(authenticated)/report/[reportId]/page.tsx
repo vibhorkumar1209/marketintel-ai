@@ -115,6 +115,9 @@ export default function ReportPage() {
     </div>
   );
 
+  // Safety: ensure report is available for rendering
+  if (!report) return null;
+
   const isTrends = (report as any).reportType === 'trends_report';
 
   let scopeSection: any, otherSections: any[], appendixSection: any, visibleSections: any[], tabs: string[], tocEntries: any[];
@@ -195,13 +198,29 @@ export default function ReportPage() {
         </div>
       </div>
 
-      {/* ── Horizontal section nav ────────────────────────────────── */}
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 30,
+      {/* ── Section Navigation (Dropdown on Mobile, Tabs on Desktop) ── */}
+      <div className="sticky top-14 md:top-0 z-30" style={{
         background: T.card, borderBottom: `1px solid ${T.cardBorder}`,
-        overflowX: 'auto', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-      }} className="scrollbar-hide">
-        <div className="flex px-4 md:px-6 whitespace-nowrap min-w-max">
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+      }}>
+        {/* Mobile Dropdown */}
+        <div className="md:hidden px-4 py-3">
+          <div className="relative">
+            <select
+              value={activeSection}
+              onChange={(e) => setActiveSection(parseInt(e.target.value))}
+              className="w-full bg-white border border-[#e5e7eb] rounded-lg px-4 py-2.5 text-sm font-bold text-[#0C3649] appearance-none focus:outline-none focus:ring-2 focus:ring-[#3491E8]/20"
+              style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 24 24\' stroke=\'%230C3649\'%3E%3Cpath stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '16px' }}
+            >
+              {(tabs || []).map((tab, idx) => (
+                <option key={idx} value={idx}>{idx === 0 ? `✦ ${tab}` : `${idx + 1}. ${tab}`}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Desktop Tabs */}
+        <div className="hidden md:flex px-6 whitespace-nowrap overflow-x-auto scrollbar-hide">
           {(tabs || []).map((tab, idx) => {
             const active = activeSection === idx;
             return (
@@ -209,7 +228,7 @@ export default function ReportPage() {
                 key={idx}
                 onClick={() => setActiveSection(idx)}
                 style={{
-                  padding: '14px 14px md:padding: 14px 18px', fontSize: 13, fontWeight: active ? 700 : 500,
+                  padding: '14px 18px', fontSize: 13, fontWeight: active ? 700 : 500,
                   color: active ? T.teal : T.muted,
                   background: 'none', border: 'none',
                   borderBottom: active ? `2px solid ${T.teal}` : '2px solid transparent',
@@ -463,7 +482,7 @@ export default function ReportPage() {
                   {(section.subsections || [])
                     .filter((sub: any) => isAdmin || !HIDE_KEYWORDS.test(sub.title))
                     .map((sub: any, si: number) => (
-                      <Card key={si} style={{ borderLeft: `4px solid ${si % 2 === 0 ? T.teal : T.blue}` }}>
+                      <Card key={si} className="p-4 md:p-6" style={{ borderLeft: `4px solid ${si % 2 === 0 ? T.teal : T.blue}` }}>
                         <h4 style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 16 }}>{sub.title}</h4>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                           {(sub.content || [])
@@ -474,15 +493,15 @@ export default function ReportPage() {
                         </div>
 
                         {sub.keyTable && (
-                          <div style={{ marginTop: 20, borderRadius: 8, border: `1px solid ${T.cardBorder}`, overflow: 'hidden' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                          <div style={{ marginTop: 20, borderRadius: 8, border: `1px solid ${T.cardBorder}`, overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, minWidth: 400 }}>
                               {sub.keyTable.headers && (
                                 <thead style={{ background: '#f8fafc' }}>
                                   <tr>
                                     {(sub.keyTable.headers || [])
                                       .filter((h: string) => isAdmin || !HIDE_KEYWORDS.test(String(h)))
                                       .map((h: string, hi: number) => (
-                                        <th key={hi} style={{ padding: '8px 12px', textAlign: 'left', color: T.teal, fontSize: 9, textTransform: 'uppercase', fontWeight: 800 }}>{h}</th>
+                                        <th key={hi} style={{ padding: '10px 12px', textAlign: 'left', color: T.teal, fontSize: 9, textTransform: 'uppercase', fontWeight: 800 }}>{h}</th>
                                       ))}
                                   </tr>
                                 </thead>
@@ -496,7 +515,7 @@ export default function ReportPage() {
                                         return null;
                                       }
                                       return (
-                                        <td key={ci} style={{ padding: '8px 12px', color: ci === 0 ? T.text : T.muted }}>{String(cell)}</td>
+                                        <td key={ci} style={{ padding: '10px 12px', color: ci === 0 ? T.text : T.muted }}>{String(cell)}</td>
                                       );
                                     })}
                                   </tr>
