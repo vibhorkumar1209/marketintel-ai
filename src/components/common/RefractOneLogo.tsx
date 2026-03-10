@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 
 interface LogoProps {
     className?: string;
@@ -17,41 +18,15 @@ export const RefractOneLogo: React.FC<LogoProps> = ({
 }) => {
     return (
         <div className={`flex items-center gap-3 ${className}`}>
-            {/* Logo Mark */}
-            <svg
-                width={size}
-                height={size}
-                viewBox="0 0 100 100"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ flexShrink: 0 }}
-            >
-                {/* Outer triangle border - Dark Navy */}
-                <path
-                    d="M50 8L94 84H6L50 8Z"
-                    stroke="#0C3649"
-                    strokeWidth="6"
-                    strokeLinejoin="round"
+            {/* Logo Mark as Image */}
+            <div style={{ width: size, height: size, position: 'relative', flexShrink: 0 }}>
+                <Image
+                    src="/logo.png"
+                    alt="RefractOne Logo"
+                    fill
+                    style={{ objectFit: 'contain' }}
                 />
-
-                {/* Blue Segment (Left) - Stylized blade */}
-                <path
-                    d="M45 48L26 68L36 38L45 22V48Z"
-                    fill="#3491E8"
-                />
-
-                {/* Gold Segment (Right) - Stylized blade */}
-                <path
-                    d="M55 48V22L64 38L74 68L55 48Z"
-                    fill="#F5C22D"
-                />
-
-                {/* Red Segment (Bottom) - Wide Chevron */}
-                <path
-                    d="M50 56L76 80H24L50 56Z"
-                    fill="#F53646"
-                />
-            </svg>
+            </div>
 
             {/* Brand Text */}
             {showText && (
