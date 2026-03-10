@@ -84,8 +84,8 @@ const Sidebar: React.FC = () => {
       {/* ── Desktop Sidebar ── */}
       <aside
         style={{
-          width: isCollapsed ? 68 : 220,
-          minWidth: isCollapsed ? 68 : 220,
+          width: isCollapsed ? 80 : 280,
+          minWidth: isCollapsed ? 80 : 280,
           background: 'linear-gradient(180deg, #0C3649 0%, #1a4a6b 100%)',
           borderRight: '1px solid #1a4a6b',
           transition: 'width 250ms ease, min-width 250ms ease',
@@ -96,11 +96,11 @@ const Sidebar: React.FC = () => {
       >
         {/* Logo */}
         <div style={{
-          height: 64,
+          height: 80,
           borderBottom: '1px solid rgba(255,255,255,0.05)',
           display: 'flex',
           alignItems: 'center',
-          padding: isCollapsed ? '0 12px' : '0 20px',
+          padding: isCollapsed ? '0 16px' : '0 24px',
           overflow: 'hidden',
         }}>
           <RefractOneLogo size={48} showText={!isCollapsed} />
@@ -214,9 +214,9 @@ const Sidebar: React.FC = () => {
 
       {/* ── Mobile: Navbar/Dropdown ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50">
-        <div className="h-14 bg-[#0C3649] border-b border-[#1a4a6b] flex items-center justify-between px-4 shadow-lg">
+        <div className="h-20 bg-[#0C3649] border-b border-[#1a4a6b] flex items-center justify-between px-6 shadow-lg">
           <Link href="/dashboard" className="flex items-center no-underline">
-            <RefractOneLogo size={42} showText={true} />
+            <RefractOneLogo size={48} showText={true} />
           </Link>
 
           <div className="relative">

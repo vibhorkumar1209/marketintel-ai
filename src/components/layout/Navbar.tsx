@@ -46,10 +46,7 @@ const Navbar: React.FC = () => {
         zIndex: 40,
       }}
     >
-      {/* Brand Logo */}
-      <Link href="/" className="flex items-center no-underline mr-4">
-        <RefractOneLogo size={48} showText={true} textColor="#0C3649" />
-      </Link>
+      {/* Removed redundant brand logo for Authenticated views */}
 
       {/* Search bar */}
       <div style={{ flex: 1, maxWidth: 480, position: 'relative' }}>

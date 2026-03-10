@@ -20,7 +20,7 @@ export default async function AuthenticatedLayout({
       <Sidebar />
 
       {/* Right column: topnav + content */}
-      <div className="flex-1 flex flex-col min-w-0 bg-[#f9fafb] pt-14 md:pt-0">
+      <div className="flex-1 flex flex-col min-w-0 bg-[#f9fafb] pt-20 md:pt-0">
         {/* Navbar is hidden on md in Sidebar mobile view, so we keep parity here */}
         <Navbar />
         <main className="flex-1 overflow-y-auto p-4 md:p-8">

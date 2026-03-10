@@ -31,7 +31,7 @@ export const RefractOneLogo: React.FC<LogoProps> = ({
             {/* Brand Text */}
             {showText && (
                 <div style={{ color: textColor }}>
-                    <div style={{ fontSize: 27, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
+                    <div style={{ fontSize: Math.round(size * 0.45), fontWeight: 900, lineHeight: 1, letterSpacing: '-0.02em', fontFamily: 'Inter, sans-serif' }}>
                         RefractOne
                     </div>
                 </div>
