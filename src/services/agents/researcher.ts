@@ -34,7 +34,7 @@ export async function parallelSearch(objective: string, queries: string[]): Prom
 
 export function formatResultsForClaude(results: ParallelResult[]): string {
   return results.map((r, i) =>
-    `[${i + 1}] ${r.title}\nURL: ${r.url}\n${r.excerpts.slice(0, 5).join('\n').slice(0, 1000)}`
+    `[${i + 1}] ${r.title}\nURL: ${r.url}\n${r.excerpts.slice(0, 5).join('\n').slice(0, 2500)}`
   ).join('\n\n---\n\n');
 }
 

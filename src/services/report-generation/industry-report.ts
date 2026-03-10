@@ -19,7 +19,12 @@ export async function runIndustryReportPipeline(
   reportType: string = 'industry_report'
 ) {
   const SECTION_IDS = reportType === 'trends_report' ? [
-    'dynamics'
+    'intro',
+    'dynamics',
+    'segmentation',
+    'tech_developments',
+    'regulatory',
+    'opportunities',
   ] : [
     'intro',            // Section 1 — Market Report Scope
     'sizing_workings',  // Section 2 — Market Size

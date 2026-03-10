@@ -219,18 +219,38 @@ ${enrichmentBundle && enrichmentBundle.enrichment_data.length > 0 ? `ENRICHMENT 
 ${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 4), null, 2)}` : ''}
 
 === LOCALIZED PARALLEL.AI SEARCH RESULTS EXACTLY FOR THIS SECTION ===
-${formattedSectionSources.slice(0, 15000) || 'No local parallel.ai results gathered.'}
+${formattedSectionSources.slice(0, 20000) || 'No local parallel.ai results gathered.'}
 ====================================================================
 
 OUTPUT the complete section JSON:`;
 
-  const response = await client.messages.create({
-    model: useHighQualityModel ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001',
-    max_tokens: 4000,
-    temperature: 0.3,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  });
+  let response;
+  let retries = 0;
+  const maxRetries = 3;
+
+  while (retries <= maxRetries) {
+    try {
+      response = await client.messages.create({
+        model: useHighQualityModel ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001',
+        max_tokens: 4000,
+        temperature: 0.3,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
+      });
+      break;
+    } catch (err: any) {
+      if (err.status === 429 && retries < maxRetries) {
+        retries++;
+        const wait = Math.pow(2, retries) * 1000 + (Math.random() * 1000); // 2s, 4s, 8s + jitter
+        console.warn(`Rate limit (429) hit for section ${sectionId}. Retrying ${retries}/${maxRetries} after ${Math.round(wait)}ms...`);
+        await new Promise(resolve => setTimeout(resolve, wait));
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  if (!response) throw new Error(`Failed to generate section ${sectionId} after ${maxRetries} retries.`);
 
   const text = (response.content[0] as { text: string }).text.trim();
 
@@ -280,7 +300,7 @@ export async function draftSectionsParallel(
   onSectionComplete?: (sectionId: string, draft: SectionDraft) => void
 ): Promise<SectionDraft[]> {
   const results: SectionDraft[] = [];
-  const CONCURRENCY = 10; // Maximized concurrency to draft all sections instantly and defeat the 300s Vercel hard timeout
+  const CONCURRENCY = 2; // Drastically reduced for Tier 1 8k output TPM limit preservation
 
   for (let i = 0; i < sectionIds.length; i += CONCURRENCY) {
     const batch = sectionIds.slice(i, i + CONCURRENCY);

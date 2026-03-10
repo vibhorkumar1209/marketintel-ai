@@ -70,13 +70,33 @@ ${JSON.stringify(
 GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 5) ?? [])}
 SCOPE: ${scope.industry} | ${scope.product_scope} | ${scope.geography} | ${scope.base_year}–${scope.forecast_end_year}`;
 
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 2000,
-    temperature: 0,
-    system: systemPrompt,
-    messages: [{ role: 'user', content: userPrompt }],
-  });
+  let response;
+  let retries = 0;
+  const maxRetries = 2;
+
+  while (retries <= maxRetries) {
+    try {
+      response = await client.messages.create({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        temperature: 0,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userPrompt }],
+      });
+      break;
+    } catch (err: any) {
+      if (err.status === 429 && retries < maxRetries) {
+        retries++;
+        const wait = 2000 * retries;
+        console.warn(`Sizer hit 429. Retrying ${retries}/${maxRetries} in ${wait}ms...`);
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+      throw err;
+    }
+  }
+
+  if (!response) throw new Error("Sizing failed after retries.");
 
   const text = (response.content[0] as { text: string }).text.trim();
 
