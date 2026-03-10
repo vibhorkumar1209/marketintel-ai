@@ -16,7 +16,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 1
   intro: {
     title: 'Market Report Scope',
-    desc: 'Purely define market boundaries: (A) Product scope matrix (list all included/excluded types); (B) Application scope matrix; (C) Geography scope (regions/districts included); (D) Timeline definition (Base year, Forecast period). DO NOT include any market sizing figures here.',
+    desc: 'Purely define market boundaries: (A) Product scope matrix (list all included/excluded types); (B) Application scope matrix; (C) Geography scope (regions/districts included); (D) Timeline definition (Base year, Forecast period); (E) A comprehensive Table of Contents outlining all sections and subsections of this report. DO NOT include any market sizing figures here.',
     tone: 'Definitive. Clear "included/excluded" boundaries for the research.',
   },
   // Section 2

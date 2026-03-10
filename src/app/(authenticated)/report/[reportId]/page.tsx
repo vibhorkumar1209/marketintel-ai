@@ -123,7 +123,7 @@ export default function ReportPage() {
 
   const isTrends = (report as any).reportType === 'trends_report';
 
-  let scopeSection: any, otherSections: any[], appendixSection: any, visibleSections: any[], tabs: string[];
+  let scopeSection: any, otherSections: any[], appendixSection: any, visibleSections: any[], tabs: string[], tocEntries: any[];
 
   const HIDE_KEYWORDS = /(source|methodology|estimation|assumption|confidence|primary)/i;
   const isAdmin = session?.user?.role === 'admin';
@@ -133,6 +133,7 @@ export default function ReportPage() {
     if (trendsSection) trendsSection.title = 'Trend Report';
     visibleSections = trendsSection ? [trendsSection] : [];
     tabs = ['Trend Report'];
+    tocEntries = visibleSections.map((s: any) => ({ title: s.title, id: s.id, subsections: s.subsections }));
   } else {
     scopeSection = report.sections.find((s: any) => s.id === 'intro' || s.id === 'market_report_scope');
     otherSections = report.sections.filter((s: any) => s.id !== 'intro' && s.id !== 'appendix' && s.id !== 'market_report_scope');
@@ -149,6 +150,13 @@ export default function ReportPage() {
       'Executive Summary',
       ...(otherSections || []).map((s: any) => s.title),
       ...(appendixSection && isAdmin ? [appendixSection.title] : [])
+    ];
+
+    tocEntries = [
+      ...(scopeSection ? [{ title: scopeSection.title, id: scopeSection.id, subsections: scopeSection.subsections }] : []),
+      { title: 'Executive Summary', id: 'exsum', subsections: [] },
+      ...(otherSections || []).map((s: any) => ({ title: s.title, id: s.id, subsections: s.subsections })),
+      ...(appendixSection && isAdmin ? [{ title: appendixSection.title, id: appendixSection.id, subsections: appendixSection.subsections }] : [])
     ];
   }
 
@@ -313,6 +321,46 @@ export default function ReportPage() {
                 <SectionLabel text={`Section ${idx + 1} of ${visibleSections.length}`} />
                 <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0c3649' }}>{section.title}</h2>
               </div>
+
+              {(section.id === 'intro' || section.id === 'market_report_scope') && (
+                <Card style={{ padding: '24px', background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)' }}>
+                  <SectionLabel text="Report Structure" />
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: T.text, marginBottom: 20 }}>Table of Contents</h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+                    {(tocEntries || []).map((entry: any, tIdx: number) => {
+                      const isTargetActive = activeSection === tIdx;
+                      return (
+                        <div key={tIdx} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          <div
+                            onClick={() => setActiveSection(tIdx)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer',
+                              padding: '8px 12px', borderRadius: 8, marginLeft: -12,
+                              background: isTargetActive ? 'rgba(12, 54, 73, 0.05)' : 'transparent',
+                              transition: 'all 0.2s ease'
+                            }}
+                          >
+                            <span style={{ fontSize: 13, fontWeight: 800, color: T.teal, opacity: 0.6 }}>{(tIdx + 1).toString().padStart(2, '0')}.</span>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: T.text }}>{entry.title}</span>
+                          </div>
+                          {entry.subsections && entry.subsections.length > 0 && (
+                            <div style={{ marginLeft: 22, display: 'flex', flexDirection: 'column', gap: 6, borderLeft: `1.5px solid ${T.cardBorder}`, paddingLeft: 14 }}>
+                              {entry.subsections
+                                .filter((sub: any) => isAdmin || !HIDE_KEYWORDS.test(sub.title || ''))
+                                .map((sub: any, sIdx: number) => (
+                                  <div key={sIdx} style={{ fontSize: 12, color: T.muted, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <div style={{ width: 4, height: 4, borderRadius: '50%', background: T.cardBorder }} />
+                                    {sub.title}
+                                  </div>
+                                ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
 
               {/* Body text */}
               <Card>
