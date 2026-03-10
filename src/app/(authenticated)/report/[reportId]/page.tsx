@@ -122,7 +122,7 @@ export default function ReportPage() {
 
   let scopeSection: any, otherSections: any[], appendixSection: any, visibleSections: any[], tabs: string[], tocEntries: any[];
 
-  const HIDE_KEYWORDS = /(^source:|^primary data source:|^estimation methodology|^research methodology|^confidence score:)/i;
+  const HIDE_KEYWORDS = /(^source:|^primary data source:|^estimation methodology|^research methodology|^confidence score:|^confidence level:)/i;
   const isAdmin = session?.user?.role === 'admin';
 
   if (isTrends) {

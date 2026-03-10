@@ -32,7 +32,7 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
     return s.title || 'Section';
   };
 
-  const HIDE_KEYWORDS = /(source|methodology|estimation|assumption|confidence|primary)/i;
+  const HIDE_KEYWORDS = /(^source:|^primary data source:|^estimation methodology|^research methodology|^confidence score:|^confidence level:)/i;
 
   const sectionsHTML = sections.map(s => {
     const isScope = s.id === 'intro' || s.id === 'market_report_scope' || (s.title && s.title.toLowerCase().includes('report scope'));
