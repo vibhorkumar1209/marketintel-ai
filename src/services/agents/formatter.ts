@@ -365,7 +365,7 @@ function countUniqueSources(sections: SectionDraft[]): number {
 
 export async function generateReportTitle(scope: ScopeJSON): Promise<string> {
   const response = await client.messages.create({
-    model: 'claude-3-5-haiku-20241022',
+    model: 'claude-3-haiku-20240307',
     max_tokens: 100,
     temperature: 0.3,
     messages: [{

@@ -135,7 +135,7 @@ OUTPUT: { "enrichment_data": [...max 3 companies...] }`;
 
   try {
     const response = await claudeClient.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-3-haiku-20240307',
       max_tokens: 2000,
       temperature: 0,
       system: systemPrompt,
