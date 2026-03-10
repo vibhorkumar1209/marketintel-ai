@@ -42,7 +42,7 @@ export default function TrendsLandingPage() {
             {/* What's inside */}
             <div>
                 <p style={{ fontSize: 11, fontWeight: 700, color: C.blue, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 16 }}>What&apos;s in a Trends Report</p>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 14 }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
                         { num: '01', title: 'Macro Trend Identification', desc: '6–10 structural trends with evidence source, time horizon (short / medium / long), and direction (acceleration / stabilisation / reversal)' },
                         { num: '02', title: 'Growth Driver Table (TEI)', desc: 'Top 5–7 drivers with quantified market impact ($ or %), scenario type, probability, affected segments and strategic implication' },

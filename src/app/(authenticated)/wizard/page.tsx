@@ -171,7 +171,7 @@ export default function WizardProductPage() {
       </div>
 
       {/* Product cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 16, marginBottom: 28 }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-7 animate-in fade-in slide-in-from-bottom-4 duration-500">
         {PRODUCTS.map(prod => {
           const selected = selectedType === prod.id;
           return (

@@ -71,7 +71,7 @@ export default function ReportsPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
             {/* Page header */}
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-6">
                 <div>
                     <p style={{ fontSize: 11, fontWeight: 700, color: C.blue, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 6 }}>Library</p>
                     <h1 style={{ fontSize: 24, fontWeight: 900, color: C.navy, marginBottom: 4 }}>Report History</h1>
@@ -85,13 +85,13 @@ export default function ReportsPage() {
             </div>
 
             {/* Status filter tabs */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#f8fafc', padding: '4px', borderRadius: 10, width: 'fit-content', border: `1px solid ${C.border}` }}>
+            <div className="flex flex-wrap items-center gap-2">
                 {(['all', 'completed', 'processing', 'failed'] as const).map(s => (
                     <button key={s} onClick={() => setFilter(s)} style={{
                         padding: '7px 14px', borderRadius: 8, fontSize: 12, fontWeight: filter === s ? 700 : 500,
-                        background: filter === s ? C.white : 'transparent',
+                        background: filter === s ? C.white : '#f8fafc',
                         color: filter === s ? C.text : C.muted,
-                        border: 'none', cursor: 'pointer',
+                        border: `1px solid ${filter === s ? C.border : 'transparent'}`, cursor: 'pointer',
                         boxShadow: filter === s ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                         transition: 'all 150ms ease',
                     }}>
@@ -101,8 +101,8 @@ export default function ReportsPage() {
             </div>
 
             {/* Type + Search */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', gap: 8 }}>
+            <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                <div className="flex flex-wrap gap-2">
                     {(['all', 'industry_report', 'datapack', 'trends_report'] as const).map(t => {
                         const tl = TYPE_LABELS[t] || { label: 'All', color: C.muted, bg: '#f8fafc', border: C.border };
                         return (
@@ -118,17 +118,20 @@ export default function ReportsPage() {
                         );
                     })}
                 </div>
-                <input
-                    type="text"
-                    placeholder="Search reports…"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    style={{
-                        padding: '8px 14px', borderRadius: 8, fontSize: 13,
-                        border: `1px solid ${C.border}`, outline: 'none',
-                        background: C.white, color: C.text, minWidth: 220,
-                    }}
-                />
+                <div className="flex-1 lg:max-w-xs">
+                    <input
+                        type="text"
+                        placeholder="Search reports…"
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        style={{
+                            width: '100%',
+                            padding: '8px 14px', borderRadius: 8, fontSize: 13,
+                            border: `1px solid ${C.border}`, outline: 'none',
+                            background: C.white, color: C.text,
+                        }}
+                    />
+                </div>
             </div>
 
             {/* Table */}
@@ -143,8 +146,8 @@ export default function ReportsPage() {
                     </Link>
                 </div>
             ) : (
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: 'hidden', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+                <div className="bg-white border border-[#e2e8f0] rounded-xl overflow-x-auto shadow-sm">
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 800 }}>
                         <thead>
                             <tr style={{ background: '#f8fafc', borderBottom: `1px solid ${C.border}` }}>
                                 {['Report Title', 'Type', 'Status', 'Created', 'Actions'].map(h => (

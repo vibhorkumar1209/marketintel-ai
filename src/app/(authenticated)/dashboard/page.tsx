@@ -92,7 +92,7 @@ export default function DashboardPage() {
       {error && <div style={{ background: '#fff5f5', border: '1px solid #fecaca', borderRadius: 10, padding: '12px 16px', color: C.red, fontSize: 13 }}>{error}</div>}
 
       {/* KPI strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14 }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((k, i) => (
           <div key={i} style={{ background: k.gradient, border: `1px solid ${C.border}`, borderRadius: 14, padding: '18px 22px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -107,10 +107,10 @@ export default function DashboardPage() {
       {/* Workspace Actions */}
       <div>
         <p style={{ fontSize: 11, fontWeight: 700, color: C.blue, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 14 }}>Workspace Actions</p>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 14 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
 
-          {/* Industry Report */}
-          <Link href="/wizard" style={{ textDecoration: 'none' }}>
+          {/* Industry Report - takes 2 cols on large */}
+          <Link href="/wizard" className="lg:col-span-2" style={{ textDecoration: 'none' }}>
             <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: '22px 26px', height: '100%', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', cursor: 'pointer', display: 'flex', flexDirection: 'column', transition: 'all 150ms ease' }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${C.blue}20`; (e.currentTarget as HTMLElement).style.borderColor = `${C.blue}50`; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.05)'; (e.currentTarget as HTMLElement).style.borderColor = C.border; }}>
@@ -122,7 +122,7 @@ export default function DashboardPage() {
           </Link>
 
           {/* Trends Report */}
-          <Link href="/wizard?type=trends_report" style={{ textDecoration: 'none' }}>
+          <Link href="/wizard?type=trends_report" className="lg:col-span-1" style={{ textDecoration: 'none' }}>
             <div style={{ background: `linear-gradient(135deg,#fdf4ff,#fae8ff)`, border: `1px solid #d8b4fe50`, borderRadius: 14, padding: '22px 26px', height: '100%', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', flexDirection: 'column', transition: 'all 150ms ease' }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px #a855f720`; (e.currentTarget as HTMLElement).style.borderColor = '#a855f770'; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = '#d8b4fe50'; }}>
@@ -137,7 +137,7 @@ export default function DashboardPage() {
           </Link>
 
           {/* Market Datapack */}
-          <Link href="/wizard?type=datapack" style={{ textDecoration: 'none' }}>
+          <Link href="/wizard?type=datapack" className="lg:col-span-1" style={{ textDecoration: 'none' }}>
             <div style={{ background: `linear-gradient(135deg,#f0fdf9,#e6fff9)`, border: `1px solid ${C.teal}35`, borderRadius: 14, padding: '22px 26px', height: '100%', boxShadow: '0 1px 4px rgba(0,0,0,0.04)', cursor: 'pointer', display: 'flex', flexDirection: 'column', transition: 'all 150ms ease' }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = `0 4px 20px ${C.teal}20`; (e.currentTarget as HTMLElement).style.borderColor = `${C.teal}60`; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = '0 1px 4px rgba(0,0,0,0.04)'; (e.currentTarget as HTMLElement).style.borderColor = `${C.teal}35`; }}>

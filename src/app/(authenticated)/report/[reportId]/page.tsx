@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Spinner from '@/components/ui/Spinner';
@@ -59,12 +60,9 @@ const IconChart = () => (
 );
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function Card({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function Card({ children, style = {}, className = "" }: { children: React.ReactNode; style?: React.CSSProperties; className?: string }) {
   return (
-    <div style={{
-      background: T.card, border: `1px solid ${T.cardBorder}`,
-      borderRadius: 12, padding: 24, ...style,
-    }}>
+    <div className={`bg-white border border-[#e5e7eb] rounded-xl p-5 md:p-8 ${className}`} style={style}>
       {children}
     </div>
   );
@@ -72,7 +70,7 @@ function Card({ children, style = {} }: { children: React.ReactNode; style?: Rea
 
 function SectionLabel({ text, color = T.teal }: { text: string; color?: string }) {
   return (
-    <p style={{ fontSize: 10, fontWeight: 700, color, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 8 }}>
+    <p className="text-[10px] font-bold tracking-widest uppercase mb-2" style={{ color }}>
       {text}
     </p>
   );
@@ -106,17 +104,13 @@ export default function ReportPage() {
   );
 
   if (error || !report) return (
-    <div style={{ padding: 32 }}>
-      <Card style={{ textAlign: 'center', padding: 40 }}>
-        <p style={{ color: T.red, fontWeight: 700, fontSize: 16, marginBottom: 8 }}>Error loading report</p>
-        <p style={{ color: T.muted, fontSize: 14, marginBottom: 20 }}>{error || 'Report not found'}</p>
-        <a href="/dashboard" style={{
-          display: 'inline-flex', alignItems: 'center', gap: 6,
-          padding: '9px 18px', borderRadius: 8, background: T.teal, color: '#fff',
-          fontSize: 13, fontWeight: 700, textDecoration: 'none',
-        }}>
+    <div className="p-4 md:p-8">
+      <Card className="text-center p-10">
+        <p className="text-red-500 font-bold text-lg mb-2">Error loading report</p>
+        <p className="text-slate-500 text-sm mb-5">{error || 'Report not found'}</p>
+        <Link href="/dashboard" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0C3649] text-white font-bold text-sm no-underline">
           <IconBack /> Back to Dashboard
-        </a>
+        </Link>
       </Card>
     </div>
   );
@@ -161,17 +155,16 @@ export default function ReportPage() {
   }
 
   return (
-    // Full-bleed: break out of layout's 32px padding
-    <div style={{ margin: '-32px', background: T.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="-m-4 md:-m-8 flex flex-col" style={{ background: T.bg, minHeight: '100vh' }}>
 
       {/* ── Dark header ─────────────────────────────────────────── */}
-      <div style={{ background: T.navy, padding: '20px 32px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4 p-5 md:p-8" style={{ background: T.navy }}>
+        <div style={{ flex: '1 1 300px', minWidth: 0 }}>
           <a href="/dashboard" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, color: T.muted, textDecoration: 'none', marginBottom: 10 }}>
             <IconBack /> Back to Dashboard
           </a>
           <SectionLabel text="Industry Report" color={T.muted} />
-          <h1 style={{ fontSize: 21, fontWeight: 800, color: '#ffffff', lineHeight: 1.3, marginBottom: 8 }}>{report.title}</h1>
+          <h1 style={{ fontSize: 'clamp(18px, 4vw, 21px)', fontWeight: 800, color: '#ffffff', lineHeight: 1.3, marginBottom: 8 }}>{report.title}</h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 12, color: T.muted }}>
               Generated {new Date(report.metadata.generatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -183,21 +176,21 @@ export default function ReportPage() {
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 10, flexShrink: 0, paddingTop: 28 }}>
+        <div className="flex gap-2 flex-wrap sm:pt-7">
           <a href={`/api/report/${reportId}/download/pdf`} target="_blank" rel="noopener noreferrer" style={{
             display: 'inline-flex', alignItems: 'center', gap: 7,
-            padding: '9px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+            padding: '8px 14px md:padding: 9px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600,
             background: 'rgba(255,255,255,0.08)', color: '#ffffff',
             border: `1px solid rgba(255,255,255,0.15)`, textDecoration: 'none',
           }}>
-            <IconDownload /> Print / PDF
+            <IconDownload /> <span className="hidden sm:inline">Print / PDF</span><span className="sm:hidden">PDF</span>
           </a>
           <a href={`/api/report/${reportId}/download/xlsx`} style={{
             display: 'inline-flex', alignItems: 'center', gap: 7,
-            padding: '9px 18px', borderRadius: 8, fontSize: 13, fontWeight: 700,
+            padding: '8px 14px md:padding: 9px 18px', borderRadius: 8, fontSize: 13, fontWeight: 700,
             background: T.red, color: '#fff', border: 'none', textDecoration: 'none',
           }}>
-            <IconDownload /> Excel
+            <IconDownload /> <span className="hidden sm:inline">Excel Export</span><span className="sm:hidden">Excel</span>
           </a>
         </div>
       </div>
@@ -207,8 +200,8 @@ export default function ReportPage() {
         position: 'sticky', top: 0, zIndex: 30,
         background: T.card, borderBottom: `1px solid ${T.cardBorder}`,
         overflowX: 'auto', boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
-      }}>
-        <div style={{ display: 'flex', padding: '0 24px', whiteSpace: 'nowrap', minWidth: 'max-content' }}>
+      }} className="scrollbar-hide">
+        <div className="flex px-4 md:px-6 whitespace-nowrap min-w-max">
           {(tabs || []).map((tab, idx) => {
             const active = activeSection === idx;
             return (
@@ -216,7 +209,7 @@ export default function ReportPage() {
                 key={idx}
                 onClick={() => setActiveSection(idx)}
                 style={{
-                  padding: '14px 18px', fontSize: 13, fontWeight: active ? 700 : 500,
+                  padding: '14px 14px md:padding: 14px 18px', fontSize: 13, fontWeight: active ? 700 : 500,
                   color: active ? T.teal : T.muted,
                   background: 'none', border: 'none',
                   borderBottom: active ? `2px solid ${T.teal}` : '2px solid transparent',
@@ -231,7 +224,7 @@ export default function ReportPage() {
       </div>
 
       {/* ── Section content ───────────────────────────────────────── */}
-      <div style={{ padding: '32px', maxWidth: 1100, margin: '0 auto', width: '100%' }}>
+      <div className="p-4 md:p-8" style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
 
         {/* EXECUTIVE SUMMARY (Now at index 1 for standard industry report, Hidden for trends_report) */}
         {!isTrends && activeSection === (scopeSection ? 1 : 0) && (
@@ -245,7 +238,7 @@ export default function ReportPage() {
             </Card>
 
             {/* KPI panel */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 14 }}>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
               {(report.executiveSummary?.kpiPanel || [])
                 .filter((kpi: any) => isAdmin || !HIDE_KEYWORDS.test(kpi.label))
                 .map((kpi, i) => (
@@ -280,7 +273,7 @@ export default function ReportPage() {
             {/* Scenarios */}
             <Card>
               <SectionLabel text="3-Scenario Forecast" />
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 {[
                   { label: 'Pessimistic', value: report.executiveSummary?.scenarios?.bear || 'N/A', color: T.red },
                   { label: 'Base Case', value: report.executiveSummary?.scenarios?.base || 'N/A', color: T.teal },
