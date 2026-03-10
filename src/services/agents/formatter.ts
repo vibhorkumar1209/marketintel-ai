@@ -41,26 +41,33 @@ export async function formatIndustryReport(
     title: reportTitle,
     query: `${scope.industry} — ${scope.product_scope} — ${scope.geography}`,
     executiveSummary: {
-      headline: executiveSummary.market_headline,
-      kpiPanel: (executiveSummary.kpi_panel || []).map(k => ({ label: k.label, value: k.value })),
-      paragraphs: executiveSummary.body_paragraphs,
-      scenarios: executiveSummary.scenario_outlook,
+      headline: executiveSummary?.market_headline ?? 'Executive Summary',
+      kpiPanel: (executiveSummary?.kpi_panel || [])
+        .filter(Boolean)
+        .map(k => ({ label: k.label ?? 'KPI', value: k.value ?? '-' })),
+      paragraphs: executiveSummary?.body_paragraphs || [],
+      scenarios: executiveSummary?.scenario_outlook || { bull: '', base: '', bear: '' },
     },
     sections: convertedSections,
     metadata: {
       generatedAt: new Date().toISOString(),
       qualityScore,
-      marketSize: `${sizingJSON.validated_market_size.value} ${sizingJSON.validated_market_size.unit}`,
-      cagr: `${sizingJSON.cagr_estimate.value}%`,
-      keyFindings: (executiveSummary.kpi_panel || []).slice(0, 5).map(k => `${k.label}: ${k.value}`),
+      marketSize: `${sizingJSON?.validated_market_size?.value ?? '-'} ${sizingJSON?.validated_market_size?.unit ?? ''}`,
+      cagr: `${sizingJSON?.cagr_estimate?.value ?? '-'}%`,
+      keyFindings: (executiveSummary?.kpi_panel || [])
+        .filter(Boolean)
+        .slice(0, 5)
+        .map(k => `${k.label ?? 'Factor'}: ${k.value ?? '-'}`),
       sources: countUniqueSources(sections),
       depth: scope.depth_level,
       geography: scope.geography,
       executiveSummary: {
-        headline: executiveSummary.market_headline,
-        kpiPanel: (executiveSummary.kpi_panel || []).map(k => ({ label: k.label, value: k.value })),
-        paragraphs: executiveSummary.body_paragraphs,
-        scenarios: executiveSummary.scenario_outlook,
+        headline: executiveSummary?.market_headline ?? 'Executive Summary',
+        kpiPanel: (executiveSummary?.kpi_panel || [])
+          .filter(Boolean)
+          .map(k => ({ label: k.label ?? 'KPI', value: k.value ?? '-' })),
+        paragraphs: executiveSummary?.body_paragraphs || [],
+        scenarios: executiveSummary?.scenario_outlook || { bull: '', base: '', bear: '' },
       }
     },
   };

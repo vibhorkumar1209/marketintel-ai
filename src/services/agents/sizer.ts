@@ -58,7 +58,7 @@ OUTPUT FORMAT:
 
 RESEARCH BUNDLE (top 10 data points):
 ${JSON.stringify(
-    researchBundle.data_points.slice(0, 10).map(dp => ({
+    researchBundle.data_points.slice(0, 10).filter(Boolean).map(dp => ({
       value: dp.value,
       unit: dp.unit,
       context: String(dp.context || '').slice(0, 120),

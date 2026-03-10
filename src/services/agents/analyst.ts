@@ -211,7 +211,7 @@ ${JSON.stringify({
   }, null, 2)}
 
 KEY DATA POINTS (cite by source_name — use ALL available):
-${JSON.stringify(researchBundle.data_points.slice(0, 100).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 200), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
+${JSON.stringify(researchBundle.data_points.slice(0, 100).filter(Boolean).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 200), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
 
 DATA GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 8) ?? [])}
 
