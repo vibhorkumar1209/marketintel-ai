@@ -3,7 +3,7 @@ import { db } from '@/lib/db';
 import { StreamEvent } from '@/types/agents';
 
 export class StreamHandler {
-  constructor(private readonly jobId: string) {}
+  constructor(private readonly jobId: string) { }
 
   async emit(event: Omit<StreamEvent, 'timestamp'>): Promise<void> {
     const fullEvent: StreamEvent = {
@@ -15,15 +15,18 @@ export class StreamHandler {
     await publishStreamEvent(this.jobId, fullEvent);
 
     // Update job record in DB
-    if (event.type === 'step_start' || event.type === 'step_complete') {
-      const pct = Math.round((event.step / 8) * 100);
+    if (event.type === 'step_start' || event.type === 'step_complete' || event.type === 'step_progress') {
+      const isProgress = event.type === 'step_progress';
+      const pct = isProgress ? undefined : Math.round((event.step / 8) * 100);
+
       await db.job.update({
         where: { id: this.jobId },
         data: {
+          ...(pct !== undefined && { progressPct: pct }),
           currentStep: event.step,
           currentStepName: event.stepName,
-          progressPct: pct,
           status: 'processing',
+          updatedAt: new Date(),
         },
       });
     }

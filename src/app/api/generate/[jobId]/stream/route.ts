@@ -59,7 +59,7 @@ export async function GET(
 
       // Try to transition job from queued -> running OR recover a zombie job
       const isStale = (job.status === 'running' || job.status === 'processing') &&
-        (Date.now() - new Date(job.updatedAt).getTime() > 5 * 60 * 1000);
+        (Date.now() - new Date(job.updatedAt).getTime() > 15 * 60 * 1000);
 
       if (job.status === 'queued' || isStale) {
         const updated = await db.job.updateMany({
