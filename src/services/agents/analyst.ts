@@ -16,7 +16,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 1
   intro: {
     title: 'Market Report Scope',
-    desc: 'Purely define market boundaries: (A) Product scope matrix (list all included/excluded types); (B) Application scope matrix; (C) Geography scope (regions/districts included); (D) Timeline definition (Base year, Forecast period); (E) A comprehensive Table of Contents outlining all sections and subsections of this report. DO NOT include any market sizing figures here.',
+    desc: 'Purely define market boundaries: (A) Product scope matrix (list all included/excluded types); (B) Application scope matrix; (C) Geography scope (regions/districts included); (D) Timeline definition (Base year, Forecast period). DO NOT include any market sizing figures here.',
     tone: 'Definitive. Clear "included/excluded" boundaries for the research.',
   },
   // Section 2
@@ -86,7 +86,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
 };
 
 // High-quality sections that warrant Sonnet instead of Haiku
-const SONNET_SECTIONS = new Set(['sizing_workings', 'competitive', 'dynamics', 'opportunities']);
+const SONNET_SECTIONS = new Set(['sizing_workings', 'competitive', 'dynamics', 'opportunities', 'intro', 'regulatory']);
 
 // ─── STEP 5: DRAFT ONE SECTION ─────────────────────────────────────────────────
 
@@ -146,7 +146,7 @@ CORE RULES (NON-NEGOTIABLE):
 8. TONE: ${sectionTone}
 9. Output structured JSON ONLY.
 
-${['dynamics', 'segmentation', 'regional_analysis', 'competitive', 'regulatory'].includes(sectionId) ? `
+${['dynamics', 'segmentation', 'regional_analysis', 'competitive', 'regulatory', 'intro'].includes(sectionId) ? `
 SPECIAL SUBSECTION REQUIREMENT: 
 This section requires granular dimensions. You MUST output a "subsections" array instead of a single top-level table/chart. 
 ${reportType === 'trends_report' && sectionId === 'dynamics' ? `
@@ -155,6 +155,7 @@ ${reportType === 'trends_report' && sectionId === 'dynamics' ? `
 - In "Technology", detail trends related to both Traditional and Emerging technologies.
 - BOTH subsections must use a table with these EXACT headers: ["Trend name", "Impact of Trend on Industry", "Description of Trend", "Examples"].
 ` : `
+- If Intro (Market Report Scope): create EXACTLY 4 subsections: "Product Scope", "Application Scope", "Geography Scope", and "Research Timeline". Total market sizing numbers are BANNED here.
 - If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the table MUST follow these headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
 - If Regulatory: create EXACTLY 4 subsections: "Regulatory Bodies", "Regulation Tracker", "Trade & Compliance Barriers", and "Pending Regulations". Each must have its own table as defined in the section description.
 - If Competitive: create an individual subsection for each major company detailing its current operations, with its own table and chart.
