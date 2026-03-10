@@ -235,15 +235,25 @@ OUTPUT the complete section JSON:`;
 
   const safeParse = (raw: string): SectionDraft | null => {
     try {
-      const jsonMatch = raw.match(/\{[\s\S]*\}/);
-      return JSON.parse(jsonMatch ? jsonMatch[0] : raw) as SectionDraft;
+      // Find the first { and the last }
+      const start = raw.indexOf('{');
+      const end = raw.lastIndexOf('}');
+      if (start === -1 || end === -1) return null;
+
+      const jsonStr = raw.slice(start, end + 1);
+      return JSON.parse(jsonStr) as SectionDraft;
     } catch {
       return null;
     }
   };
 
   const parsed = safeParse(text);
-  if (parsed) return parsed;
+  if (parsed) {
+    // Force the requested sectionId and section title to maintain consistency
+    parsed.section_id = sectionId;
+    if (!parsed.section_title) parsed.section_title = sectionDef.title;
+    return parsed;
+  }
 
   return {
     section_id: sectionId,

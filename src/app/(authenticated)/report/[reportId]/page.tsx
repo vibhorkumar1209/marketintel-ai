@@ -132,8 +132,16 @@ export default function ReportPage() {
     tabs = ['Trend Report'];
     tocEntries = visibleSections.map((s: any) => ({ title: s.title, id: s.id, subsections: s.subsections }));
   } else {
-    scopeSection = report.sections.find((s: any) => s.id === 'intro' || s.id === 'market_report_scope');
-    otherSections = report.sections.filter((s: any) => s.id !== 'intro' && s.id !== 'appendix' && s.id !== 'market_report_scope');
+    scopeSection = report.sections.find((s: any) =>
+      s.id === 'intro' ||
+      s.id === 'market_report_scope' ||
+      (s.title && s.title.toLowerCase().includes('report scope'))
+    );
+    otherSections = report.sections.filter((s: any) =>
+      s.id !== (scopeSection?.id || 'intro') &&
+      s.id !== (scopeSection?.id || 'market_report_scope') &&
+      s.id !== 'appendix'
+    );
     appendixSection = report.sections.find((s: any) => s.id === 'appendix');
 
     visibleSections = [
@@ -476,8 +484,33 @@ export default function ReportPage() {
                 </Card>
               )}
 
+              {/* Fallback for direct content (e.g. if JSON parsing failed) */}
+              {(!section.subsections || section.subsections.length === 0) && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {(section.content || [])
+                    .filter((p: string) => isAdmin || !HIDE_KEYWORDS.test(p))
+                    .map((para: any, pi: number) => {
+                      const isFailedJson = typeof para === 'string' && (para.includes('```json') || para.trim().startsWith('{'));
+                      return (
+                        <p key={pi} style={{
+                          color: T.muted, lineHeight: 1.8, fontSize: 14,
+                          whiteSpace: isFailedJson ? 'pre-wrap' : 'normal',
+                          fontFamily: isFailedJson ? 'monospace' : 'inherit',
+                          background: isFailedJson ? '#f1f5f9' : 'transparent',
+                          padding: isFailedJson ? '12px' : '0',
+                          borderRadius: isFailedJson ? '6px' : '0',
+                          overflow: 'auto',
+                          border: isFailedJson ? `1px solid ${T.cardBorder}` : 'none'
+                        }}>
+                          {isFailedJson ? 'Note: Standard formatting unavailable for this research section. Showing raw data: \n\n' + para : para}
+                        </p>
+                      );
+                    })}
+                </div>
+              )}
+
               {/* Subsections */}
-              {section.subsections && (
+              {section.subsections && section.subsections.length > 0 && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginTop: 10 }}>
                   {(section.subsections || [])
                     .filter((sub: any) => isAdmin || !HIDE_KEYWORDS.test(sub.title))

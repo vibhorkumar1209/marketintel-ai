@@ -35,7 +35,7 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
   const HIDE_KEYWORDS = /(source|methodology|estimation|assumption|confidence|primary)/i;
 
   const sectionsHTML = sections.map(s => {
-    const isScope = s.id === 'intro' || s.id === 'market_report_scope' || String(s.title).toLowerCase().includes('scope');
+    const isScope = s.id === 'intro' || s.id === 'market_report_scope' || (s.title && s.title.toLowerCase().includes('report scope'));
 
     let subTOC = '';
     if (isScope) {
@@ -69,8 +69,17 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
       ${isScope ? subTOC : ''}
       ${(s.flags || []).length > 0 ? `<div class="flag">${(s.flags || []).slice(0, 3).map(f => `<span>⚠ ${String(f).slice(0, 100)}</span>`).join(' ')}</div>` : ''}
       ${(s.content || [])
-        .filter(p => session?.user?.role === 'admin' || !HIDE_KEYWORDS.test(p))
-        .map(p => `<p>${p}</p>`).join('')}
+        .filter(p => session?.user?.role === 'admin' || (!String(p).includes('```json') && !HIDE_KEYWORDS.test(p)))
+        .map(p => {
+          const isFailedJson = typeof p === 'string' && (p.includes('```json') || p.trim().startsWith('{'));
+          if (isFailedJson) {
+            return `<div style="font-family: monospace; font-size: 8pt; background: #f8fafc; padding: 10px; border: 1px solid #e2e8f0; border-radius: 4px; white-space: pre-wrap; margin-bottom: 15px;">
+              <div style="font-family: sans-serif; font-weight: bold; margin-bottom: 5px; color: #64748b;">Research Data Log:</div>
+              ${p}
+            </div>`;
+          }
+          return `<p>${p}</p>`;
+        }).join('')}
       
       ${s.keyTable && s.keyTable.rows?.length ? `
         <table>
