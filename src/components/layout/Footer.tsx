@@ -14,7 +14,7 @@ const Footer: React.FC = () => {
           {/* Brand */}
           <div>
             <Link href="/" className="inline-block mb-4">
-              <RefractOneLogo size={32} showText={true} />
+              <RefractOneLogo size={48} showText={true} />
             </Link>
             <p className="text-[#8899BB] text-sm mt-2">
               AI-powered market intelligence for modern enterprises.

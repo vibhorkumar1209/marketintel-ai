@@ -103,7 +103,7 @@ const Sidebar: React.FC = () => {
           padding: isCollapsed ? '0 12px' : '0 20px',
           overflow: 'hidden',
         }}>
-          <RefractOneLogo size={32} showText={!isCollapsed} />
+          <RefractOneLogo size={48} showText={!isCollapsed} />
         </div>
 
         {/* Collapse toggle */}
@@ -216,7 +216,7 @@ const Sidebar: React.FC = () => {
       <div className="md:hidden fixed top-0 left-0 right-0 z-50">
         <div className="h-14 bg-[#0C3649] border-b border-[#1a4a6b] flex items-center justify-between px-4 shadow-lg">
           <Link href="/dashboard" className="flex items-center no-underline">
-            <RefractOneLogo size={28} showText={true} />
+            <RefractOneLogo size={42} showText={true} />
           </Link>
 
           <div className="relative">

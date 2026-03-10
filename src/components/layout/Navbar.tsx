@@ -48,7 +48,7 @@ const Navbar: React.FC = () => {
     >
       {/* Brand Logo */}
       <Link href="/" className="flex items-center no-underline mr-4">
-        <RefractOneLogo size={32} showText={true} textColor="#0C3649" />
+        <RefractOneLogo size={48} showText={true} textColor="#0C3649" />
       </Link>
 
       {/* Search bar */}
