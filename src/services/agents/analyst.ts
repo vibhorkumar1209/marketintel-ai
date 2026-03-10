@@ -225,7 +225,7 @@ ${formattedSectionSources.slice(0, 15000) || 'No local parallel.ai results gathe
 OUTPUT the complete section JSON:`;
 
   const response = await client.messages.create({
-    model: useHighQualityModel ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001',
+    model: useHighQualityModel ? 'claude-3-5-sonnet-20241022' : 'claude-3-5-haiku-20241022',
     max_tokens: 8000,
     temperature: 0.3,
     system: systemPrompt,
