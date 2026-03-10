@@ -57,12 +57,22 @@ export async function GET(
         return;
       }
 
-      // Try to transition job from queued -> running if we are the first to observe it
-      if (job.status === 'queued') {
+      // Try to transition job from queued -> running OR recover a zombie job
+      const isStale = (job.status === 'running' || job.status === 'processing') &&
+        (Date.now() - new Date(job.updatedAt).getTime() > 5 * 60 * 1000);
+
+      if (job.status === 'queued' || isStale) {
         const updated = await db.job.updateMany({
-          where: { id: params.jobId, status: 'queued' },
-          data: { status: 'running' }
+          where: {
+            id: params.jobId,
+            OR: [
+              { status: 'queued' },
+              { status: job.status, updatedAt: job.updatedAt } // Ensure no one else moved it
+            ]
+          },
+          data: { status: 'running', updatedAt: new Date() }
         });
+
         if (updated.count > 0) {
           let pipelineFn: typeof runIndustryReportPipeline | typeof runDatapackPipeline;
           if (job.reportType === 'industry_report' || job.reportType === 'trends_report') {
@@ -71,6 +81,7 @@ export async function GET(
             pipelineFn = runDatapackPipeline;
           }
 
+          console.log(`[STREAM] Triggering/Recovering pipeline for job ${job.id} (stale: ${isStale})`);
           pipelineFn(job.id, session.user.id, job.query, job.config as any).catch(console.error);
         }
       }
