@@ -12,6 +12,10 @@ export const metadata: Metadata = {
     description: 'AI-powered market intelligence for modern enterprises',
     type: 'website',
   },
+  icons: {
+    icon: '/icon.png',
+    apple: '/icon.png',
+  },
 };
 
 export default async function RootLayout({
