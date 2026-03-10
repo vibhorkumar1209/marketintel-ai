@@ -27,7 +27,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   },
   // Section 3
   segmentation: {
-    title: 'Market Size by Segment',
+    title: 'Market Size by Segments',
     desc: 'Break total market across ALL dimensions: (A) By Product Type — size + share + CAGR + key driver per type; (B) By Application — heatmap size × growth rate matrix; (C) By End-Use Industry — Pareto showing which 3 sectors = 80% of demand; (D) By Geography — country table with size, share, CAGR, top local player; (E) By Distribution Channel — channel mix with trend direction. Flag: [ESTIMATE — LOW DATA CONFIDENCE] for any segment with insufficient data.',
     tone: 'Structured. Use tables for all segmentation. Prose only for non-obvious insight.',
   },
@@ -45,7 +45,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   },
   // Section 6
   tech_developments: {
-    title: 'Tech Tends',
+    title: 'Tech Trends',
     desc: 'Top 5–8 tech trends. You MUST output a highly detailed table using these EXACT headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Ensure each trend (AI, Automation, Patents, etc.) includes specific company examples and news events in the Examples column.',
     tone: 'Forward-looking. Named examples required for every trend. No generic technology commentary.',
   },
@@ -83,10 +83,21 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
     desc: 'Complete source list: Source Name | URL | Date Accessed | Credibility Tier (1–6) | Section Used In. Methodology note: data collection approach, triangulation logic, number of searches, known data gaps, confidence tier distribution.',
     tone: 'Factual. Only place where source names appear in the report.',
   },
+  // Trends Report Specific
+  business: {
+    title: 'Business',
+    desc: 'Business trends relating to Demand, Supply, Commercial, Pricing, Regulatory, and Macroeconomics. You MUST output a highly detailed table using these EXACT headers: ["Trend name", "Impact of Trend on Industry", "Description of Trend", "Examples"].',
+    tone: 'Strategic and business-focused.',
+  },
+  technology: {
+    title: 'Technology',
+    desc: 'Technology trends related to both Traditional and Emerging technologies. You MUST output a highly detailed table using these EXACT headers: ["Trend name", "Impact of Trend on Industry", "Description of Trend", "Examples"].',
+    tone: 'Technical and innovation-focused.',
+  },
 };
 
 // High-quality sections that warrant Sonnet instead of Haiku
-const SONNET_SECTIONS = new Set(['sizing_workings', 'competitive', 'dynamics', 'opportunities', 'intro', 'regulatory']);
+const SONNET_SECTIONS = new Set(['sizing_workings', 'competitive', 'dynamics', 'opportunities', 'intro', 'regulatory', 'business', 'technology']);
 
 // ─── STEP 5: DRAFT ONE SECTION ─────────────────────────────────────────────────
 
@@ -101,23 +112,6 @@ export async function draftSection(
   const sectionDef = SECTION_DEFINITIONS[sectionId] || { title: sectionId, desc: '' };
   const wordTarget = scope.token_budget_per_section;
   const useHighQualityModel = SONNET_SECTIONS.has(sectionId);
-
-  // EXECUTE Parallel.ai IN REAL TIME FOR THIS SPECIFIC SECTION/SUBSECTION
-  const searchObjective = `Market intelligence for ${scope.industry} in ${scope.geography}`;
-  const sectionQueries = [
-    `${scope.industry} ${scope.geography} ${sectionDef.title}`,
-    `${scope.product_scope} industry ${sectionDef.title} data statistics`,
-    `${scope.industry} ${scope.geography} ${sectionId === 'competitive' ? 'top players market share' : sectionId === 'regulatory' ? 'regulations policies' : sectionId === 'tech_developments' ? 'new technology innovation' : sectionId === 'segmentation' ? 'market breakdown by product application' : sectionId === 'sizing_workings' ? 'market size CAGR value USD' : 'drivers barriers trends'}`,
-    `${scope.industry} ${scope.geography} news market dynamics recent events 2024 2025`
-  ];
-
-  let formattedSectionSources = '';
-  try {
-    const rawSectionResults = await parallelSearch(searchObjective, sectionQueries);
-    formattedSectionSources = formatResultsForClaude(rawSectionResults);
-  } catch (err) {
-    console.error(`Parallel.ai search failed for section ${sectionId}:`, err);
-  }
 
   const sectionTone = sectionDef.tone || 'Analytical and evidence-backed.';
 
@@ -211,16 +205,12 @@ ${JSON.stringify({
   }, null, 2)}
 
 KEY DATA POINTS (cite by source_name — use ALL available):
-${JSON.stringify(researchBundle.data_points.slice(0, 100).filter(Boolean).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 200), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
+${JSON.stringify(researchBundle.data_points.slice(0, 200).filter(Boolean).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 300), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
 
 DATA GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 8) ?? [])}
 
 ${enrichmentBundle && enrichmentBundle.enrichment_data.length > 0 ? `ENRICHMENT (company intelligence):
 ${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 4), null, 2)}` : ''}
-
-=== LOCALIZED PARALLEL.AI SEARCH RESULTS EXACTLY FOR THIS SECTION ===
-${formattedSectionSources.slice(0, 20000) || 'No local parallel.ai results gathered.'}
-====================================================================
 
 OUTPUT the complete section JSON:`;
 
@@ -300,22 +290,45 @@ export async function draftSectionsParallel(
   onSectionComplete?: (sectionId: string, draft: SectionDraft) => void
 ): Promise<SectionDraft[]> {
   const results: SectionDraft[] = [];
-  const CONCURRENCY = 2; // Drastically reduced for Tier 1 8k output TPM limit preservation
+  const CONCURRENCY = 3; // Reduced slightly for better TPM stability with high-depth Sonnet output
 
   for (let i = 0; i < sectionIds.length; i += CONCURRENCY) {
     const batch = sectionIds.slice(i, i + CONCURRENCY);
     const batchDrafts = await Promise.all(
       batch.map(async (id) => {
-        const draft = await draftSection(id, scope, researchBundle, sizingJSON, enrichmentBundle, reportType);
-        if (onSectionComplete) onSectionComplete(id, draft);
-        return draft;
+        // Implement a 180s hard timeout per section to prevent hanging
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`Drafting section ${id} timed out after 180s`)), 180000)
+        );
+
+        try {
+          const draft = await Promise.race([
+            draftSection(id, scope, researchBundle, sizingJSON, enrichmentBundle, reportType),
+            timeoutPromise
+          ]) as SectionDraft;
+
+          if (onSectionComplete) onSectionComplete(id, draft);
+          return draft;
+        } catch (err) {
+          console.error(`Error or Timeout in section ${id}:`, err);
+          // Return a placeholder draft if it fails/times out to allow report to continue
+          return {
+            section_id: id,
+            section_title: id,
+            word_count_target: scope.token_budget_per_section,
+            body_paragraphs: ["Section drafting encountered a timeout or error. Data may be incomplete for this specific segment."],
+            key_table: null,
+            chart_spec: null,
+            citations: [],
+            section_flags: ['GENERATION_TIMEOUT']
+          } as SectionDraft;
+        }
       })
     );
     results.push(...batchDrafts);
 
-    // Small delay between batches to avoid burst rate limits
     if (i + CONCURRENCY < sectionIds.length) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 800));
     }
   }
 
