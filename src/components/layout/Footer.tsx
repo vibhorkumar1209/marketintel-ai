@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { RefractOneLogo } from '../common/RefractOneLogo';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -12,11 +13,10 @@ const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* Brand */}
           <div>
-            <Link href="/" className="font-bold text-lg inline-block mb-4">
-              <span className="text-[#E8EDF5]">RefractOne Industry Report Hub</span>
-              <span className="text-teal-600">AI</span>
+            <Link href="/" className="inline-block mb-4">
+              <RefractOneLogo size={32} showText={true} />
             </Link>
-            <p className="text-[#8899BB] text-sm">
+            <p className="text-[#8899BB] text-sm mt-2">
               AI-powered market intelligence for modern enterprises.
             </p>
           </div>

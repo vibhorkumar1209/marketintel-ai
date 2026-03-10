@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
+import { RefractOneLogo } from '../common/RefractOneLogo';
 
 const NAV_ITEMS = [
   {
@@ -95,30 +96,14 @@ const Sidebar: React.FC = () => {
       >
         {/* Logo */}
         <div style={{
-          height: 56,
-          borderBottom: '1px solid #064e3b',
+          height: 64,
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
           display: 'flex',
           alignItems: 'center',
-          padding: isCollapsed ? '0 16px' : '0 20px',
-          gap: 10,
+          padding: isCollapsed ? '0 12px' : '0 20px',
           overflow: 'hidden',
         }}>
-          {/* Triangle logo mark */}
-          <div style={{
-            width: 30, height: 30, flexShrink: 0,
-            background: 'linear-gradient(135deg, #3491E8 0%, #E63946 100%)',
-            clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)',
-          }} />
-          {!isCollapsed && (
-            <div style={{ overflow: 'hidden' }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: '#ffffff', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
-                RefractOne
-              </div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: '#7eaabf', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
-                Industry Report Hub
-              </div>
-            </div>
-          )}
+          <RefractOneLogo size={32} showText={!isCollapsed} />
         </div>
 
         {/* Collapse toggle */}
@@ -230,9 +215,8 @@ const Sidebar: React.FC = () => {
       {/* ── Mobile: Navbar/Dropdown ── */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-50">
         <div className="h-14 bg-[#0C3649] border-b border-[#1a4a6b] flex items-center justify-between px-4 shadow-lg">
-          <Link href="/dashboard" className="flex items-center gap-2 no-underline">
-            <div className="w-7 h-7 bg-gradient-to-br from-[#3491E8] to-[#E63946] [clip-path:polygon(50%_0%,0%_100%,100%_100%)]" />
-            <span className="text-sm font-black text-white tracking-tight">REFRACTONE</span>
+          <Link href="/dashboard" className="flex items-center no-underline">
+            <RefractOneLogo size={28} showText={true} />
           </Link>
 
           <div className="relative">

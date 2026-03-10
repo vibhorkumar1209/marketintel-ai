@@ -128,13 +128,21 @@ export async function runIndustryReportPipeline(
       reportTitle
     );
 
-    // Persist to DB
-    const savedReport = await db.report.create({
-      data: {
+    // Persist to DB (upsert based on jobId)
+    const savedReport = await db.report.upsert({
+      where: { jobId },
+      create: {
         jobId,
         userId,
         reportType,
         query,
+        title: reportTitle,
+        sections: formattedReport.sections as object,
+        metadata: formattedReport.metadata as object,
+        enrichment: enrichmentBundle as object,
+        sizing: sizingJSON as object,
+      },
+      update: {
         title: reportTitle,
         sections: formattedReport.sections as object,
         metadata: formattedReport.metadata as object,

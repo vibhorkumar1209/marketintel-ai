@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signOut, useSession } from 'next-auth/react';
+import { RefractOneLogo } from '../common/RefractOneLogo';
 
 const Navbar: React.FC = () => {
   const { data: session } = useSession();
@@ -39,12 +40,17 @@ const Navbar: React.FC = () => {
         borderBottom: '1px solid #e5e7eb',
         paddingLeft: 24,
         paddingRight: 24,
-        gap: 16,
+        gap: 24,
         position: 'sticky',
         top: 0,
         zIndex: 40,
       }}
     >
+      {/* Brand Logo */}
+      <Link href="/" className="flex items-center no-underline mr-4">
+        <RefractOneLogo size={32} showText={true} textColor="#0C3649" />
+      </Link>
+
       {/* Search bar */}
       <div style={{ flex: 1, maxWidth: 480, position: 'relative' }}>
         <svg
