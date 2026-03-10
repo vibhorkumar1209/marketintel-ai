@@ -8,7 +8,7 @@ import { runDatapackPipeline } from '@/services/report-generation/datapack';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
-export const maxDuration = 300;
+export const maxDuration = 900;
 
 export async function GET(
   req: NextRequest,
@@ -57,20 +57,11 @@ export async function GET(
         return;
       }
 
-      // Try to transition job from queued -> running OR recover a zombie job
-      const isStale = (job.status === 'running' || job.status === 'processing') &&
-        (Date.now() - new Date(job.updatedAt).getTime() > 15 * 60 * 1000);
-
-      if (job.status === 'queued' || isStale) {
+      // Try to transition job from queued -> running if we are the first to observe it
+      if (job.status === 'queued') {
         const updated = await db.job.updateMany({
-          where: {
-            id: params.jobId,
-            OR: [
-              { status: 'queued' },
-              { status: job.status, updatedAt: job.updatedAt } // Ensure no one else moved it
-            ]
-          },
-          data: { status: 'running', updatedAt: new Date() }
+          where: { id: params.jobId, status: 'queued' },
+          data: { status: 'running' }
         });
 
         if (updated.count > 0) {
@@ -81,7 +72,7 @@ export async function GET(
             pipelineFn = runDatapackPipeline;
           }
 
-          console.log(`[STREAM] Triggering/Recovering pipeline for job ${job.id} (stale: ${isStale})`);
+          console.log(`[STREAM] Triggering pipeline for job ${job.id}`);
           pipelineFn(job.id, session.user.id, job.query, job.config as any).catch(console.error);
         }
       }

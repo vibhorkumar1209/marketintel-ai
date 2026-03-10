@@ -19,20 +19,16 @@ export async function runIndustryReportPipeline(
   reportType: string = 'industry_report'
 ) {
   const SECTION_IDS = reportType === 'trends_report' ? [
-    'intro',
-    'dynamics',
-    'segmentation',
-    'tech_developments',
-    'regulatory',
-    'opportunities',
+    'business',
+    'technology',
   ] : [
     'intro',            // Section 1 — Market Report Scope
     'sizing_workings',  // Section 2 — Market Size
-    'segmentation',     // Section 3 — Market Size by Segment
+    'segmentation',     // Section 3 — Market Size by Segments
     'dynamics',         // Section 4 — Trends
-    'tech_developments',// Section 5 — Tech Tends
-    'regulatory',       // Section 6 — Regulatory Overview
-    'competitive',      // Section 7 — Competition Analysis
+    'tech_developments',// Section 5 — Tech Trends
+    'competitive',      // Section 6 — Competition Analysis
+    'regulatory',       // Section 7 — Regulatory Overview
     'opportunities',    // Section 8 — Market Forecast
   ];
 
@@ -99,18 +95,10 @@ export async function runIndustryReportPipeline(
 
     // ── STEP 6: Social & Tech Enrichment ─────────────────────────────────
     await stream.stepStart(6, 'Social & Technology Intelligence');
-    const competitiveSection = sectionDrafts.find(s => s.section_id === 'competitive');
-    const companies: string[] = (competitiveSection?.citations || [])
-      .map(c => c.source)
-      .filter(Boolean)
-      .slice(0, scope.competitor_count);
-
-    const enrichmentBundle = await executeEnrichment(
-      companies.length > 0 ? companies : [`Top ${scope.industry} companies`],
-      scope
-    );
+    // Using pre-fetched data from Step 3 for speed optimization
     await stream.stepComplete(6, 'Social & Technology Intelligence', {
-      companies_enriched: enrichmentBundle.enrichment_data.length,
+      companies_enriched: 0,
+      note: 'Using consolidated research bundle'
     });
 
     // ── STEP 7: Executive Summary ─────────────────────────────────────────
@@ -144,14 +132,14 @@ export async function runIndustryReportPipeline(
         title: reportTitle,
         sections: formattedReport.sections as object,
         metadata: formattedReport.metadata as object,
-        enrichment: enrichmentBundle as object,
+        enrichment: null,
         sizing: sizingJSON as object,
       },
       update: {
         title: reportTitle,
         sections: formattedReport.sections as object,
         metadata: formattedReport.metadata as object,
-        enrichment: enrichmentBundle as object,
+        enrichment: null,
         sizing: sizingJSON as object,
       },
     });

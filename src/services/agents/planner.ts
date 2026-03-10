@@ -51,7 +51,7 @@ export async function generateResearchPlan(scope: ScopeJSON): Promise<SearchPlan
   const systemPrompt = `You are a market research planning agent following the Antigravity v2.0 methodology.
 Generate web searches following these EXACT patterns. Output ONLY valid JSON.`;
 
-  const userPrompt = `Generate exactly 12 prioritised searches for the scope below.
+  const userPrompt = `Generate exactly 15 prioritised searches for the scope below.
 
 Use Antigravity search library patterns:
   MARKET SIZE: "[PRODUCT] market size [GEOGRAPHY] [YEAR]" site:gov OR site:europa.eu
@@ -63,12 +63,12 @@ Use Antigravity search library patterns:
   M&A:         "[COMPANY] acquisition merger [PRODUCT] [YEAR] press release"
   PRICING:     "[PRODUCT] average selling price [GEOGRAPHY] [YEAR] ICIS OR Platts OR earnings"
 
-Tier A (6 searches): Market size, government data, trade flows, company filings — Tier T1-T2 sources
-Tier B (6 searches): Competitive landscape, technology, regulatory, M&A — Tier T2-T4 sources
+Tier A (8 searches): Market size, government data, trade flows, company filings — Tier T1-T2 sources
+Tier B (7 searches): Competitive landscape, technology, regulatory, M&A — Tier T2-T4 sources
 
 Each search: { "search_query": "exact string", "target_source_tier": "T1|T2|T3|T4", "data_objective": "what this finds", "fallback_query": "alternative if no results", "section_target": "which section this feeds" }
 
-OUTPUT: { "search_plan": [ ...exactly 12 items... ] }
+OUTPUT: { "search_plan": [ ...exactly 15 items... ] }
 
 SCOPE: ${JSON.stringify(scope, null, 2)}`;
 

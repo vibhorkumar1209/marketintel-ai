@@ -6,7 +6,7 @@ import { CREDIT_COSTS, deductCredits } from '@/lib/stripe';
 import { checkRateLimit } from '@/lib/redis';
 import { z } from 'zod';
 
-export const maxDuration = 300;
+export const maxDuration = 900;
 
 const GenerateSchema = z.object({
   reportType: z.enum(['industry_report', 'datapack', 'trends_report']),

@@ -71,8 +71,8 @@ export async function executeResearch(
 WEB SEARCH RESULTS:
 ${formattedSources}
 
-Extract data points with this structure (max 100 items, keep values concise):
-{ "value": "string", "unit": "string", "context": "max 100 chars", "source_name": "string", "source_url": "string", "source_tier": "T1|T2|T3", "publication_date": "YYYY", "confidence": "high|medium|low", "staleness_warning": false }
+Extract data points with this structure (max 200 items, keep values concise):
+{ "value": "string", "unit": "string", "context": "max 200 chars", "source_name": "string", "source_url": "string", "source_tier": "T1|T2|T3", "publication_date": "YYYY", "confidence": "high|medium|low", "staleness_warning": false }
 
 OUTPUT JSON: { "data_points": [...], "gaps": [...max 5 items...], "searches_executed": ${queries.length}, "sources_rejected": 0, "web_injection_flags": [] }`;
 
@@ -88,7 +88,7 @@ OUTPUT JSON: { "data_points": [...], "gaps": [...max 5 items...], "searches_exec
     const text = (response.content[0] as { text: string }).text.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const parsed = JSON.parse(jsonMatch ? jsonMatch[0] : text) as ResearchBundle;
-    parsed.data_points = (parsed.data_points || []).slice(0, 100);
+    parsed.data_points = (parsed.data_points || []).slice(0, 200);
     return parsed;
   } catch {
     return {
