@@ -77,7 +77,7 @@ SCOPE: ${scope.industry} | ${scope.product_scope} | ${scope.geography} | ${scope
   while (retries <= maxRetries) {
     try {
       response = await client.messages.create({
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 2000,
         temperature: 0,
         system: systemPrompt,
