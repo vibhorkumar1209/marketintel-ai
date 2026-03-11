@@ -224,7 +224,8 @@ ${JSON.stringify({
   }, null, 2)}
 
 KEY DATA POINTS (cite by source_name — use ALL available):
-${JSON.stringify(researchBundle.data_points.slice(0, 100).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 200), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
+  // Slicing to 40 instead of 100 to stay under 30k TPM rate limits for Claude 4.6 Sonnet
+  ${JSON.stringify(researchBundle.data_points.slice(0, 40).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 200), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
 
 DATA GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 8) ?? [])}
 
@@ -287,7 +288,8 @@ export async function draftSectionsParallel(
   onSectionComplete?: (sectionId: string, draft: SectionDraft) => void
 ): Promise<SectionDraft[]> {
   const results: SectionDraft[] = [];
-  const CONCURRENCY = 8; // Process all sections in parallel for 2-3min completion
+  // Reduced concurrency to 2 to comply with 30k TPM (Tier 1) rate limits of Claude 4.6 Sonnet
+  const CONCURRENCY = 2; 
 
   for (let i = 0; i < sectionIds.length; i += CONCURRENCY) {
     const batch = sectionIds.slice(i, i + CONCURRENCY);
@@ -312,6 +314,11 @@ export async function draftSectionsParallel(
       })
     );
     results.push(...batchDrafts);
+
+    // 10s anti-flooding delay for 30k TPM rate limits if there are more batches
+    if (i + CONCURRENCY < sectionIds.length) {
+      await new Promise(r => setTimeout(r, 10000));
+    }
   }
 
   return results;
