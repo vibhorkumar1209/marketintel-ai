@@ -119,8 +119,9 @@ export async function draftSection(
   const sectionQueries = [
     `${scope.industry} ${scope.geography} ${sectionDef.title}`,
     `${scope.product_scope} industry ${sectionDef.title} data statistics`,
-    `${scope.industry} ${scope.geography} ${sectionId === 'competitive' ? 'top players market share' : sectionId === 'regulatory' ? 'regulations policies' : sectionId === 'tech_developments' ? 'new technology innovation' : sectionId === 'segmentation' ? 'market breakdown by product application' : sectionId === 'sizing_workings' ? 'market size CAGR value USD' : 'drivers barriers trends'}`,
-    `${scope.industry} ${scope.geography} news market dynamics recent events 2024 2025`
+    `${scope.industry} ${scope.geography} ${sectionId === 'competitive' ? 'top players market share' : sectionId === 'regulatory' ? 'regulations policies' : sectionId === 'tech_developments' ? 'new technology innovation' : sectionId === 'segmentation' ? 'market breakdown by product application' : sectionId === 'sizing_workings' ? 'market size CAGR value USD' : 'leading drivers barriers trends and market shifts'}`,
+    `${scope.industry} ${scope.geography} news market dynamics recent events 2024 2025`,
+    ...(sectionId === 'dynamics' ? [`${scope.industry} ${scope.geography} emerging trends future outlook`, `${scope.industry} ${scope.geography} market drivers growth factors research`, `${scope.industry} ${scope.geography} key challenges operational barriers 2024`] : [])
   ];
 
   let formattedSectionSources = '';
@@ -136,9 +137,9 @@ export async function draftSection(
   const systemPrompt = `You are a principal-level market intelligence analyst generating a section of a commercial-grade industry report.
 
 CORE RULES (NON-NEGOTIABLE):
-1. NO HALLUCINATION — every factual claim, number, company stat, or regulation must come from the data provided. If you do not have enough specific data for a section, YOU MUST ESTIMATE AND EXTRAPOLATE reasonable values based on the data you DO have, and clearly tag it. DO NOT say "Data Not Available" unless absolutely impossible to infer.
+1. NO HALLUCINATION — every factual claim, number, company stat, or regulation must come from the data provided. If you do not have enough specific data for a section, YOU MUST ESTIMATE AND EXTRAPOLATE reasonable values based on the data you DO have. DO NOT say "Data Not Available" unless absolutely impossible to infer.
 2. NO GENERIC STATEMENTS — "the market is growing" is not acceptable. Required format: "the market grew at 6.8% CAGR 2020–2024, driven by X".
-3. CONFIDENCE TAGGING — tag every estimate: [HIGH — Tier 1–2] | [MEDIUM — Tier 3–4] | [LOW — ESTIMATE].
+3. NO TAGS OR CITATIONS — DO NOT include any confidence tags like [HIGH], [MEDIUM], or [ESTIMATE]. DO NOT name-drop any sources in the text.
 4. SOURCE TIER ORDER (highest available per data point):
    T1: Government / Regulatory / Central Bank
    T2: Audited Company Filings / Annual Reports / Earnings Calls

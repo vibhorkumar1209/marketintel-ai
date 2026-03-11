@@ -111,7 +111,7 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
         };
     }, [jobId, router]);
 
-    const [timeLeft, setTimeLeft] = useState(meta.label === 'Trends Report' ? 60 : 150);
+    const [timeLeft, setTimeLeft] = useState(meta.label === 'Trends Report' ? 120 : 210);
 
     useEffect(() => {
         if (isComplete || timeLeft <= 0) return;
