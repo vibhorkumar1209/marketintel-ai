@@ -5,10 +5,10 @@ import { ThemeProvider } from '@/components/layout/ThemeProvider';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'RefractOne Industry Report Hub',
+  title: 'RefractOne Hub v2.5.1',
   description: 'AI-powered market intelligence for modern enterprises',
   openGraph: {
-    title: 'RefractOne Industry Report Hub',
+    title: 'RefractOne Hub v2.5.1',
     description: 'AI-powered market intelligence for modern enterprises',
     type: 'website',
   },
