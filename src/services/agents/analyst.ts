@@ -34,8 +34,8 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   // Section 4
   dynamics: {
     title: 'Trends',
-    desc: 'You must output EXACTLY 3 detailed subsections: "Trends", "Drivers", and "Barriers". Each subsection requires an EXTREMELY detailed table with at least 6–8 distinct data rows. Headers MUST BE: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Emphasize local market dynamics (e.g. specific local regulations, infrastructure projects, or news events).',
-    tone: 'Extremely detailed and evidence-anchored. Use specific local news and data points from the research results.',
+    desc: 'You must output EXACTLY 4 detailed subsections: "Social/Market Trends", "Technological Trends", "Economic Drivers", and "Regulatory/Barriers". Each subsection requires an EXTREMELY detailed table with at least 8 distinct data rows. Headers MUST BE: ["Name", "Impact (H/M/L)", "Detailed Description", "Evidence/Examples (Company names, news dates, project titles)"]. Emphasize local market dynamics and specific emerging technologies (e.g. autonomy, energy density).',
+    tone: 'Strategic and data-dense. Every row in every table must contain at least one specific proper noun (Company, Agency, or Technology name).',
   },
   // Section 5
   regulatory: {
@@ -121,7 +121,16 @@ export async function draftSection(
     `${scope.product_scope} industry ${sectionDef.title} data statistics`,
     `${scope.industry} ${scope.geography} ${sectionId === 'competitive' ? 'top players market share' : sectionId === 'regulatory' ? 'regulations policies' : sectionId === 'tech_developments' ? 'new technology innovation' : sectionId === 'segmentation' ? 'market breakdown by product application' : sectionId === 'sizing_workings' ? 'market size CAGR value USD' : 'leading drivers barriers trends and market shifts'}`,
     `${scope.industry} ${scope.geography} news market dynamics recent events 2024 2025`,
-    ...(sectionId === 'dynamics' ? [`${scope.industry} ${scope.geography} emerging trends future outlook`, `${scope.industry} ${scope.geography} market drivers growth factors research`, `${scope.industry} ${scope.geography} key challenges operational barriers 2024`] : [])
+    ...(sectionId === 'dynamics' ? [
+      `${scope.industry} ${scope.geography} emerging trends future outlook`,
+      `${scope.industry} ${scope.geography} market drivers growth factors research`,
+      `${scope.industry} ${scope.geography} key challenges operational barriers 2024`,
+      ...(scope.industry.toLowerCase().includes('drone') ? [
+        `${scope.industry} BVLoS regulations and FAA EASA updates 2025`,
+        `${scope.industry} hydrogen fuel cell vs solid state battery trends`,
+        `${scope.industry} drone-in-a-box and autonomous vertiport developments`
+      ] : [])
+    ] : [])
   ];
 
   let formattedSectionSources = '';
