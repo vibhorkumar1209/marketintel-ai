@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Card from '@/components/ui/Card';
+import Button from '@/components/ui/Button';
 import { StreamEvent, AgentStep } from '@/types/agents';
 import { clsx } from 'clsx';
 
@@ -29,6 +30,7 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
     const [isComplete, setIsComplete] = useState(false);
     const [reportId, setReportId] = useState('');
     const [error, setError] = useState('');
+    const [isAborting, setIsAborting] = useState(false);
     const [syncStatus, setSyncStatus] = useState<'connected' | 'reconnecting' | 'polling'>('connected');
 
     const sections = REPORT_SECTIONS[meta.label] || REPORT_SECTIONS['Industry Report'];
@@ -137,6 +139,25 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
 
     const progress = calculateProgress();
 
+    const handleAbort = async () => {
+        if (!window.confirm('Are you sure you want to stop this report generation? Credits will not be refunded for partially completed work.')) return;
+        
+        setIsAborting(true);
+        try {
+            const res = await fetch(`/api/generate/${jobId}/abort`, { method: 'POST' });
+            if (res.ok) {
+                router.push('/wizard');
+            } else {
+                const data = await res.json();
+                setError(data.error || 'Failed to abort');
+            }
+        } catch (err) {
+            setError('An error occurred while aborting');
+        } finally {
+            setIsAborting(false);
+        }
+    };
+
     return (
         <div className="space-y-12 py-10 animate-in fade-in duration-700">
             {error && (
@@ -199,16 +220,28 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
                 }
             `}</style>
 
-            {/* Subtle Footnote */}
-            {!isComplete && (
-                <div className="flex justify-center pt-8">
+            {/* Subtle Footnote & Abort Button */}
+            <div className="flex flex-col items-center gap-10 pt-8">
+                {!isComplete && (
                     <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-4 rounded-2xl max-w-sm">
                         <p className="text-[11px] leading-relaxed text-slate-500 text-center font-medium opacity-80">
                             Our agents are currently scanning high-depth data sources including company filings, news archives, and regulatory databases.
                         </p>
                     </div>
-                </div>
-            )}
+                )}
+                
+                {!isComplete && !error && (
+                    <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={handleAbort} 
+                        loading={isAborting}
+                        className="text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all border border-transparent hover:border-red-100 rounded-full px-6"
+                    >
+                        Abort Generation
+                    </Button>
+                )}
+            </div>
         </div>
     );
 }
