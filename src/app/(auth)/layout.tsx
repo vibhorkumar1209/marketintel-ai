@@ -19,7 +19,7 @@ export default function AuthLayout({
           {/* Logo */}
           <Link href="/" className="flex items-center justify-center mb-8">
             <span className="text-3xl font-bold">
-              <span className="text-[#E8EDF5]">RefractOne Industry Report Hub</span>
+              <span className="text-[#E8EDF5]">RefractOne Hub v2.5.1</span>
               <span className="text-teal-600">AI</span>
             </span>
           </Link>

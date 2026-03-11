@@ -98,10 +98,11 @@ export default function SignInPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-[#E8EDF5] mb-2">Sign In</h1>
-        <p className="text-[#8899BB]">Access your RefractOne Industry Report Hub account</p>
-      </div>
+        <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-2xl font-bold text-[#E8EDF5]">Sign In</h1>
+            <span className="bg-teal-500/20 text-teal-400 text-[10px] font-black px-2 py-0.5 rounded border border-teal-500/30">v2.5.1 NEW</span>
+        </div>
+        <p className="text-[#8899BB]">Access your refined RefractOne v2.5.1 account</p>
 
       {generalError && (
         <div className="bg-red-600 bg-opacity-10 border border-red-600 border-opacity-30 rounded-lg p-4">
