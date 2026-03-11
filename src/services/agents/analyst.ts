@@ -11,7 +11,7 @@ import {
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
 
-// Antigravity CONTENT_PROMPT v2.0 — 9-section architecture
+// Antigravity CONTENT_PROMPT v1.5 — Highly stable targeted research logic
 const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: string }> = {
   // Section 1
   intro: {
@@ -27,7 +27,7 @@ const SECTION_DEFINITIONS: Record<string, { title: string; desc: string; tone: s
   },
   // Section 3
   segmentation: {
-    title: 'Market Size by Segments',
+    title: 'Market Size by Segment',
     desc: 'Break total market across ALL dimensions: (A) By Product Type — size + share + CAGR + key driver per type; (B) By Application — heatmap size × growth rate matrix; (C) By End-Use Industry — Pareto showing which 3 sectors = 80% of demand; (D) By Geography — country table with size, share, CAGR, top local player; (E) By Distribution Channel — channel mix with trend direction. Flag: [ESTIMATE — LOW DATA CONFIDENCE] for any segment with insufficient data.',
     tone: 'Structured. Use tables for all segmentation. Prose only for non-obvious insight.',
   },
@@ -113,6 +113,24 @@ export async function draftSection(
   const wordTarget = scope.token_budget_per_section;
   const useHighQualityModel = SONNET_SECTIONS.has(sectionId);
 
+  // EXECUTE Parallel.ai IN REAL TIME FOR THIS SPECIFIC SECTION/SUBSECTION
+  // This is the "secret sauce" that made the early reports so good
+  const searchObjective = `Market intelligence for ${scope.industry} in ${scope.geography}`;
+  const sectionQueries = [
+    `${scope.industry} ${scope.geography} ${sectionDef.title}`,
+    `${scope.product_scope} industry ${sectionDef.title} data statistics`,
+    `${scope.industry} ${scope.geography} ${sectionId === 'competitive' ? 'top players market share' : sectionId === 'regulatory' ? 'regulations policies' : sectionId === 'tech_developments' ? 'new technology innovation' : sectionId === 'segmentation' ? 'market breakdown by product application' : sectionId === 'sizing_workings' ? 'market size CAGR value USD' : 'drivers barriers trends'}`,
+    `${scope.industry} ${scope.geography} news market dynamics recent events 2024 2025`
+  ];
+
+  let formattedSectionSources = '';
+  try {
+    const rawSectionResults = await parallelSearch(searchObjective, sectionQueries);
+    formattedSectionSources = formatResultsForClaude(rawSectionResults);
+  } catch (err) {
+    console.error(`Parallel.ai search failed for section ${sectionId}:`, err);
+  }
+
   const sectionTone = sectionDef.tone || 'Analytical and evidence-backed.';
 
   const systemPrompt = `You are a principal-level market intelligence analyst generating a section of a commercial-grade industry report.
@@ -150,9 +168,9 @@ ${reportType === 'trends_report' && sectionId === 'dynamics' ? `
 - BOTH subsections must use a table with these EXACT headers: ["Trend name", "Impact of Trend on Industry", "Description of Trend", "Examples"].
 ` : `
 - If Intro (Market Report Scope): create EXACTLY 4 subsections: "Product Scope", "Application Scope", "Geography Scope", and "Research Timeline". Total market sizing numbers are BANNED here.
-- If Dynamics (Trends, Drivers, Barriers): create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers". For each of these 3 subsections, the table MUST follow these headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
+- If Dynamics (Trends, Drivers, Barriers): ${reportType === 'trends_report' ? 'create EXACTLY 2 detailed subsections named "Business Trends" and "Technology Trends".' : 'create EXACTLY 3 detailed subsections named "Trends", "Drivers", and "Barriers".'} For each of these subsections, the table MUST follow these headers: ["Name of Trend", "Impact of Trend", "Description of Trend", "Examples (referring to news, events highlighting the trend)"]. Each subsection must have exactly 2 lines of intro and its highly detailed table. DO NOT INCLUDE A CHART (\`chart_spec: null\`).
 - If Regulatory: create EXACTLY 4 subsections: "Regulatory Bodies", "Regulation Tracker", "Trade & Compliance Barriers", and "Pending Regulations". Each must have its own table as defined in the section description.
-- If Competitive: create an individual subsection for each major company detailing its current operations, with its own table and chart.
+- If Competitive: Create a summary market share table first. Then, create individual subsections for the TOP 5 companies only. For each of these 5, output a brief profile table and a 2x2 matrix data point.
 - If Segmentation / Regional: create subsections for each major segment/region, each with its own 2-line intro, table, and MUST use a \`"type": "stacked_column_line"\` chart.
 `}
 ` : ''}
@@ -163,20 +181,22 @@ OUTPUT FORMAT:
   "section_title": "string",
   "word_count_target": number,
   "body_paragraphs": ["Exactly 2 sentences introducing the overall section context."],
+  "admin_methodology": "DANGER: FOR ADMIN LOG ONLY. Detailed internal logic, triangulation calculations, assumptions, and data source quality notes. This will NOT be rendered for users.",
+  "key_table": null,
+  "chart_spec": null,
   "subsections": [
     {
       "title": "Subsection Title (e.g. Supply / Company A / Segment)",
       "body_paragraphs": ["Exactly 2 sentences introducing this subsection."],
       "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] },
-      "chart_spec": { "type": "stacked_column_line|combination_column_line|bar|pie|line", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" } | null
+      "chart_spec": { "type": "bar|line|pie|scatter|heatmap|timeline", "title": "string", "x_axis": "label", "y_axis": "label", "data_source": "string" } | null
     }
   ],
   "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
-  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"],
-  "admin_methodology": "DANGER: FOR ADMIN LOG ONLY. Detailed internal logic, triangulation calculations, assumptions, and data source quality notes. This will NOT be rendered for users."
+  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
 }
 
-${!['dynamics', 'segmentation', 'regional_analysis', 'competitive'].includes(sectionId) ? `
+${!['dynamics', 'segmentation', 'regional_analysis', 'competitive', 'regulatory', 'intro'].includes(sectionId) ? `
 Wait, if this section is NOT one of the above, use this simpler structure:
 {
   "section_id": "string",
@@ -186,8 +206,7 @@ Wait, if this section is NOT one of the above, use this simpler structure:
   "key_table": { "title": "string", "headers": ["Col1","Col2"], "rows": [["val","val"]] },
   "chart_spec": { "type": "combination_column_line|line|bar|pie|waterfall|competitive_matrix", "title": "string", "xAxis": "label", "yAxis": "label", "data_source": "string" } | null,
   "citations": [{ "claim": "string", "source": "string", "tier": "T1|T2|T3|T4|T5|T6", "date": "YYYY", "url": "string" }],
-  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"],
-  "admin_methodology": "Detailed internal logic and assumptions."
+  "section_flags": ["SOURCING_GAP|DATA_QUALITY|METHODOLOGY_NOTE"]
 }` : ''}
 `;
 
@@ -205,54 +224,33 @@ ${JSON.stringify({
   }, null, 2)}
 
 KEY DATA POINTS (cite by source_name — use ALL available):
-${JSON.stringify(researchBundle.data_points.slice(0, 200).filter(Boolean).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 300), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
+${JSON.stringify(researchBundle.data_points.slice(0, 100).map(dp => ({ value: dp.value, unit: dp.unit, context: String(dp.context || '').slice(0, 200), source_name: dp.source_name, source_url: dp.source_url || '', confidence: dp.confidence, date: dp.publication_date || '' })), null, 2)}
 
 DATA GAPS: ${JSON.stringify(researchBundle.gaps?.slice(0, 8) ?? [])}
 
 ${enrichmentBundle && enrichmentBundle.enrichment_data.length > 0 ? `ENRICHMENT (company intelligence):
 ${JSON.stringify(enrichmentBundle.enrichment_data.slice(0, 4), null, 2)}` : ''}
 
+=== LOCALIZED PARALLEL.AI SEARCH RESULTS EXACTLY FOR THIS SECTION ===
+${formattedSectionSources.slice(0, 15000) || 'No local parallel.ai results gathered.'}
+====================================================================
+
 OUTPUT the complete section JSON:`;
 
-  let response;
-  let retries = 0;
-  const maxRetries = 3;
-
-  while (retries <= maxRetries) {
-    try {
-      response = await client.messages.create({
-        model: useHighQualityModel ? 'claude-sonnet-4-6' : 'claude-haiku-4-5-20251001',
-        max_tokens: 4000,
-        temperature: 0.3,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
-      });
-      break;
-    } catch (err: any) {
-      if (err.status === 429 && retries < maxRetries) {
-        retries++;
-        const wait = Math.pow(2, retries) * 1000 + (Math.random() * 1000); // 2s, 4s, 8s + jitter
-        console.warn(`Rate limit (429) hit for section ${sectionId}. Retrying ${retries}/${maxRetries} after ${Math.round(wait)}ms...`);
-        await new Promise(resolve => setTimeout(resolve, wait));
-        continue;
-      }
-      throw err;
-    }
-  }
-
-  if (!response) throw new Error(`Failed to generate section ${sectionId} after ${maxRetries} retries.`);
+  const response = await client.messages.create({
+    model: useHighQualityModel ? 'claude-3-5-sonnet-20241022' : 'claude-3-5-haiku-20241022',
+    max_tokens: 8000,
+    temperature: 0.3,
+    system: systemPrompt,
+    messages: [{ role: 'user', content: userPrompt }],
+  });
 
   const text = (response.content[0] as { text: string }).text.trim();
 
   const safeParse = (raw: string): SectionDraft | null => {
     try {
-      // Find the first { and the last }
-      const start = raw.indexOf('{');
-      const end = raw.lastIndexOf('}');
-      if (start === -1 || end === -1) return null;
-
-      const jsonStr = raw.slice(start, end + 1);
-      return JSON.parse(jsonStr) as SectionDraft;
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      return JSON.parse(jsonMatch ? jsonMatch[0] : raw) as SectionDraft;
     } catch {
       return null;
     }
@@ -260,7 +258,6 @@ OUTPUT the complete section JSON:`;
 
   const parsed = safeParse(text);
   if (parsed) {
-    // Force the requested sectionId and section title to maintain consistency
     parsed.section_id = sectionId;
     if (!parsed.section_title) parsed.section_title = sectionDef.title;
     return parsed;
@@ -270,7 +267,7 @@ OUTPUT the complete section JSON:`;
     section_id: sectionId,
     section_title: sectionDef.title,
     word_count_target: wordTarget,
-    body_paragraphs: [text.slice(0, 30000) || 'Section generation incomplete'],
+    body_paragraphs: [text.slice(0, 4000) || 'Section generation incomplete'],
     key_table: null,
     chart_spec: null,
     citations: [],
@@ -290,15 +287,14 @@ export async function draftSectionsParallel(
   onSectionComplete?: (sectionId: string, draft: SectionDraft) => void
 ): Promise<SectionDraft[]> {
   const results: SectionDraft[] = [];
-  const CONCURRENCY = 3; // Reduced slightly for better TPM stability with high-depth Sonnet output
+  const CONCURRENCY = 8; // Process all sections in parallel for 2-3min completion
 
   for (let i = 0; i < sectionIds.length; i += CONCURRENCY) {
     const batch = sectionIds.slice(i, i + CONCURRENCY);
     const batchDrafts = await Promise.all(
       batch.map(async (id) => {
-        // Implement a 180s hard timeout per section to prevent hanging
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error(`Drafting section ${id} timed out after 180s`)), 180000)
+          setTimeout(() => reject(new Error(`Drafting section ${id} timed out after 300s`)), 300000)
         );
 
         try {
@@ -307,29 +303,15 @@ export async function draftSectionsParallel(
             timeoutPromise
           ]) as SectionDraft;
 
-          if (onSectionComplete) onSectionComplete(id, draft);
+          if (onSectionComplete) await onSectionComplete(id, draft);
           return draft;
         } catch (err) {
           console.error(`Error or Timeout in section ${id}:`, err);
-          // Return a placeholder draft if it fails/times out to allow report to continue
-          return {
-            section_id: id,
-            section_title: id,
-            word_count_target: scope.token_budget_per_section,
-            body_paragraphs: ["Section drafting encountered a timeout or error. Data may be incomplete for this specific segment."],
-            key_table: null,
-            chart_spec: null,
-            citations: [],
-            section_flags: ['GENERATION_TIMEOUT']
-          } as SectionDraft;
+          throw err;
         }
       })
     );
     results.push(...batchDrafts);
-
-    if (i + CONCURRENCY < sectionIds.length) {
-      await new Promise(resolve => setTimeout(resolve, 800));
-    }
   }
 
   return results;
@@ -352,35 +334,34 @@ REQUIREMENTS:
 5. Every figure must be traceable to a section already drafted
 6. No new claims not in the drafted sections
 
-OUTPUT FORMAT (JSON ONLY):
+Output ONLY valid JSON.`;
+
+  const sectionSummaries = sections.map(s => ({
+    section_id: s.section_id,
+    title: s.section_title,
+    key_point: String(s.body_paragraphs?.[0] || '').slice(0, 300),
+    top_citation: s.citations?.[0] || null,
+  }));
+
+  const userPrompt = `Write the Executive Summary for this ${scope.industry} market report.
+
+MARKET: ${scope.industry} | ${scope.product_scope} | ${scope.geography}
+VALIDATED MARKET SIZE: ${sizingJSON.validated_market_size.value} ${sizingJSON.validated_market_size.unit} (${sizingJSON.validated_market_size.year})
+CAGR: ${sizingJSON.cagr_estimate.value}% (${sizingJSON.cagr_estimate.period})
+
+SECTION SUMMARIES:
+${JSON.stringify(sectionSummaries, null, 2)}
+
+OUTPUT FORMAT:
 {
   "market_headline": "string",
-  "kpi_panel": [
-    { "label": "Market Size", "value": "string", "source_section": "sizing_workings" },
-    { "label": "CAGR (%)", "value": "string", "source_section": "sizing_workings" },
-    { "label": "Major Trend", "value": "string", "source_section": "dynamics" }
-  ],
-  "body_paragraphs": ["string (paragraph 1)", "string (paragraph 2)"],
-  "scenario_outlook": {
-    "bull": "string",
-    "base": "string",
-    "bear": "string"
-  }
-}
-`;
-
-  const userPrompt = `DRAFT THE EXECUTIVE SUMMARY for the following report on ${scope.industry}.
-
-SECTIONS DRAFTED:
-${JSON.stringify(sections.map(s => ({ title: s.section_title, content: s.body_paragraphs.join(' ').slice(0, 500) })), null, 2)}
-
-SIZING DATA:
-${JSON.stringify(sizingJSON, null, 2)}
-
-Output the JSON:`;
+  "kpi_panel": [{ "label": "string", "value": "string", "source_section": "string" }],
+  "body_paragraphs": ["array of 6-10 paragraph strings"],
+  "scenario_outlook": { "bull": "string", "base": "string", "bear": "string" }
+}`;
 
   const response = await client.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: 'claude-3-5-sonnet-20241022',
     max_tokens: 4000,
     temperature: 0.3,
     system: systemPrompt,
@@ -388,15 +369,46 @@ Output the JSON:`;
   });
 
   const text = (response.content[0] as { text: string }).text.trim();
-  const jsonMatch = text.match(/\{[\s\S]*\}/);
-  return JSON.parse(jsonMatch ? jsonMatch[0] : text) as ExecutiveSummary;
+
+  const safeParse = (raw: string): ExecutiveSummary | null => {
+    try {
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      return JSON.parse(jsonMatch ? jsonMatch[0] : raw) as ExecutiveSummary;
+    } catch {
+      return null;
+    }
+  };
+
+  const parsed = safeParse(text);
+  if (parsed) return parsed;
+
+  return {
+    section_id: 'executive_summary',
+    market_headline: `${scope.industry} market analysis — ${scope.base_year}–${scope.forecast_end_year}`,
+    kpi_panel: [
+      { label: 'Market Size', value: `${sizingJSON.validated_market_size.value} ${sizingJSON.validated_market_size.unit}`, source_section: 'sizing_workings' },
+      { label: 'CAGR', value: `${sizingJSON.cagr_estimate.value}%`, source_section: 'sizing_workings' },
+    ],
+    body_paragraphs: [text.slice(0, 2000) || 'Executive summary generation incomplete'],
+    scenario_outlook: { bull: 'Strong growth trajectory', base: 'Steady growth', bear: 'Subdued growth if headwinds persist' },
+    citations: [],
+  };
 }
 
-// ─── STEP 9: APPENDIX ─────────────────────────────────────────────────────────
+// ─── APPENDIX BUILDER ──────────────────────────────────────────────────────────
 
 export function buildAppendixSection(sections: SectionDraft[], scope: ScopeJSON): SectionDraft {
-  const allCitations = sections.flatMap(s => (s.citations || []).map(c => ({ ...c, usedIn: s.section_title })));
-  const uniqueCitations = Array.from(new Map(allCitations.map(c => [c.source + c.claim, c])).values());
+  const allCitations = sections.flatMap(s =>
+    (s.citations || []).map(c => ({ ...c, usedIn: s.section_title }))
+  );
+
+  const seen = new Set<string>();
+  const uniqueCitations = allCitations.filter(c => {
+    const key = (c.source || '').toLowerCase().trim();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
   const tierCounts: Record<string, number> = {};
   for (const c of uniqueCitations) {
@@ -444,22 +456,3 @@ export function buildAppendixSection(sections: SectionDraft[], scope: ScopeJSON)
   };
 }
 
-export async function generateReportTitle(scope: ScopeJSON): Promise<string> {
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
-    max_tokens: 100,
-    temperature: 0.3,
-    messages: [{
-      role: 'user',
-      content: `Generate a professional market intelligence report title for:
-    Industry: ${scope.industry}
-Product Scope: ${scope.product_scope}
-  Geography: ${scope.geography}
-Base Year: ${scope.base_year}
-Forecast Year: ${scope.forecast_end_year}
-
-Output ONLY the title (no quotes, no explanation). Example format: "Global PU Hot-Melt Adhesives Market — Analysis and Forecast 2024–2030"`,
-    }],
-  });
-  return (response.content[0] as { text: string }).text.trim();
-}

@@ -14,22 +14,39 @@ export interface ParallelResult {
 }
 
 export async function parallelSearch(objective: string, queries: string[]): Promise<ParallelResult[]> {
-  const res = await fetch(PARALLEL_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${PARALLEL_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ objective, search_queries: queries }),
-  });
+  console.log(`[Parallel.ai] Searching with ${queries.length} queries for: ${objective.slice(0, 100)}...`);
+  
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Parallel.ai search failed: ${res.status} ${err.slice(0, 200)}`);
+  try {
+    const res = await fetch(PARALLEL_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${PARALLEL_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ objective, search_queries: queries }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Parallel.ai search failed: ${res.status} ${err.slice(0, 200)}`);
+    }
+
+    const data = await res.json() as { results: ParallelResult[]; search_id: string };
+    console.log(`[Parallel.ai] Found ${data.results?.length ?? 0} results.`);
+    return data.results || [];
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new Error('Parallel.ai search timed out after 60s');
+    }
+    throw err;
   }
-
-  const data = await res.json() as { results: ParallelResult[]; search_id: string };
-  return data.results || [];
 }
 
 export function formatResultsForClaude(results: ParallelResult[]): string {
@@ -78,7 +95,7 @@ OUTPUT JSON: { "data_points": [...], "gaps": [...max 5 items...], "searches_exec
 
   try {
     const response = await claudeClient.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 8000,
       temperature: 0,
       system: systemPrompt,
@@ -135,7 +152,7 @@ OUTPUT: { "enrichment_data": [...max 3 companies...] }`;
 
   try {
     const response = await claudeClient.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 2000,
       temperature: 0,
       system: systemPrompt,

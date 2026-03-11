@@ -6,26 +6,10 @@ import Card from '@/components/ui/Card';
 import { StreamEvent, AgentStep } from '@/types/agents';
 import { clsx } from 'clsx';
 
-const STEPS: AgentStep[] = [
-    { step: 1, name: 'Scope Extraction', status: 'pending' },
-    { step: 2, name: 'Research Plan', status: 'pending' },
-    { step: 3, name: 'Web Research', status: 'pending' },
-    { step: 4, name: 'Market Sizing', status: 'pending' },
-    { step: 5, name: 'Drafting Sections', status: 'pending' },
-    { step: 6, name: 'Social & Tech Intelligence', status: 'pending' },
-    { step: 7, name: 'Executive Summary', status: 'pending' },
-    { step: 8, name: 'Formatting Report', status: 'pending' },
-];
-
-const STEP_ICONS: Record<number, string> = {
-    1: '🧭',
-    2: '📋',
-    3: '🔍',
-    4: '📊',
-    5: '✍️',
-    6: '📡',
-    7: '📝',
-    8: '🎨',
+const REPORT_SECTIONS: Record<string, string[]> = {
+    'Industry Report': ['Research & Sizing', 'Executive Summary', 'Intro', 'Market Size', 'Segmentation', 'Dynamics', 'Tech', 'Competitive', 'Regulatory', 'Opportunities', 'Finalizing'],
+    'Trends Report': ['Research & Discovery', 'Dynamics Analysis', 'Finalizing'],
+    'Market Datapack': ['Planning', 'Data Extraction', 'Market Sizing', 'Competitive Share', 'Dynamics', 'Regional Analysis', 'Excel Generation']
 };
 
 interface GenerationProgressProps {
@@ -39,14 +23,15 @@ interface GenerationProgressProps {
 
 export default function GenerationProgress({ jobId, meta }: GenerationProgressProps) {
     const router = useRouter();
-    const [steps, setSteps] = useState<AgentStep[]>(STEPS);
     const [currentStep, setCurrentStep] = useState(0);
+    const [subProgress, setSubProgress] = useState({ current: 0, total: 0 });
+    const [statusText, setStatusText] = useState('Initializing research agents...');
     const [isComplete, setIsComplete] = useState(false);
     const [reportId, setReportId] = useState('');
     const [error, setError] = useState('');
     const [syncStatus, setSyncStatus] = useState<'connected' | 'reconnecting' | 'polling'>('connected');
 
-    // Use refs for values that shouldn't trigger re-renders or be stale in effects
+    const sections = REPORT_SECTIONS[meta.label] || REPORT_SECTIONS['Industry Report'];
     const isCompleteRef = useRef(false);
 
     useEffect(() => {
@@ -56,26 +41,31 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
 
         const connectStream = () => {
             if (isCompleteRef.current) return;
-
             if (eventSource) eventSource.close();
 
             eventSource = new EventSource(`/api/generate/${jobId}/stream`);
-
             eventSource.onmessage = (event) => {
                 try {
-                    const data: StreamEvent = JSON.parse(event.data);
+                    const data: any = JSON.parse(event.data);
                     setSyncStatus('connected');
 
-                    if (data.type === 'step_start') {
+                    if (data.type === 'connected') {
+                        if (data.currentStep > 0) {
+                            setCurrentStep(data.currentStep);
+                            if (data.sectionsCompleted) setSubProgress({ current: data.sectionsCompleted, total: data.totalSections || 8 });
+                        }
+                    } else if (data.type === 'step_start') {
                         setCurrentStep(data.step);
-                        setSteps((prev) => prev.map((s) => s.step === data.step ? { ...s, status: 'running', startedAt: data.timestamp } : s));
+                        setStatusText(data.stepName);
                     } else if (data.type === 'step_complete') {
-                        setSteps((prev) => prev.map((s) => s.step === data.step ? { ...s, status: 'completed', completedAt: data.timestamp, durationMs: s.startedAt ? new Date(data.timestamp).getTime() - new Date(s.startedAt).getTime() : undefined } : s));
+                        setCurrentStep(data.step + 1);
                     } else if (data.type === 'step_progress') {
-                        setSteps((prev) => prev.map((s) => s.step === data.step && data.data ? { ...s, progressText: `Completed ${data.data.sectionsCompleted}/${data.data.totalSections} sections` } : s));
+                        if (data.data) {
+                            setSubProgress({ current: data.data.sectionsCompleted, total: data.data.totalSections });
+                            setStatusText(`Drafting: ${data.data.sectionId.replace(/_/g, ' ')}`);
+                        }
                     } else if (data.type === 'step_error') {
-                        setSteps((prev) => prev.map((s) => (s.step === data.step ? { ...s, status: 'failed' } : s)));
-                        setError(`Step ${data.step} failed: ${data.error || 'Unknown error'}`);
+                        setError(`Error: ${data.error || 'Unknown failure'}`);
                         eventSource?.close();
                     } else if (data.type === 'job_complete') {
                         handleComplete(data.reportId || '');
@@ -85,10 +75,7 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
                 } catch (err) { }
             };
 
-            eventSource.onerror = () => {
-                console.warn("Stream interrupted, switching to polling mode...");
-                setSyncStatus('polling');
-            };
+            eventSource.onerror = () => setSyncStatus('polling');
         };
 
         const handleComplete = (id: string) => {
@@ -107,12 +94,8 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
                 const res = await fetch(`/api/generate/${jobId}/status`);
                 if (!res.ok) return;
                 const data = await res.json();
-
-                if (data.status === 'completed') {
-                    handleComplete(data.reportId);
-                } else if (data.status === 'failed') {
-                    setError(data.errorMessage || 'Report generation failed');
-                }
+                if (data.status === 'completed') handleComplete(data.reportId);
+                else if (data.status === 'failed') setError(data.errorMessage || 'Report generation failed');
             } catch (e) { }
         };
 
@@ -126,13 +109,11 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
         };
     }, [jobId, router]);
 
-    const [timeLeft, setTimeLeft] = useState(meta.label === 'Trends Report' ? 60 : 300);
+    const [timeLeft, setTimeLeft] = useState(meta.label === 'Trends Report' ? 60 : 180);
 
     useEffect(() => {
         if (isComplete || timeLeft <= 0) return;
-        const timer = setInterval(() => {
-            setTimeLeft(prev => Math.max(0, prev - 1));
-        }, 1000);
+        const timer = setInterval(() => setTimeLeft(prev => Math.max(0, prev - 1)), 1000);
         return () => clearInterval(timer);
     }, [isComplete, timeLeft]);
 
@@ -142,88 +123,92 @@ export default function GenerationProgress({ jobId, meta }: GenerationProgressPr
         return `${mins}m ${secs}s`;
     };
 
-    const progress = Math.min(99, Math.round((steps.filter((s) => s.status === 'completed').length / steps.length) * 100));
+    // Granular progress calculation
+    const calculateProgress = () => {
+        if (isComplete) return 100;
+        if (currentStep <= 4) return currentStep * 10; // Phase 1-4: 0-40%
+        if (currentStep === 5) { // Drafting Phase: 40-90%
+            const ratio = subProgress.total > 0 ? subProgress.current / subProgress.total : 0;
+            return Math.min(90, 40 + Math.round(ratio * 50));
+        }
+        if (currentStep > 5) return 90 + (currentStep - 5) * 3; // Finalizing: 90-100%
+        return 0;
+    };
+
+    const progress = calculateProgress();
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Error Message */}
+        <div className="space-y-12 py-10 animate-in fade-in duration-700">
             {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-600 text-sm">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center shadow-sm">
+                    <p className="text-red-600 font-semibold">{error}</p>
+                    <button onClick={() => window.location.reload()} className="mt-4 text-sm font-bold text-red-700 underline underline-offset-4">Retry Generation</button>
                 </div>
             )}
 
-            {/* Sync Status Badge */}
-            {!isComplete && !error && (
-                <div className="flex justify-center">
-                    <span className={clsx(
-                        "text-[10px] px-2 py-0.5 rounded-full border flex items-center gap-1.5 transition-colors duration-500",
-                        syncStatus === 'connected' ? "bg-green-50 text-green-600 border-green-200" : "bg-amber-50 text-amber-600 border-amber-200"
-                    )}>
-                        <span className={clsx("w-1.5 h-1.5 rounded-full", syncStatus === 'connected' ? "bg-green-500" : "bg-amber-500 animate-pulse")}></span>
-                        {syncStatus === 'connected' ? "Live Stream Active" : "Synchronizing Status..."}
+            {/* Header Area */}
+            <div className="text-center space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/50 backdrop-blur-md border border-gray-100 rounded-full shadow-sm">
+                    <span className={clsx("w-2 h-2 rounded-full", syncStatus === 'connected' ? "bg-green-500 animate-pulse" : "bg-amber-500")}></span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                        {isComplete ? 'Analysis Finished' : 'Research in Progress'}
                     </span>
                 </div>
-            )}
+                <h2 className="text-4xl font-black text-slate-900 tracking-tight">
+                    {progress}% <span className="text-gray-300">Complete</span>
+                </h2>
+            </div>
 
-            {/* Progress Bar Header */}
-            <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-[#6b7280] uppercase tracking-wider">Report Completion</p>
-                    <p className="text-sm font-bold" style={{ color: meta.accent }}>{isComplete ? '100%' : `${progress}%`}</p>
-                </div>
-                <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+            {/* Progress Bar Container */}
+            <div className="relative max-w-2xl mx-auto px-4">
+                <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-200/50">
                     <div
-                        className="h-full transition-all duration-500 rounded-full"
-                        style={{ width: `${isComplete ? 100 : progress}%`, backgroundColor: meta.accent }}
-                    />
+                        className="h-full transition-all duration-1000 ease-out rounded-full relative overflow-hidden"
+                        style={{
+                            width: `${progress}%`,
+                            backgroundColor: meta.accent,
+                            backgroundImage: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
+                            backgroundSize: '200% 100%',
+                            animation: 'shimmer 2s infinite linear'
+                        }}
+                    >
+                    </div>
                 </div>
-                {!isComplete && (
-                    <p className="text-center text-[10px] text-gray-400 uppercase tracking-widest font-bold mt-2">
-                        Estimated Time Remaining: {formatTime(timeLeft)}
-                    </p>
-                )}
-            </div>
 
-            {/* Compact Status Indicator */}
-            <div className="flex flex-col items-center justify-center py-12 px-6 bg-white/50 backdrop-blur-sm rounded-2xl border border-gray-100 shadow-sm transition-all duration-500">
-                {!isComplete ? (
-                    <>
-                        <div className="relative mb-6">
-                            <div className="w-16 h-16 rounded-full border-4 border-gray-100 border-t-current animate-spin" style={{ color: meta.accent }}></div>
-                            <div className="absolute inset-0 flex items-center justify-center text-2xl">
-                                {STEP_ICONS[currentStep] || '⚡'}
-                            </div>
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">
-                            {steps.find(s => s.step === currentStep)?.name || 'Initializing...'}
-                        </h3>
-                        <p className="text-sm text-gray-500 font-medium animate-pulse">
-                            {steps.find(s => s.step === currentStep)?.progressText || 'Processing deep market intelligence...'}
+                {/* Status Text & Timer */}
+                <div className="mt-8 flex flex-col items-center gap-6">
+                    <div className="flex flex-col items-center gap-2">
+                        <p className="text-sm font-bold text-slate-500 uppercase tracking-widest animate-pulse">
+                            {isComplete ? 'Generating final report...' : statusText}
                         </p>
-                    </>
-                ) : (
-                    <>
-                        <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-3xl mb-4 text-green-600 animate-bounce">
-                            ✓
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">Research Complete</h3>
-                        <p className="text-sm text-green-600 font-medium">Redirecting to your results...</p>
-                    </>
-                )}
-            </div>
-
-            {/* Pro Tip */}
-            <div className="flex gap-4 bg-[#f8fafc] p-5 rounded-2xl border border-blue-100/50">
-                <div className="text-xl shrink-0 opacity-80">💡</div>
-                <div>
-                    <p className="font-bold text-slate-800 mb-1 text-sm tracking-tight text-left">Pro Tip</p>
-                    <p className="text-xs text-slate-500 leading-relaxed text-left font-medium">
-                        Your {meta.label.toLowerCase()} is being built with high-depth accuracy. You can close this window at any time;
-                        the processing will continue and results will appear on your Dashboard.
-                    </p>
+                        {!isComplete && (
+                            <div className="h-6 flex items-center gap-4">
+                                <span className="text-[13px] font-bold text-slate-400">
+                                    ESTIMATED TIME: {formatTime(timeLeft)}
+                                </span>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
+
+            <style jsx>{`
+                @keyframes shimmer {
+                    0% { background-position: -200% 0; }
+                    100% { background-position: 200% 0; }
+                }
+            `}</style>
+
+            {/* Subtle Footnote */}
+            {!isComplete && (
+                <div className="flex justify-center pt-8">
+                    <div className="bg-white/40 backdrop-blur-sm border border-white/60 p-4 rounded-2xl max-w-sm">
+                        <p className="text-[11px] leading-relaxed text-slate-500 text-center font-medium opacity-80">
+                            Our agents are currently scanning high-depth data sources including company filings, news archives, and regulatory databases.
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

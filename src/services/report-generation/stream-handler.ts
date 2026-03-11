@@ -5,7 +5,7 @@ import { StreamEvent } from '@/types/agents';
 export class StreamHandler {
   constructor(private readonly jobId: string) { }
 
-  async emit(event: Omit<StreamEvent, 'timestamp'>): Promise<void> {
+  async emit(event: Omit<StreamEvent, 'timestamp'>, extraData?: object): Promise<void> {
     const fullEvent: StreamEvent = {
       ...event,
       timestamp: new Date().toISOString(),
@@ -27,6 +27,7 @@ export class StreamHandler {
           currentStepName: event.stepName,
           status: 'processing',
           updatedAt: new Date(),
+          ...extraData,
         },
       });
     }
@@ -63,6 +64,10 @@ export class StreamHandler {
 
   async stepError(step: number, stepName: string, error: string) {
     await this.emit({ type: 'step_error', step, stepName, error });
+  }
+
+  async stepProgress(step: number, stepName: string, progressData: object, extraJobData?: object) {
+    await this.emit({ type: 'step_progress', step, stepName, data: progressData as any }, extraJobData);
   }
 
   async jobComplete(reportId: string) {

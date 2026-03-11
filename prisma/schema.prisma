@@ -1,33 +1,28 @@
-datasource db {
-  provider = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// ═══════════════════════════════════════
-// USERS & AUTH (NextAuth.js models)
-// ═══════════════════════════════════════
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
 
 model User {
-  id            String    @id @default(cuid())
+  id            String         @id @default(cuid())
   name          String?
-  email         String    @unique
+  email         String         @unique
   emailVerified DateTime?
   image         String?
-  password      String?   // bcrypt hash — null for OAuth users
-  role          String    @default("user")  // "user" | "admin"
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-
+  password      String?
+  role          String         @default("user")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   accounts      Account[]
-  sessions      Session[]
   credits       Credits?
   jobs          Job[]
   reports       Report[]
+  sessions      Session[]
   subscriptions Subscription[]
   usage         Usage[]
 
@@ -40,15 +35,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@index([userId])
@@ -59,8 +53,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -73,10 +66,6 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ═══════════════════════════════════════
-// CREDITS & BILLING
-// ═══════════════════════════════════════
-
 model Credits {
   id             String   @id @default(cuid())
   userId         String   @unique
@@ -84,8 +73,7 @@ model Credits {
   lifetimeEarned Int      @default(0)
   lifetimeSpent  Int      @default(0)
   updatedAt      DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Subscription {
@@ -94,64 +82,54 @@ model Subscription {
   stripeCustomerId     String    @unique
   stripeSubscriptionId String    @unique
   stripePriceId        String
-  plan                 String    // "starter" | "pro" | "team"
-  status               String    // "active" | "canceled" | "past_due" | "trialing"
+  plan                 String
+  status               String
   currentPeriodStart   DateTime
   currentPeriodEnd     DateTime
   canceledAt           DateTime?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([stripeCustomerId])
 }
 
 model Usage {
-  id           String   @id @default(cuid())
-  userId       String
-  reportType   String   // "industry_report" | "datapack"
-  creditsUsed  Int
-  jobId        String?
-  createdAt    DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  userId      String
+  reportType  String
+  creditsUsed Int
+  jobId       String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([createdAt])
 }
 
-// ═══════════════════════════════════════
-// JOBS & REPORTS
-// ═══════════════════════════════════════
-
 model Job {
   id               String    @id @default(cuid())
   userId           String
-  reportType       String    // "industry_report" | "datapack"
-  query            String    @db.Text
-  config           Json      // { depth, regions, sections, competitorCount }
-  status           String    @default("queued")  // "queued" | "processing" | "completed" | "failed"
+  reportType       String
+  query            String
+  config           Json
+  status           String    @default("queued")
   currentStep      Int       @default(0)
   currentStepName  String?
   progressPct      Int       @default(0)
-  errorMessage     String?   @db.Text
+  errorMessage     String?
   estimatedCredits Int
   actualCredits    Int?
-  
-  // Intermediate state for resumption
-  researchData     Json?     // ResearchBundle
-  sizingData       Json?     // SizingJSON
-  draftedSections  Json?     // SectionDraft[]
-  
   startedAt        DateTime?
   completedAt      DateTime?
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
-
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  report Report?
+  draftedSections  Json?
+  researchData     Json?
+  sizingData       Json?
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  report           Report?
 
   @@index([userId])
   @@index([status])
@@ -162,48 +140,30 @@ model Report {
   id         String   @id @default(cuid())
   jobId      String   @unique
   userId     String
-  reportType String   // "industry_report" | "datapack"
-  query      String   @db.Text
+  reportType String
+  query      String
   title      String?
-
-  // Industry Report — array of { id, title, content, keyTable, chartSpec, citations }
   sections   Json?
-
-  // Datapack — array of { name, columns, rows }
   sheets     Json?
-
-  // Shared metadata
-  metadata   Json?    // { marketSize, cagr, generatedAt, qualityScore, keyFindings[], sources[] }
-
-  // Enrichment data
-  enrichment Json?    // Social + tech intelligence
-
-  // Sizing output
-  sizing     Json?    // { topDown, bottomUp, validatedMarketSize, cagr, confidenceInterval }
-
-  // Export files (base64 or file path)
+  metadata   Json?
+  enrichment Json?
+  sizing     Json?
   pdfPath    String?
   xlsxPath   String?
-
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  job  Job  @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([jobId])
   @@index([createdAt])
 }
 
-// ═══════════════════════════════════════
-// AUDIT LOG
-// ═══════════════════════════════════════
-
 model AuditLog {
   id        String   @id @default(cuid())
   userId    String?
-  action    String   // "generate_report" | "download_pdf" | "download_xlsx" | "stripe_checkout" | etc.
+  action    String
   metadata  Json?
   ipAddress String?
   createdAt DateTime @default(now())

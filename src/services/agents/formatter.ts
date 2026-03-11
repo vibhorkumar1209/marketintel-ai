@@ -186,7 +186,7 @@ ${JSON.stringify(sizingJSON, null, 2).slice(0, 1000)}
 `;
 
     const segRes = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 4000,
       temperature: 0,
       messages: [{ role: 'user', content: segPrompt }],
@@ -372,7 +372,7 @@ function countUniqueSources(sections: SectionDraft[]): number {
 
 export async function generateReportTitle(scope: ScopeJSON): Promise<string> {
   const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: 'claude-3-5-haiku-20241022',
     max_tokens: 100,
     temperature: 0.3,
     messages: [{

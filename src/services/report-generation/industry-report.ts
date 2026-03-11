@@ -6,7 +6,7 @@ import { draftSectionsParallel, generateExecutiveSummary, buildAppendixSection }
 import { formatIndustryReport, generateReportTitle } from '@/services/agents/formatter';
 import { StreamHandler } from './stream-handler';
 import { refundCredits } from '@/lib/stripe';
-import { cacheReport } from '@/lib/redis';
+import { cacheReport, acquireJobLock, releaseJobLock } from '@/lib/redis';
 import { ReportConfig } from '@/types/agents';
 
 // Section IDs will be defined dynamically inside the function based on reportType
@@ -18,21 +18,18 @@ export async function runIndustryReportPipeline(
   config: ReportConfig,
   reportType: string = 'industry_report'
 ) {
-  const SECTION_IDS = reportType === 'trends_report' ? [
-    'business',
-    'technology',
-  ] : [
-    'intro',            // Section 1 — Market Report Scope
-    'sizing_workings',  // Section 2 — Market Size
-    'segmentation',     // Section 3 — Market Size by Segments
-    'dynamics',         // Section 4 — Trends
-    'tech_developments',// Section 5 — Tech Trends
-    'competitive',      // Section 6 — Competition Analysis
-    'regulatory',       // Section 7 — Regulatory Overview
-    'opportunities',    // Section 8 — Market Forecast
-  ];
-
   const stream = new StreamHandler(jobId);
+
+  // ── ATOMIC LOCK ────────────────────────────────────────────────────────
+  const lockAcquired = await acquireJobLock(jobId, 300); // 5m lock for fast Vercel recovery
+  if (!lockAcquired) {
+    console.warn(`[LOCK] Job ${jobId} is already being processed by another instance. Aborting parallel trigger.`);
+    return;
+  }
+
+  const SECTION_IDS = reportType === 'trends_report' ? ['dynamics'] : [
+    'intro', 'sizing_workings', 'segmentation', 'dynamics', 'tech_developments', 'competitive', 'regulatory', 'opportunities'
+  ];
 
   try {
     const job = await db.job.findUnique({ where: { id: jobId } });
@@ -51,9 +48,12 @@ export async function runIndustryReportPipeline(
 
     await stream.stepComplete(1, 'Scope Extraction', { industry: scope.industry, geography: scope.geography });
 
-    // ── STEP 2: Research Plan ─────────────────────────────────────────────
+    // ── STEP 2: Research Plan & Title Generation (Parallel) ──────────────
     await stream.stepStart(2, 'Research Plan');
-    const searchPlan = await generateResearchPlan(scope);
+    const [searchPlan, reportTitle] = await Promise.all([
+      generateResearchPlan(scope),
+      generateReportTitle(scope)
+    ]);
     await stream.stepComplete(2, 'Research Plan', { searches_planned: searchPlan.search_plan.length });
 
     // ── STEP 3: Web Search Execution (RECOVERABLE) ───────────────────────
@@ -115,22 +115,17 @@ export async function runIndustryReportPipeline(
         reportType,
         async (sectionId, draft) => {
           sectionDrafts.push(draft);
-          // Persist progress every section to survive crashes
-          await db.job.update({
-            where: { id: jobId },
-            data: { draftedSections: sectionDrafts as object, updatedAt: new Date() }
-          });
-
-          await stream.emit({
-            type: 'step_progress',
-            step: 5,
-            stepName: 'Drafting Report Sections',
-            data: {
+          // Persist progress AND section data in a single/efficient call
+          await stream.stepProgress(
+            5,
+            'Drafting Report Sections',
+            {
               sectionId,
               sectionsCompleted: sectionDrafts.length,
               totalSections: SECTION_IDS.length
-            }
-          });
+            },
+            { draftedSections: sectionDrafts as object }
+          );
         }
       );
       await stream.stepComplete(5, 'Drafting Report Sections', { sections: sectionDrafts.length });
@@ -153,7 +148,6 @@ export async function runIndustryReportPipeline(
 
     // ── STEP 8: Format & Persist ─────────────────────────────────────────
     await stream.stepStart(8, 'Formatting Report');
-    const reportTitle = await generateReportTitle(scope);
     const formattedReport = await formatIndustryReport(
       allSectionDrafts,
       executiveSummary,
@@ -211,5 +205,7 @@ export async function runIndustryReportPipeline(
     });
 
     throw err;
+  } finally {
+    await releaseJobLock(jobId);
   }
 }

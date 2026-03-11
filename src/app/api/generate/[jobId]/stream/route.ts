@@ -35,11 +35,13 @@ export async function GET(
         } catch { /* stream closed */ }
       };
 
-      // Send initial status
+      // Send initial status and catch-up data
       send({
         type: 'connected',
         jobId: params.jobId,
         status: job.status,
+        currentStep: job.currentStep,
+        sectionsCompleted: Array.isArray(job.draftedSections) ? job.draftedSections.length : 0,
         timestamp: new Date().toISOString(),
       });
 
@@ -59,7 +61,7 @@ export async function GET(
 
       // Try to transition job from queued -> running OR recover a zombie job
       const isStale = (job.status === 'running' || job.status === 'processing') &&
-        (Date.now() - new Date(job.updatedAt).getTime() > 12 * 60 * 1000);
+        (Date.now() - new Date(job.updatedAt).getTime() > 2.5 * 60 * 1000);
 
       if (job.status === 'queued' || isStale) {
         const updated = await db.job.updateMany({

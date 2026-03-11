@@ -6,7 +6,7 @@ import { draftSectionsParallel } from '@/services/agents/analyst';
 import { formatDatapack } from '@/services/agents/formatter';
 import { StreamHandler } from './stream-handler';
 import { refundCredits } from '@/lib/stripe';
-import { cacheReport } from '@/lib/redis';
+import { cacheReport, acquireJobLock, releaseJobLock } from '@/lib/redis';
 import { ReportConfig } from '@/types/agents';
 
 export async function runDatapackPipeline(
@@ -16,6 +16,13 @@ export async function runDatapackPipeline(
   config: ReportConfig
 ) {
   const stream = new StreamHandler(jobId);
+
+  // ── ATOMIC LOCK ────────────────────────────────────────────────────────
+  const lockAcquired = await acquireJobLock(jobId, 300); // 5m lock
+  if (!lockAcquired) {
+    console.warn(`[LOCK] Job ${jobId} is already being processed. Aborting parallel trigger.`);
+    return;
+  }
 
   try {
     // ── STEP 1: Scope ──────────────────────────────────────────────────────────
@@ -142,5 +149,7 @@ export async function runDatapackPipeline(
     });
 
     throw err;
+  } finally {
+    await releaseJobLock(jobId);
   }
 }

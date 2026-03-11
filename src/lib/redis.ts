@@ -99,3 +99,24 @@ export async function checkRateLimit(userId: string, limit = 5, windowSec = 3600
     return true; // fail-open locally
   }
 }
+// ─── JOB LOCKING (Prevent Parallel Agents) ───────────────────────────────────
+
+export async function acquireJobLock(jobId: string, ttlSec = 1200): Promise<boolean> {
+  try {
+    const key = `lock:job:${jobId}`;
+    // SET with NX=true (Only if not exist) and EX=ttl (Expiration)
+    const result = await redis.set(key, 'locked', 'EX', ttlSec, 'NX');
+    return result === 'OK';
+  } catch (err) {
+    console.warn(`Redis acquireJobLock failed for ${jobId}:`, err);
+    return true; // Fail-open to avoid total deadlock, but risky
+  }
+}
+
+export async function releaseJobLock(jobId: string) {
+  try {
+    await redis.del(`lock:job:${jobId}`);
+  } catch (err) {
+    console.warn(`Redis releaseJobLock failed for ${jobId}:`, err);
+  }
+}
