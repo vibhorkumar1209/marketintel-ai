@@ -95,7 +95,7 @@ OUTPUT JSON: { "data_points": [...], "gaps": [...max 5 items...], "searches_exec
 
   try {
     const response = await claudeClient.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+      model: 'claude-sonnet-4-6',
       max_tokens: 8000,
       temperature: 0,
       system: systemPrompt,
