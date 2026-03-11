@@ -35,11 +35,14 @@ export async function runIndustryReportPipeline(
   const stream = new StreamHandler(jobId);
 
   try {
+    const job = await db.job.findUnique({ where: { id: jobId } });
+    if (!job) throw new Error('Job not found');
+
     // ── STEP 1: Scope Extraction ──────────────────────────────────────────
     await stream.stepStart(1, 'Scope Extraction');
     const scope = await extractScope(query);
 
-    // Override scope with user config (ambiguity flags are ignored — use inferred defaults)
+    // Override scope with user config
     scope.geography = (config.regions && config.regions.length > 0) ? config.regions.join(', ') : (scope.geography || 'Global');
     scope.depth_level = config.depth || 'standard';
     scope.competitor_count = config.competitorCount || 10;
@@ -53,51 +56,89 @@ export async function runIndustryReportPipeline(
     const searchPlan = await generateResearchPlan(scope);
     await stream.stepComplete(2, 'Research Plan', { searches_planned: searchPlan.search_plan.length });
 
-    // ── STEP 3: Web Search Execution ──────────────────────────────────────
+    // ── STEP 3: Web Search Execution (RECOVERABLE) ───────────────────────
     await stream.stepStart(3, 'Web Research');
-    const researchBundle = await executeResearch(searchPlan, scope);
-    await stream.stepComplete(3, 'Web Research', {
-      data_points: researchBundle.data_points.length,
-      gaps: researchBundle.gaps.length,
-      sources_rejected: researchBundle.sources_rejected,
-    });
+    let researchBundle = job.researchData as any;
+    if (researchBundle) {
+      console.log(`[RESUME] Using cached research data for job ${jobId}`);
+      await stream.stepComplete(3, 'Web Research (Resumed)', { data_points: researchBundle.data_points.length });
+    } else {
+      researchBundle = await executeResearch(searchPlan, scope);
+      await db.job.update({
+        where: { id: jobId },
+        data: { researchData: researchBundle as object, updatedAt: new Date() }
+      });
+      await stream.stepComplete(3, 'Web Research', {
+        data_points: researchBundle.data_points.length,
+        gaps: researchBundle.gaps.length,
+      });
+    }
 
-    // ── STEP 4: Market Sizing ─────────────────────────────────────────────
+    // ── STEP 4: Market Sizing (RECOVERABLE) ──────────────────────────────
     await stream.stepStart(4, 'Market Sizing');
-    const sizingJSON = await runMarketSizing(researchBundle, scope);
-    await stream.stepComplete(4, 'Market Sizing', {
-      market_size: sizingJSON.validated_market_size,
-      cagr: sizingJSON.cagr_estimate,
-      discrepancy_flag: sizingJSON.discrepancy_flag,
-    });
+    let sizingJSON = job.sizingData as any;
+    if (sizingJSON) {
+      console.log(`[RESUME] Using cached sizing data for job ${jobId}`);
+      await stream.stepComplete(4, 'Market Sizing (Resumed)', { market_size: sizingJSON.validated_market_size });
+    } else {
+      sizingJSON = await runMarketSizing(researchBundle, scope);
+      await db.job.update({
+        where: { id: jobId },
+        data: { sizingData: sizingJSON as object, updatedAt: new Date() }
+      });
+      await stream.stepComplete(4, 'Market Sizing', {
+        market_size: sizingJSON.validated_market_size,
+        cagr: sizingJSON.cagr_estimate,
+      });
+    }
 
-    // ── STEP 5: Section Drafting (parallel) ───────────────────────────────
+    // ── STEP 5: Section Drafting (RECOVERABLE) ───────────────────────────
     await stream.stepStart(5, 'Drafting Report Sections');
-    let sectionsCompleted = 0;
-    const sectionDrafts = await draftSectionsParallel(
-      SECTION_IDS,
-      scope,
-      researchBundle,
-      sizingJSON,
-      undefined,
-      reportType,
-      async (sectionId) => {
-        sectionsCompleted++;
-        await stream.emit({
-          type: 'step_progress',
-          step: 5,
-          stepName: `Drafting Report Sections`,
-          data: { sectionId, sectionsCompleted, totalSections: SECTION_IDS.length }
-        });
+    let sectionDrafts = (job.draftedSections as any[]) || [];
+    const completedIds = new Set(sectionDrafts.map(s => s.section_id));
+    const remainingIds = SECTION_IDS.filter(id => !completedIds.has(id));
+
+    if (remainingIds.length === 0 && sectionDrafts.length > 0) {
+      console.log(`[RESUME] All sections already drafted for job ${jobId}`);
+      await stream.stepComplete(5, 'Drafting Sections (Resumed)', { sections: sectionDrafts.length });
+    } else {
+      if (sectionDrafts.length > 0) {
+        console.log(`[RESUME] Resuming drafting from ${sectionDrafts.length}/${SECTION_IDS.length} for job ${jobId}`);
       }
-    );
-    await stream.stepComplete(5, 'Drafting Report Sections', { sections: sectionDrafts.length });
+
+      const newDrafts = await draftSectionsParallel(
+        remainingIds,
+        scope,
+        researchBundle,
+        sizingJSON,
+        undefined,
+        reportType,
+        async (sectionId, draft) => {
+          sectionDrafts.push(draft);
+          // Persist progress every section to survive crashes
+          await db.job.update({
+            where: { id: jobId },
+            data: { draftedSections: sectionDrafts as object, updatedAt: new Date() }
+          });
+
+          await stream.emit({
+            type: 'step_progress',
+            step: 5,
+            stepName: 'Drafting Report Sections',
+            data: {
+              sectionId,
+              sectionsCompleted: sectionDrafts.length,
+              totalSections: SECTION_IDS.length
+            }
+          });
+        }
+      );
+      await stream.stepComplete(5, 'Drafting Report Sections', { sections: sectionDrafts.length });
+    }
 
     // ── STEP 6: Social & Tech Enrichment ─────────────────────────────────
     await stream.stepStart(6, 'Social & Technology Intelligence');
-    // Using pre-fetched data from Step 3 for speed optimization
     await stream.stepComplete(6, 'Social & Technology Intelligence', {
-      companies_enriched: 0,
       note: 'Using consolidated research bundle'
     });
 
@@ -106,7 +147,7 @@ export async function runIndustryReportPipeline(
     const executiveSummary = await generateExecutiveSummary(sectionDrafts, sizingJSON, scope);
     await stream.stepComplete(7, 'Executive Summary', { headline: executiveSummary.market_headline });
 
-    // Build appendix — aggregates all citations as source log (placed last per master prompt Rule 2)
+    // Build appendix
     const appendixDraft = buildAppendixSection(sectionDrafts, scope);
     const allSectionDrafts = [...sectionDrafts, appendixDraft];
 
@@ -146,8 +187,6 @@ export async function runIndustryReportPipeline(
 
     // Update report ID
     formattedReport.id = savedReport.id;
-
-    // Cache for fast retrieval
     await cacheReport(savedReport.id, formattedReport);
 
     await stream.stepComplete(8, 'Report Complete', { reportId: savedReport.id });
@@ -155,13 +194,17 @@ export async function runIndustryReportPipeline(
 
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : 'Unknown pipeline error';
+    console.error(`[PIPELINE ERROR] Job ${jobId}:`, err);
+
     await stream.stepError(0, 'Pipeline Error', errorMsg);
 
-    // Refund credits on failure
+    // Only refund if we haven't successfully reached Step 5 (Drafting)
+    // Drafting segments consumes substantial tokens, so we don't auto-refund after progress
     const job = await db.job.findUnique({ where: { id: jobId } });
-    if (job) await refundCredits(userId, job.estimatedCredits);
+    if (job && job.currentStep < 5) {
+      await refundCredits(userId, job.estimatedCredits);
+    }
 
-    // Note: If Vercel forces a shutdown at 300s, this won't be hit, but normal errors will be
     await db.job.update({
       where: { id: jobId },
       data: { status: 'failed', errorMessage: errorMsg },

@@ -126,10 +126,8 @@ export default function ReportPage() {
   const isAdmin = session?.user?.role === 'admin';
 
   if (isTrends) {
-    const trendsSection = report.sections.find((s: any) => s.id === 'dynamics');
-    if (trendsSection) trendsSection.title = 'Trend Report';
-    visibleSections = trendsSection ? [trendsSection] : [];
-    tabs = ['Trend Report'];
+    visibleSections = report.sections.filter((s: any) => s.id !== 'appendix');
+    tabs = visibleSections.map((s: any) => s.title);
     tocEntries = visibleSections.map((s: any) => ({ title: s.title, id: s.id, subsections: s.subsections }));
   } else {
     scopeSection = report.sections.find((s: any) =>
@@ -137,11 +135,12 @@ export default function ReportPage() {
       s.id === 'market_report_scope' ||
       (s.title && s.title.toLowerCase().includes('report scope'))
     );
-    otherSections = report.sections.filter((s: any) =>
-      s.id !== (scopeSection?.id || 'intro') &&
-      s.id !== (scopeSection?.id || 'market_report_scope') &&
-      s.id !== 'appendix'
-    );
+    // Explicitly order other sections to ensure they match the requested flow
+    const sectionOrder = ['sizing_workings', 'segmentation', 'dynamics', 'tech_developments', 'competitive', 'regulatory', 'opportunities'];
+    otherSections = sectionOrder
+      .map(id => report.sections.find((s: any) => s.id === id))
+      .filter(Boolean);
+
     appendixSection = report.sections.find((s: any) => s.id === 'appendix');
 
     visibleSections = [
@@ -151,15 +150,15 @@ export default function ReportPage() {
     ];
 
     tabs = [
-      ...(scopeSection ? [scopeSection.title] : []),
       'Executive Summary',
+      ...(scopeSection ? [scopeSection.title] : []),
       ...(otherSections || []).map((s: any) => s.title),
       ...(appendixSection && isAdmin ? [appendixSection.title] : [])
     ];
 
     tocEntries = [
-      ...(scopeSection ? [{ title: scopeSection.title, id: scopeSection.id, subsections: scopeSection.subsections }] : []),
       { title: 'Executive Summary', id: 'exsum', subsections: [] },
+      ...(scopeSection ? [{ title: scopeSection.title, id: scopeSection.id, subsections: scopeSection.subsections }] : []),
       ...(otherSections || []).map((s: any) => ({ title: s.title, id: s.id, subsections: s.subsections })),
       ...(appendixSection && isAdmin ? [{ title: appendixSection.title, id: appendixSection.id, subsections: appendixSection.subsections }] : [])
     ];
@@ -253,8 +252,8 @@ export default function ReportPage() {
       {/* ── Section content ───────────────────────────────────────── */}
       <div className="p-4 md:p-8" style={{ maxWidth: 1100, margin: '0 auto', width: '100%' }}>
 
-        {/* EXECUTIVE SUMMARY (Now at index 1 for standard industry report, Hidden for trends_report) */}
-        {!isTrends && activeSection === (scopeSection ? 1 : 0) && (
+        {/* EXECUTIVE SUMMARY (Locked to first tab for Industry, Hidden for trends_report) */}
+        {!isTrends && activeSection === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {/* Headline */}
             <Card>
@@ -323,15 +322,11 @@ export default function ReportPage() {
         {(visibleSections || []).map((section: any, idx: number) => {
           let targetIndex;
           if (isTrends) {
-            targetIndex = idx; // Direct mapping for Trends
+            targetIndex = idx; // Direct mapping for Trends (Business, Technology)
           } else {
-            // idx 0 -> tabs[0] -> activeSection 0
-            // idx >= 1 -> tabs[idx+1] -> activeSection idx+1
-            targetIndex = idx === 0 ? 0 : idx + 1;
-            // Adjust if scopeSection doesn't exist
-            if (!scopeSection) {
-              targetIndex = idx + 1; // Since idx 0 of visibleSections is otherSections[0], which sits after ExSumm
-            }
+            // idx 0 (Scope) -> activeSection 1
+            // idx 1 (Size) -> activeSection 2... 
+            targetIndex = idx + 1;
           }
 
           return activeSection === targetIndex && (

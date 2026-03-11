@@ -139,6 +139,12 @@ model Job {
   errorMessage     String?   @db.Text
   estimatedCredits Int
   actualCredits    Int?
+  
+  // Intermediate state for resumption
+  researchData     Json?     // ResearchBundle
+  sizingData       Json?     // SizingJSON
+  draftedSections  Json?     // SectionDraft[]
+  
   startedAt        DateTime?
   completedAt      DateTime?
   createdAt        DateTime  @default(now())

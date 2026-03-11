@@ -42,3 +42,4 @@ prisma/migrations/
 # generated
 *.zip
 .env.vercel
+.env*.local

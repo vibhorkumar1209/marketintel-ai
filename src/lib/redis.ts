@@ -4,7 +4,14 @@ const globalForRedis = globalThis as unknown as { redis: Redis };
 
 export const redis =
   globalForRedis.redis ||
-  new Redis(process.env.REDIS_URL || '');
+  new Redis(process.env.REDIS_URL || '', {
+    maxRetriesPerRequest: 0,
+    enableOfflineQueue: false
+  });
+
+redis.on('error', (err) => {
+  console.warn('Redis Connection Error:', err.message);
+});
 
 if (process.env.NODE_ENV !== 'production') globalForRedis.redis = redis;
 
@@ -16,48 +23,79 @@ export async function setJobProgress(jobId: string, progress: {
   pct: number;
   status: string;
 }) {
-  await redis.set(`job:${jobId}:progress`, JSON.stringify(progress), 'EX', 86400);
+  try {
+    await redis.set(`job:${jobId}:progress`, JSON.stringify(progress), 'EX', 86400);
+  } catch (err) {
+    console.warn(`Redis setJobProgress failed for ${jobId}:`, err);
+  }
 }
 
 export async function getJobProgress(jobId: string) {
-  const raw = await redis.get(`job:${jobId}:progress`);
-  return raw ? JSON.parse(raw) : null;
+  try {
+    const raw = await redis.get(`job:${jobId}:progress`);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    console.warn(`Redis getJobProgress failed for ${jobId}:`, err);
+    return null;
+  }
 }
 
 // ─── STREAM EVENTS ────────────────────────────────────────────────────────────
 
 export async function publishStreamEvent(jobId: string, event: object) {
-  const key = `stream:${jobId}`;
-  // Append event to a Redis list; SSE route will poll and drain it
-  await redis.rpush(key, JSON.stringify(event));
-  await redis.expire(key, 3600); // 1h TTL
+  try {
+    const key = `stream:${jobId}`;
+    await redis.rpush(key, JSON.stringify(event));
+    await redis.expire(key, 3600); // 1h TTL
+  } catch (err) {
+    console.warn(`Redis publishStreamEvent failed for ${jobId}:`, err);
+  }
 }
 
 export async function drainStreamEvents(jobId: string): Promise<string[]> {
-  const key = `stream:${jobId}`;
-  const len = await redis.llen(key);
-  if (len === 0) return [];
-  const items = await redis.lrange(key, 0, len - 1);
-  if (len > 0) await redis.ltrim(key, len, -1);
-  return items;
+  try {
+    const key = `stream:${jobId}`;
+    const len = await redis.llen(key);
+    if (len === 0) return [];
+    const items = await redis.lrange(key, 0, len - 1);
+    if (len > 0) await redis.ltrim(key, len, -1);
+    return items;
+  } catch (err) {
+    console.warn(`Redis drainStreamEvents failed for ${jobId}:`, err);
+    return [];
+  }
 }
 
 // ─── REPORT CACHE ─────────────────────────────────────────────────────────────
 
 export async function cacheReport(reportId: string, data: object) {
-  await redis.set(`report:${reportId}`, JSON.stringify(data), 'EX', 86400);
+  try {
+    await redis.set(`report:${reportId}`, JSON.stringify(data), 'EX', 86400);
+  } catch (err) {
+    console.warn(`Redis cacheReport failed for ${reportId}:`, err);
+  }
 }
 
 export async function getCachedReport(reportId: string) {
-  const raw = await redis.get(`report:${reportId}`);
-  return raw ? JSON.parse(raw) : null;
+  try {
+    const raw = await redis.get(`report:${reportId}`);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    console.warn(`Redis getCachedReport failed for ${reportId}:`, err);
+    return null;
+  }
 }
 
 // ─── RATE LIMITER (simple token bucket) ───────────────────────────────────────
 
 export async function checkRateLimit(userId: string, limit = 5, windowSec = 3600): Promise<boolean> {
-  const key = `rl:${userId}`;
-  const count = await redis.incr(key);
-  if (count === 1) await redis.expire(key, windowSec);
-  return count <= limit;
+  try {
+    const key = `rl:${userId}`;
+    const count = await redis.incr(key);
+    if (count === 1) await redis.expire(key, windowSec);
+    return count <= limit;
+  } catch (err) {
+    console.warn(`Redis checkRateLimit failed for ${userId}:`, err);
+    return true; // fail-open locally
+  }
 }

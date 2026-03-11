@@ -9,7 +9,7 @@ OUTPUT FORMAT:
 }`;
     const user = `Draft the section "Scope of Study"`;
     const res = await client.messages.create({
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 5000,
         temperature: 0.3,
         system: sys,
