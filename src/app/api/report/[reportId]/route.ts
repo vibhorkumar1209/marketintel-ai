@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { getCachedReport, cacheReport } from '@/lib/redis';
+import { safeJsonParse } from '@/lib/json-repair';
+import { SectionDraft } from '@/types/agents';
+import { ReportSection } from '@/types/reports';
 
 export async function GET(req: NextRequest, { params }: { params: { reportId: string } }) {
   const session = await getServerSession(authOptions);
@@ -23,7 +26,35 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
   const sizing = report.sizing as Record<string, unknown> || {};
   const sizingResult = (sizing as any)?.validated_market_size || {};
   const cagr = (sizing as any)?.cagr_estimate || {};
-  const sections = (report.sections as unknown[]) || [];
+  const rawSections = (report.sections as any[]) || [];
+
+  // Repair logic: some sections might be stored as raw JSON strings in the content field
+  const sections: ReportSection[] = rawSections.map((s: any): ReportSection => {
+    // If content[0] looks like a JSON object of a SectionDraft
+    if (s.content?.[0] && typeof s.content[0] === 'string' && (s.content[0].trim().startsWith('{') || s.content[0].includes('```json'))) {
+      const parsed = safeJsonParse<SectionDraft | null>(s.content[0], null);
+      if (parsed && (parsed.section_id || parsed.body_paragraphs)) {
+        // Convert SectionDraft (snake_case) to ReportSection (camelCase)
+        return {
+          id: parsed.section_id || s.id,
+          title: parsed.section_title || s.title,
+          content: parsed.body_paragraphs || [],
+          keyTable: parsed.key_table ? { title: parsed.key_table.title, headers: parsed.key_table.headers, rows: parsed.key_table.rows } : undefined,
+          chartSpec: parsed.chart_spec ? { type: parsed.chart_spec.type, title: parsed.chart_spec.title, xAxis: parsed.chart_spec.x_axis, yAxis: parsed.chart_spec.y_axis, dataSource: parsed.chart_spec.data_source } : undefined,
+          subsections: parsed.subsections?.map(sub => ({
+            title: sub.title,
+            content: sub.body_paragraphs,
+            keyTable: sub.key_table ? { title: sub.key_table.title, headers: sub.key_table.headers, rows: sub.key_table.rows } : undefined,
+            chartSpec: sub.chart_spec ? { type: sub.chart_spec.type, title: sub.chart_spec.title, xAxis: sub.chart_spec.x_axis, yAxis: sub.chart_spec.y_axis, dataSource: sub.chart_spec.data_source } : undefined,
+          })),
+          citations: parsed.citations || [],
+          flags: parsed.section_flags || [],
+          adminMethodology: parsed.admin_methodology,
+        };
+      }
+    }
+    return s as ReportSection;
+  });
 
   // Build executiveSummary from stored metadata/sizing since it's not a separate DB field
   const metaExSum = (metadata as any).executiveSummary;
