@@ -11,11 +11,13 @@ export async function GET(req: NextRequest, { params }: { params: { reportId: st
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  /*
   // Check cache first
   const cached = await getCachedReport(params.reportId);
   if (cached && (cached as any).executiveSummary?.headline) {
     return NextResponse.json(cached);
   }
+  */
 
   const report = await db.report.findUnique({ where: { id: params.reportId } });
   if (!report || report.userId !== session.user.id) {
