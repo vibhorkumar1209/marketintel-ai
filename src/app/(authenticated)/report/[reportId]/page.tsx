@@ -136,10 +136,41 @@ export default function ReportPage() {
       (s.title && s.title.toLowerCase().includes('report scope'))
     );
     // Explicitly order other sections to ensure they match the requested flow
-    const sectionOrder = ['sizing_workings', 'segmentation', 'dynamics', 'tech_developments', 'competitive', 'regulatory', 'opportunities'];
+    // We search by ID first, then by title for robustness
+    const sectionOrder = [
+      { id: 'sizing_workings', altTitles: ['market size'] },
+      { id: 'segmentation', altTitles: ['segmentation', 'market size by segment'] },
+      { id: 'dynamics', altTitles: ['trends', 'drivers', 'barriers', 'market dynamics'] },
+      { id: 'tech_developments', altTitles: ['technology', 'tech trends'] },
+      { id: 'competitive', altTitles: ['competition', 'competitive analysis'] },
+      { id: 'regulatory', altTitles: ['regulatory overview', 'regulation'] },
+      { id: 'opportunities', altTitles: ['market forecast', 'opportunities'] }
+    ];
+
     otherSections = sectionOrder
-      .map(id => report.sections.find((s: any) => s.id === id))
+      .map(target => {
+        // Try to find by ID exactly
+        let section = report.sections.find((s: any) => s.id === target.id);
+        // If not found, try by partial ID or title match
+        if (!section) {
+          section = report.sections.find((s: any) => 
+            s.id.includes(target.id) || 
+            target.altTitles.some(title => (s.title || '').toLowerCase().includes(title))
+          );
+        }
+        return section;
+      })
       .filter(Boolean);
+
+    // Add any sections that were missed by the explicit order but aren't appendix/intro
+    const accountedIds = new Set([
+      ...(scopeSection ? [scopeSection.id] : []),
+      ...otherSections.map(s => s.id)
+    ]);
+    const extraSections = report.sections.filter((s: any) => 
+      s.id !== 'appendix' && !accountedIds.has(s.id)
+    );
+    otherSections = [...otherSections, ...extraSections];
 
     appendixSection = report.sections.find((s: any) => s.id === 'appendix');
 
